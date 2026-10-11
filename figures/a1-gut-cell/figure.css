@@ -1,0 +1,43 @@
+/* A1 · the gut cell, hand-drawn: soft fills in the figure's own inks, one membrane line weight. */
+.iso.optimal {
+  --a1-lumen: #22361d; --a1-cell: #2c4127; --a1-cell-2: #33492d; --a1-membrane: #8e9884; --a1-nucleus: #3d5436; --a1-nucleolus: #4f6948;
+  --a1-mito: #3a4f33; --a1-tissue: #1e301a; --a1-blood: #3b2a22; --a1-endo: #4d5c46; --a1-iron: #e3a35b; --a1-hep: #ff9776; --a1-fpn: #c9cdbf;
+  --a1-dmt1: #7fa8d9; --a1-tf: #7fa8d9; --a1-rbc: #e0745f; --a1-rbc-in: #c45e4a; --a1-ferritin: #8e9884; --a1-vesicle: rgba(201, 205, 191, 0.12);
+}
+.iso.optimal[data-theme="light"] {
+  --a1-lumen: #fbf3e6; --a1-cell: #f6e9d8; --a1-cell-2: #efdfc9; --a1-membrane: #8a7f70; --a1-nucleus: #e4d3bd; --a1-nucleolus: #cdb69a;
+  --a1-mito: #ead8c2; --a1-tissue: #f8efe2; --a1-blood: #f6dcd2; --a1-endo: #e2cdbd; --a1-iron: #b8641f; --a1-hep: #d96a47; --a1-fpn: #2c4e25;
+  --a1-dmt1: #4a77ab; --a1-tf: #6f93bd; --a1-rbc: #c9503a; --a1-rbc-in: #e07a63; --a1-ferritin: #8a7f70; --a1-vesicle: rgba(44, 78, 37, 0.08);
+}
+.a1-svg path, .a1-svg circle, .a1-svg ellipse, .a1-svg rect { vector-effect: non-scaling-stroke; }
+.a1-lumen { fill: var(--a1-lumen); }
+.a1-tissue { fill: var(--a1-tissue); }
+.a1-villus { fill: var(--a1-cell-2); stroke: var(--a1-membrane); stroke-width: 1; }
+.a1-cell { fill: var(--a1-cell); stroke: var(--a1-membrane); stroke-width: 1.4; }
+.a1-dim { opacity: 0.55; }
+.a1-web { fill: var(--a1-cell-2); stroke: none; }
+.a1-junction { fill: var(--a1-membrane); }
+.a1-dmt1 path { fill: var(--a1-dmt1); stroke: none; }
+.a1-mito { fill: var(--a1-mito); stroke: var(--a1-membrane); stroke-width: 0.8; }
+.a1-mito-in { fill: none; stroke: var(--a1-membrane); stroke-width: 0.6; opacity: 0.7; }
+.a1-nucleus { fill: var(--a1-nucleus); stroke: var(--a1-membrane); stroke-width: 1.1; }
+.a1-nucleolus { fill: var(--a1-nucleolus); }
+.a1-ferritin circle { fill: var(--a1-ferritin); }
+.a1-ferritin .a1-core { fill: var(--a1-cell-2); }
+.a1-lamina { fill: var(--a1-endo); }
+.a1-blood { fill: var(--a1-blood); }
+.a1-endo { fill: var(--a1-endo); }
+.a1-iron { fill: var(--a1-iron); }
+.a1-hep { fill: var(--a1-hep); }
+.a1-fpn path { fill: var(--a1-fpn); }
+.a1-gap { fill: var(--a1-membrane); opacity: 0.35; }
+.a1-vesicle { fill: var(--a1-vesicle); stroke: var(--a1-membrane); stroke-width: 0.9; }
+.a1-rbc ellipse { fill: var(--a1-rbc); }
+.a1-rbc .a1-rbc-in { fill: var(--a1-rbc-in); }
+.a1-tf circle { fill: var(--a1-tf); }
+.a1-tf .a1-iron { fill: var(--a1-iron); }
+.a1-scene { margin: 10px 4px 0; font: 500 14px/1.4 var(--opt-ui); color: var(--anatomy-text); min-height: 2.8em; }
+.a1-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a1-par { display: block; margin-top: 6px; }
+.a1-par:first-child { margin-top: 0; }
+.a1-par small { font-size: 12.5px; color: var(--anatomy-muted); }

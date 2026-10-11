@@ -25,17 +25,18 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 4 | Creator 600 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; built `shared/mannequin.mjs` + `mannequin-view.js` for Fig 5 | `figures/04-creator-600/` |
 | 5 | VO2max on a bike | **Round 2 done** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
 | 6 | VO2max on the Creator 600 | **Round 1 done**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
-| A1–A9 | Anatomical series (beating heart, gut cell, hypothalamus, …) | Planned after Fig 5; style test first | **`BACKLOG.md`** |
+| A1 | Gut cell's gate (style test) | **Built**: hand-drawn organic SVG, both themes, phones checked; waiting on Peter's call on the look | `figures/a1-gut-cell/` |
+| A2–A9 | Rest of the anatomical series (beating heart, hypothalamus, …) | Planned; follow A1's style once approved | **`BACKLOG.md`** |
 
-## Time remaining (estimate, 2026-10-11 ~21:15 UTC)
+## Time remaining (estimate, 2026-10-11 evening)
 
 | Work | Estimate |
 |---|---|
-| Design rounds on Figs 1–5 (+30–50 %), as Peter's feedback comes in | 4–6 h |
-| Anatomical series A1–A9 incl. style test (`BACKLOG.md`) | 15–19 h, + rounds |
-| **Total** | **~19–25 h** |
+| Design rounds on Figs 1–6 and A1 (+30–50 %), as Peter's feedback comes in | 4–6 h |
+| Anatomical series A2–A9 (`BACKLOG.md`), after the A1 look is approved | 13–17 h, + rounds |
+| **Total** | **~17–23 h** |
 
-**Where to run it.** Cloud session credits ran at about $20–25 an hour; after Fig 5 roughly $85 is left, enough for a few hours of design rounds but not the anatomical series. Run the anatomical series locally (Claude Code on the Mac uses the Max plan's usage limits, not cloud credits): set up as above, then start with the A1 style test in `BACKLOG.md`.
+**Where to run it.** The cloud credits are nearly used. Run the rest locally (Claude Code on the Mac uses the Max plan's limits, not cloud credits): set up as above, then pick up from `BACKLOG.md`. A1 (`figures/a1-gut-cell/`) is the pattern for the anatomical pieces: hand-drawn organic SVG through `smooth()` (Catmull-Rom to Bézier), the shared card, CSS tokens per theme, a tiny `model.mjs`, and a particle `live.js`.
 
 ## How a figure is built (the pattern Fig 1 set)
 

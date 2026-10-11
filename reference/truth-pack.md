@@ -416,6 +416,9 @@ Hepcidin, a liver hormone that rises when iron stores fill or inflammation (IL-6
 | Hepcidin binds ferroportin, which is internalised and degraded, so cellular iron export stops | mechanism | — | [K] Nemeth et al., Science 2004 (24) | HIGH (fact) / MEDIUM (citation) |
 | Hepcidin also occludes the ferroportin channel directly, a second mechanism alongside endocytosis | mechanism | — | [K] Aschemeyer et al., Blood 2018 (26); Billesbølle et al., Nature 2020 (48) | MEDIUM |
 | Ferroportin sites gated: duodenal enterocyte (basolateral), macrophages (spleen, liver Kupffer cells), hepatocytes | — | — | [K] Nemeth 2004 (24); Hentze 2010 (47) | HIGH (fact) |
+| A1: DMT1 (divalent metal transporter 1) brings Fe²⁺ into the gut cell at the brush border; dietary Fe³⁺ is first reduced (Dcytb) | mechanism | — | [K] Gunshin H et al., Nature 1997;388:482–488; McKie AT et al., Science 2001;291:1755–1759 | HIGH (fact) / MEDIUM (citation) |
+| A1: ferroportin is the only known cellular iron exporter in mammals; hephaestin oxidises exported iron for transferrin | mechanism | — | [K] Donovan A et al., Cell Metab 2005;1:191–200; Vulpe CD et al., Nat Genet 1999;21:195–199 | HIGH (fact) / MEDIUM (citation) |
+| A1: gut lining cells are shed from the villus tips within a few days, taking unexported (ferritin) iron with them | ≈ 3–5 | days | [K] textbook (Hentze 2010, 47) | MEDIUM |
 | Inducers: iron (BMP6–SMAD) and inflammation (IL-6 → STAT3) | — | — | [K] Nemeth et al., JCI 2004 (IL-6) (25) | HIGH (fact) / MEDIUM (citation) |
 | Suppressors: iron deficiency, active erythropoiesis (erythroferrone, ERFE), hypoxia | — | — | [K] Kautz et al., Nat Genet 2014 (27) | MEDIUM |
 | Hepcidin is often near-undetectable in IDA, so the gut gate is wide open | qualitative | — | [K] general literature (29) | MEDIUM |

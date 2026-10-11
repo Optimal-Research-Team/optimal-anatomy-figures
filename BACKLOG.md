@@ -6,7 +6,7 @@ Added 2026-10-11 at Peter's request. These come after HANDOFF §1's five figures
 
 These are organic drawings, not machines. The Anatomy skill's machine tooling (audit, lathe, tube) only partly applies, so they're **hand-authored SVG**: Bézier outlines, layered fills in the figure's own inks, accurate topology and proportion, and lightly shaded editorial style (not photoreal). Each still follows the house rule that **the motion is the idea**, with a small pure `model.mjs`, a framed card, a caption and a legend.
 
-**Step 0: style test (~1 h).** Build the gut-cell inset first, as a one-screen sample. Peter approves the look (line weight, shading, how organic forms sit next to the isometric machines) before the rest are built. Decide then whether insets live inside a figure's card or as standalone cards.
+**Step 0: style test (~1 h). Done 2026-10-11: `figures/a1-gut-cell/` (A1), waiting on Peter's call on the look.** Build the gut-cell inset first, as a one-screen sample. Peter approves the look (line weight, shading, how organic forms sit next to the isometric machines) before the rest are built. Decide then whether insets live inside a figure's card or as standalone cards.
 
 | # | Piece | Page | Motion = idea | Truth needed | Size | Estimate |
 |---|---|---|---|---|---|---|
