@@ -41,7 +41,7 @@ function mount(fig) {
   };
   const pointerAt = (angle) => {
     const { x, y, r, top } = DATA.knob;
-    return lineOnTop([x - Math.sin(angle) * 2, y + Math.cos(angle) * 2], [x + Math.sin(angle) * (r - 1.2), y - Math.cos(angle) * (r - 1.2)], top, P);
+    return lineOnTop([x - Math.sin(angle) * 2, y + Math.cos(angle) * 2], [x + Math.sin(angle) * (r - 0.25), y - Math.cos(angle) * (r - 0.25)], top, P);
   };
   const needleAt = (name, angle) => {
     const [x, y] = DATA.dials[name];
@@ -51,7 +51,7 @@ function mount(fig) {
   const slatSvg = (zc, deg) => {
     const a = (deg * Math.PI) / 180;
     const F = G.frameOf([DATA.slat.x, DATA.slat.y, zc], [1, 0, 0], [0, Math.sin(a), Math.cos(a)], [0, -Math.cos(a), Math.sin(a)]);
-    return solidSvg(G.prismOf(F, DATA.slat.poly, 0, DATA.slat.len, P), { tone: "hi", crease: "lo" });
+    return solidSvg(G.prismOf(F, DATA.slat.poly, 0, DATA.slat.len, P), { tone: "mid" });
   };
   const crankTip = (zc, deg) => {
     const a = (deg * Math.PI) / 180;
@@ -91,7 +91,7 @@ function mount(fig) {
 
   const coreAt = (t) => {
     const ft = t - flashStart;
-    if (ft >= 0 && ft < CHILL_END) return flashFrom * (1 - smooth(0, 1.5, ft)) + flashAt(ft).chill;
+    if (ft >= 0 && ft < CHILL_END) return flashFrom * (1 - smooth(0.6, TRUTH.flashMin, ft)) + flashAt(ft).chill;
     return swingAt(t - swingStart);
   };
 
@@ -196,7 +196,9 @@ function mount(fig) {
 
     const sign = (v, digits) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(digits);
     const rate = rateOf(e);
-    set("out.core", sign(Math.abs(shown) < 0.005 ? 0 : shown, 2) + " °C", (t) => (out.core.textContent = t));
+    // The after-chill's size isn't measured, so the readout names it instead of printing a depth.
+    const dipping = ft >= 0 && ft < CHILL_END && core < -0.005;
+    set("out.core", dipping ? "dipping" : sign(Math.abs(shown) < 0.005 ? 0 : shown, 2) + " °C", (t) => (out.core.textContent = t));
     set("out.zone", zone.shown.toFixed(1) + " °C", (t) => (out.zone.textContent = t));
     set("out.rate", (rate < 0.05 ? "0" : rate.toFixed(1)) + " / h", (t) => (out.rate.textContent = t));
     set("out.skin", sign(flash.skin, 1) + " °C", (t) => (out.skin.textContent = t));
@@ -264,7 +266,7 @@ function mount(fig) {
     clock = 1000;
     swingStart = -1e9;
     if (eTarget < 0.5) {
-      flashStart = clock - 1.4;
+      flashStart = clock - 0.9;
       flashFrom = zoneOf(eTarget).sweat;
     } else flashStart = -1e9;
     draw();

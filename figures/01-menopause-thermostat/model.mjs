@@ -30,7 +30,7 @@ export const TRUTH = {
 };
 
 // What the figure draws: the scale board's range, the column's travel.
-export const SCALE = { low: -0.25, high: 0.35 };
+export const SCALE = { low: -0.15, high: 0.3 };
 export const RANGE = { low: -0.07, high: 0.06 };
 
 export const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));

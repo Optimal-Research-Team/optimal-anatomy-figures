@@ -4,3 +4,5 @@ dist/
 .DS_Store
 figures/*/shots/tmp/
 *.log
+figures/*/*.html
+figures/*/embed/*.js

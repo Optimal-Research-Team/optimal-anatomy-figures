@@ -28,18 +28,18 @@ const THEME = process.argv.includes("--light") ? "light" : "dark";
 const SLUG = "menopause-thermostat";
 
 const W = 600;
-const H = 560;
+const H = 580;
 const AZIMUTH = 55;
 const ELEVATION = 30;
 
 // ---------------------------------------------------------------- layout (world units, z up)
-const PLATE = { x: -160, y: -46, w: 320, d: 96, r: 9 };
+const PLATE = { x: -150, y: -42, w: 282, d: 88, r: 9 };
 const PLATE_H = 10;
 const FOOT_H = 5;
 
 // Temperature change from rest to height on the column: KZ units per °C, ZREF at rest.
 const KZ = 300;
-const ZREF = 100;
+const ZREF = 80;
 const zOf = (t) => ZREF + t * KZ;
 
 const CAN = { x: -98, y: 10 };
@@ -52,7 +52,7 @@ const Z_HIGH = zOf(T_HIGH);
 const TRAVEL = Z_HIGH - Z_LOW;
 
 const UP = { x: -70, w: 52 }; // upright base and bridge span in x
-const UP_TOP = 214;
+const UP_TOP = 186;
 const SCREW = [-44, 2.6];
 const JAW_X = -74; // contact buttons and finger pads
 const ZONE_PRE = M.zoneOf(1);
@@ -60,25 +60,25 @@ const ZONE_POST = M.zoneOf(0);
 const JAW_TRAVEL = zOf(ZONE_PRE.sweat) - zOf(ZONE_POST.sweat); // upper jaw moves down by this from pre to post
 const JAW_TRAVEL_L = zOf(ZONE_POST.shiver) - zOf(ZONE_PRE.shiver); // lower jaw moves up
 
-const BOARD = { x: -144, y: 4, w: 20, d: 3, r: 0.8 };
-const BOARD_Z = [8, 214];
+const BOARD = { x: -138, y: 4, w: 16, d: 3, r: 0.8 };
+const BOARD_Z = [8, 186];
 
-const RAD = { x0: 30, x1: 146, post: 7, y0: -22, y1: 0, top: 128 };
+const RAD = { x0: 22, x1: 116, post: 7, y0: -22, y1: 0, top: 112 };
 const PIVOT_Y = -8;
-const SLATS = Array.from({ length: 8 }, (_, i) => 22 + i * 14);
+const SLATS = Array.from({ length: 7 }, (_, i) => 22 + i * 13);
 const SLAT_W = 15.4;
 const SLAT_T = 1.4;
 const SLAT_OPEN = 60; // degrees at full vasodilation
 
 const RELAY = { x: -18, y: -6, w: 26, d: 24, r: 3 };
 const RELAY_H = 16;
-const CONSOLE = { x: 40, y: 12, w: 96, d: 26, r: 3 };
+const CONSOLE = { x: 30, y: 12, w: 78, d: 24, r: 3 };
 const CONSOLE_H = 12;
-const DIALS = { skin: [64, 25], hr: [112, 25] };
+const DIALS = { skin: [50, 24], hr: [88, 24] };
 const DIAL_R = 10;
 const DIAL_Z = CONSOLE_H + 5;
-const SOL = { x: 152.5, y: -10.5, r: 4.4, z0: 6, h: 14 };
-const BAR = { x: 147.6, w: 1.8, y: -14.6, d: 7.2, crank: 5 };
+const SOL = { x: 120.8, y: -11.5, r: 4.4, z0: 6, h: 14 };
+const BAR = { x: 117.6, w: 1.8, y: -13.8, d: 4.6, crank: 5 };
 
 const P = k.fitProjection(
   [...k.boxCorners(PLATE, -PLATE_H - FOOT_H, 0), [UP.x, -8, UP_TOP + 18], [UP.x + UP.w, 20, UP_TOP + 18], [BOARD.x, BOARD.y, BOARD_Z[1]], [RAD.x1, RAD.y0, RAD.top + 8]],
@@ -158,10 +158,10 @@ const plateScrews = k.corners(PLATE, 10);
 back.push(Ln(plateScrews.map(([x, y]) => k.ring(x, y, 2.2, 0, P, 16)).join(""), { tone: "lo" }));
 back.push(Dots(plateScrews.map(([x, y]) => at([x, y, 0])), { size: 0.5 }));
 record(A.slab(PLATE, -PLATE_H, PLATE_H, { name: "stand.plate", ground: true }, 8));
-const LABEL = { x: -150, y: 26, w: 30, d: 13, r: 1.2 };
+const LABEL = { x: -143, y: 24, w: 24, d: 12, r: 1.2 };
 back.push(S(k.slabOf(LABEL, 0, 0.8, P, 3), { tone: "lo", crease: "none" }));
 back.push(Ln(k.planOutline(k.insetPlan(LABEL, 1.4), 0.8, P, 3), { tone: "faint" }));
-back.push(Ln([20, 13, 16].map((w, i) => k.lineOnTop([LABEL.x + 4, LABEL.y + 3.4 + i * 3], [LABEL.x + 4 + w, LABEL.y + 3.4 + i * 3], 0.8, P)).join(""), { tone: "lo", free: true }));
+back.push(Ln([20, 13, 16].map((w, i) => k.lineOnTop([LABEL.x + 3.4, LABEL.y + 3.4 + i * 3], [LABEL.x + 3.4 + w * 0.8, LABEL.y + 3.4 + i * 3], 0.8, P)).join(""), { tone: "lo", free: true }));
 back.push(Dots([at([LABEL.x + LABEL.w - 2.6, LABEL.y + 2.4, 0.8]), at([LABEL.x + LABEL.w - 2.6, LABEL.y + LABEL.d - 2.4, 0.8])], { size: 0.45 }));
 
 // ---------------------------------------------------------------- scale board (core temperature)
@@ -172,19 +172,21 @@ box("scale.foot", { x: BOARD.x - 4, y: 0, w: BOARD.w + 7, d: 12, r: 2 }, 0, BOAR
   const ticks = [];
   const major = [];
   let zero = "";
+  // A double-rule ruler: majors span the two rules, minors hang from the inner one.
+  const RULE2 = 6;
   for (let i = Math.round(M.SCALE.low * 40); i <= Math.round(M.SCALE.high * 40); i++) {
     const z = zOf(i / 40);
     const big = i % 4 === 0;
     const mid = i % 2 === 0;
-    const len = i === 0 ? 9 : big ? 6.5 : mid ? 4.5 : 2.6;
+    const len = big ? RULE2 : mid ? 3.8 : 2.2;
     const d = k.segment([edge, face, z], [edge - len, face, z], P);
     if (i === 0) zero = d;
     else if (big || mid) major.push(d);
     else ticks.push(d);
   }
-  const rule = k.segment([edge, face, BOARD_Z[0]], [edge, face, BOARD_Z[1]], P);
-  const inner = Ln(rule, { tone: "mid" }) + Ln(ticks.join(""), { tone: "lo" }) + Ln(major.join(""), { tone: "mid" }) + Ln(zero, { tone: "hi" });
-  const screws = Dots([at([BOARD.x + 4, face, BOARD_Z[1] - 5]), at([BOARD.x + 4, face, BOARD_Z[0] + 5])], { size: 0.5, tone: "mid" });
+  const rule = k.segment([edge, face, BOARD_Z[0]], [edge, face, BOARD_Z[1]], P) + k.segment([edge - RULE2, face, BOARD_Z[0]], [edge - RULE2, face, BOARD_Z[1]], P);
+  const inner = Ln(rule, { tone: "mid" }) + Ln(ticks.join(""), { tone: "lo" }) + Ln(major.join(""), { tone: "mid" }) + `<path class="iso-line" data-tone="hi" d="${zero}" style="stroke-width:1.2"/>`;
+  const screws = Dots([at([BOARD.x + 3.5, face, BOARD_Z[1] - 5]), at([BOARD.x + 3.5, face, BOARD_Z[0] + 5])], { size: 0.5, tone: "mid" });
   box("scale.board", BOARD, BOARD_Z[0], BOARD_Z[1] - BOARD_Z[0], { tone: "mid" }, { steps: 2, bevel: 0.4, extra: inner + screws });
 }
 
@@ -196,11 +198,11 @@ box("scale.foot", { x: BOARD.x - 4, y: 0, w: BOARD.w + 7, d: 12, r: 2 }, 0, BOAR
   const knurl = k.knurl(CAN.x, CAN.y, 16, 14, 28, 44, P, 0.4);
   const seams = [14, 28].map((z) => k.sideArc(CAN.x, CAN.y, 16, z, P, 40)).join("");
   put("can.body", [CAN.x, CAN.y, 20], S(body, { tone: "mid", inner: Ln(seams, { tone: "faint" }) + Ln(knurl, { tone: "faint" }) }), [record(A.solid(F, [[3, 16], [36, 16]], { name: "can.body" }))]);
-  turned("can.cap", F, [[36, 16], [37.6, 16], [40, 13, 1], [41, 12]], { tone: "mid" });
+  turned("can.cap", F, [[36, 16], [37.6, 16], [40, 13], [41, 12]], { tone: "mid" });
   turned("can.gland", F, [[41, 6.2], [GLAND - 1.2, 6.2], [GLAND, 5.4]], { tone: "mid" }, { extra: Ln(G.circleOf(F, GLAND, ROD_R + 0.5, P), { tone: "faint" }) });
   // Common terminal on the capsule's front.
   const TF = G.frameOf([CAN.x + 8.5, CAN.y + 13.6, 24], G.unit3([0.53, 0.85, 0]), [0, 0, 1], G.unit3([-0.85, 0.53, 0]));
-  pin("can.boss", TF, -1.2, 2.4, 3.2, { tone: "mid" });
+  pin("can.boss", TF, -0.3, 2.4, 3.0, { tone: "mid" });
   pin("can.stud", TF, 2.4, 4.4, 1.8, { tone: "hi" });
 }
 
@@ -265,7 +267,7 @@ const DIAL_TOP_Z = UP_TOP + 11.2;
 const KNOB_TOP = DIAL_TOP_Z + 6;
 const pointerAt = (angle) => {
   const [x, y] = [KNOB.x, KNOB.y];
-  return k.lineOnTop([x - Math.sin(angle) * 2, y + Math.cos(angle) * 2], [x + Math.sin(angle) * (KNOB.r - 1.2), y - Math.cos(angle) * (KNOB.r - 1.2)], KNOB_TOP, P);
+  return k.lineOnTop([x - Math.sin(angle) * 2, y + Math.cos(angle) * 2], [x + Math.sin(angle) * (KNOB.r - 0.25), y - Math.cos(angle) * (KNOB.r - 0.25)], KNOB_TOP, P);
 };
 
 // ---------------------------------------------------------------- the jaws (built at the pre-menopause zone; they move toward the middle)
@@ -282,7 +284,10 @@ function jaw(which) {
     bevel: 0.5,
     ...piece,
     inner: Ln(k.sideSeam(carriage, cz0 + 4.5, P, 3), { tone: "faint" }),
-    extra: Dots([at([carriage.x + 3, carriage.y + 5, cz0 + 9]), at([carriage.x + carriage.w - 3, carriage.y + 5, cz0 + 9])], { size: 0.5, tone: "mid" }),
+    extra:
+      Dots([at([carriage.x + 3, carriage.y + 5, cz0 + 9]), at([carriage.x + carriage.w - 3, carriage.y + 5, cz0 + 9])], { size: 0.5, tone: "mid" }) +
+      Dots([carriage.x + 6, carriage.x + carriage.w - 6].map((x) => at([x, carriage.y + carriage.d, cz0 + 2.4])), { size: 0.55, tone: "mid" }) +
+      Ln([carriage.x + 6, carriage.x + carriage.w - 6].map((x) => G.circleOf(yframe(x, carriage.y + carriage.d, cz0 + 2.4), 0, 1.1, P, 16)).join(""), { tone: "lo" }),
   });
   const armZ = upper ? zt + 3.6 : zt - 6.6;
   box(`${which}.arm`, { x: JAW_X - 6, y: CAN.y - 2.5, w: carriage.x - (JAW_X - 6), d: 5, r: 1 }, armZ, 3, { tone: "hi", crease: "lo" }, { steps: 2, bevel: 0.3, ...piece });
@@ -302,9 +307,17 @@ box("relay", RELAY, 0, RELAY_H, { tone: "mid" }, {
 const LAMPS = { warm: [RELAY.x + 9, RELAY.y + 15], cool: [RELAY.x + 18.5, RELAY.y + 15] };
 for (const [name, [x, y]] of Object.entries(LAMPS)) {
   cyl(`lamp.${name}.bezel`, x, y, 3.6, RELAY_H, 1.4, { tone: "mid" }, { steps: 28, extra: Ln(k.ring(x, y, 2.9, RELAY_H + 1.4, P, 28), { tone: "faint" }) });
-  const c = [x, y, RELAY_H + 1.4];
-  const shape = record(A.ball(c, 2.6, { name: `lamp.${name}` }));
-  put(`lamp.${name}`, c, `<g class="mt-lamp" data-lamp="${name}">${S(G.sphereOf(c, 2.6, P, { steps: 32 }), { tone: "hi" })}</g>`, [shape], { bias: 0.1 });
+  const LF = vframe(x, y, RELAY_H + 1.4);
+  const dome = Array.from({ length: 13 }, (_, i) => {
+    const a = (i / 12) * (Math.PI / 2);
+    return [2.7 * Math.sin(a), 2.7 * Math.cos(a), 1];
+  });
+  dome[0] = [0, 2.7];
+  const radius = (sv) => Math.sqrt(Math.max(0, 2.7 * 2.7 - sv * sv));
+  const slope = (sv) => -sv / Math.max(0.05, radius(sv));
+  const c = [x, y, RELAY_H + 1.4 + 1];
+  const shape = record(A.solid(LF, dome, { name: `lamp.${name}`, radius }));
+  put(`lamp.${name}`, c, `<g class="mt-lamp" data-lamp="${name}">${S(G.solidOf(dome, LF, P, { smooth: { slope, radius } }), { tone: "hi" })}</g>`, [shape], { bias: 0.1 });
 }
 
 // ---------------------------------------------------------------- radiator: frame, finned core, louvres on pins, linkage bar, solenoid
@@ -333,7 +346,7 @@ const slatFrame = (zc, deg) => {
 const SLAT_POLY = [[-SLAT_W / 2, -SLAT_T / 2], [SLAT_W / 2, -SLAT_T / 2], [SLAT_W / 2, SLAT_T / 2], [-SLAT_W / 2, SLAT_T / 2]];
 SLATS.forEach((zc, i) => {
   const shape = record(A.prism(slatFrame(zc, 0), SLAT_POLY, 0, SLAT_LEN, { name: `slat` }));
-  put(`slat`, [(RAD.x0 + RAD.x1) / 2, PIVOT_Y, zc], `<g data-slat="${i}">${S(G.prismOf(slatFrame(zc, 0), SLAT_POLY, 0, SLAT_LEN, P), { tone: "hi", crease: "lo" })}</g>`, [shape], { bias: 0.4 });
+  put(`slat`, [(RAD.x0 + RAD.x1) / 2, PIVOT_Y, zc], `<g data-slat="${i}">${S(G.prismOf(slatFrame(zc, 0), SLAT_POLY, 0, SLAT_LEN, P), { tone: "mid" })}</g>`, [shape], { bias: 0.4 });
   pin(`slat.pin`, xframe(RAD.x1, PIVOT_Y, zc), 0, 1.6, 1.5, { tone: "mid" });
 });
 // Linkage: a crank on each pin drives a slotted bar; the solenoid lifts the bar.
@@ -358,7 +371,7 @@ const BAR_Z = [SOL.z0 + SOL.h - 2, SLATS[SLATS.length - 1] + 6];
   const pinsSvg = `<g data-part="crankpins">${Dots(SLATS.map((zc) => at([BAR.x + BAR.w, crankTip(zc, 0)[1], zc])), { size: 0.8, tone: "hi" })}</g>`;
   put("bar", [BAR.x + BAR.w / 2, BAR.y + BAR.d / 2, (BAR_Z[0] + BAR_Z[1]) / 2], `<clipPath id="mt-bar"><path data-hold d="${clip}"/></clipPath><g clip-path="url(#mt-bar)">${S(k.slabOf(bar, BAR_Z[0], barH, P, 2, 0.3), { tone: "mid", inner: Ln(slots, { tone: "lo" }) })}${pinsSvg}</g>`, [shape], { bias: 0.2, attrs: ` data-part="bar"` });
   // solenoid on a plinth
-  box("sol.plinth", { x: SOL.x - 6.4, y: SOL.y - 6.4, w: 12.8, d: 12.8, r: 1.4 }, 0, SOL.z0, { tone: "lo" }, { steps: 2, bevel: 0.4, extra: Dots(k.corners({ x: SOL.x - 6.4, y: SOL.y - 6.4, w: 12.8, d: 12.8 }, 1.8).map(([x, y]) => at([x, y, SOL.z0])), { size: 0.45 }) });
+  box("sol.plinth", { x: SOL.x - 4.6, y: SOL.y - 6, w: 10.4, d: 12, r: 1.4 }, 0, SOL.z0, { tone: "lo" }, { steps: 2, bevel: 0.4, extra: Dots(k.corners({ x: SOL.x - 4.6, y: SOL.y - 6, w: 10.4, d: 12 }, 1.6).map(([x, y]) => at([x, y, SOL.z0])), { size: 0.45 }) });
   const F = vframe(SOL.x, SOL.y);
   turned("sol.can", F, [[SOL.z0, SOL.r], [SOL.z0 + SOL.h - 1.2, SOL.r], [SOL.z0 + SOL.h, SOL.r - 0.8]], { tone: "mid" }, { inner: Ln([SOL.z0 + 3, SOL.z0 + SOL.h - 4].map((z) => k.sideArc(SOL.x, SOL.y, SOL.r, z, P, 24)).join(""), { tone: "faint" }) });
 }
@@ -403,21 +416,32 @@ const TIP = {
   com: stud("stud.relay.com", [RELAY.x + 6, RELAY.y + RELAY.d, 8], [0, 1, 0]),
   out: stud("stud.relay.out", [RELAY.x + RELAY.w, RELAY.y + 6, 8], [1, 0, 0]),
   hr: stud("stud.relay.hr", [RELAY.x + RELAY.w, RELAY.y + 15, 8], [1, 0, 0]),
-  console: stud("stud.console", [CONSOLE.x, CONSOLE.y + 13, 6], [-1, 0, 0]),
+  console: stud("stud.console", [CONSOLE.x + 5, CONSOLE.y + 4.5, CONSOLE_H], [0, 0, 1]),
   sol: stud("stud.sol", [SOL.x, SOL.y + SOL.r, SOL.z0 + 7], [0, 1, 0]),
 };
-const lay = 0.9;
+const lay = 1.5;
 {
   const a = G.unit3([0.53, 0.85, 0]);
   const p1 = G.add3(TIP.can, G.mul3(a, 4));
   cable("cable.com", [TIP.can, p1, [p1[0] + 3, p1[1] + 4, lay], [RELAY.x + 6, p1[1] + 4, lay], [RELAY.x + 6, TIP.com[1] + 5, 8], TIP.com]);
 }
-cable("cable.sol", [TIP.out, [TIP.out[0] + 5, TIP.out[1], 8], [TIP.out[0] + 9, 6, lay], [SOL.x - 10, 6, lay], [SOL.x, 4, lay], [SOL.x, TIP.sol[1] + 4, TIP.sol[2]], TIP.sol]);
-cable("cable.hr", [TIP.hr, [TIP.hr[0] + 5, TIP.hr[1], 8], [TIP.hr[0] + 9, TIP.hr[1] + 2, lay], [TIP.console[0] - 8, TIP.console[1], lay], [TIP.console[0] - 4, TIP.console[1], TIP.console[2]], TIP.console]);
+cable("cable.sol", [TIP.out, [TIP.out[0] + 5, TIP.out[1], 8], [TIP.out[0] + 9, 2.5, lay], [SOL.x - 10, 2.5, lay], [SOL.x, 2.5, lay], [SOL.x, TIP.sol[1] + 4, TIP.sol[2]], TIP.sol]);
+cable("cable.hr", [TIP.hr, [TIP.hr[0] + 4.5, TIP.hr[1], 8], [TIP.hr[0] + 9, TIP.hr[1] - 2, lay], [TIP.console[0], CONSOLE.y - 4.5, lay], [TIP.console[0], CONSOLE.y - 4.5, CONSOLE_H + 8], [TIP.console[0], TIP.console[1], CONSOLE_H + 8], TIP.console]);
 
 // ---------------------------------------------------------------- settle and assemble
+// Reachable poses only: the jaws at five settings, and the column anywhere between
+// them (the finger stops against a jaw; it never passes one).
 const STATES = [];
-for (const rod of [0, 0.25, 0.5, 0.75, 1]) for (const jaw of [0, 0.5, 1]) STATES.push({ label: `rod ${rod} jaw ${jaw}`, shares: { rod, jawU: jaw, jawL: jaw } });
+for (const j of [0, 0.25, 0.5, 0.75, 1]) {
+  const zone = M.zoneOf(1 - j);
+  const lo = Math.max(T_LOW, zone.shiver);
+  const hi = Math.min(T_HIGH, zone.sweat);
+  for (const f of [0, 0.5, 1]) {
+    const t = lo + (hi - lo) * f;
+    const rod = (zOf(t) - Z_LOW) / TRAVEL;
+    STATES.push({ label: `jaw ${j} core ${t.toFixed(3)}`, shares: { rod, jawU: j, jawL: j } });
+  }
+}
 A.settle(R, P, { states: STATES });
 R.items.sort((a, b) => a.key - b.key);
 const groups = R.items.map((item) => `<g class="it" data-name="${item.name}"${item.piece !== "stand" ? ` data-move="${item.piece}"` : ""}${item.attrs ?? ""}>${item.svg}</g>`);
@@ -465,9 +489,9 @@ const SCRIPT = `${LATHE}\n${MODEL_SRC}\n${LIVE}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const T = M.TRUTH;
 const CAPTION = [
-  `Your brain keeps core temperature inside a narrow band, the <em>thermoneutral zone</em>: above its top edge you sweat and flush to lose heat, below its bottom edge you shiver to make it. In lab studies the zone measured about ${T.zonePre} °C wide in women without hot flashes and close to ${T.zonePost.toFixed(1)} °C in women with them, mostly because the sweating threshold sits lower. Falling estrogen is thought to narrow it through the brain's KNDy neurons and their neurokinin B signal.`,
-  `On a narrow zone, an ordinary rise of about ${T.swing} °C, too small to feel, reaches the top edge and sets off a full heat-loss response: skin vessels open and finger temperature rises by about ${T.skinRise} °C, heart rate rises by about ${T.hrRise} beats a minute, and a typical flash lasts about ${T.flashMin} minutes. Core temperature then dips, and some women feel a chill.`,
-  `A typical pattern from small studies, not a test or a diagnosis. Not every woman's zone narrows, and many have no hot flashes. Played at about a minute a second, with the quiet time between rises cut; flashes per hour come from the model. The size of the after-chill is drawn small because it hasn't been measured well.`,
+  `Your brain holds core temperature inside a band, the <em>thermoneutral zone</em>: above it you sweat and flush, below it you shiver. In lab studies the zone was about ${T.zonePre} °C wide in women without hot flashes and close to ${T.zonePost.toFixed(1)} °C in women with them, mostly because the sweating threshold sat lower. Falling estrogen is thought to narrow it through neurokinin B signalling in the brain.`,
+  `In the leading explanation, on a narrow zone a rise of about ${T.swing} °C, too small to feel, sets off the whole response: finger skin warms by about ${T.skinRise} °C, heart rate rises by about ${T.hrRise} beats a minute, and a typical flash lasts about ${T.flashMin} minutes. Core temperature then dips, and some women feel a chill.`,
+  `<small>A typical pattern from small studies, not a diagnosis; not every woman's zone narrows, and many have no hot flashes. Time runs at about a minute a second with quiet spells cut. Flashes per hour come from the model, set for a woman with frequent flashes (about one an hour); the size of the after-chill is illustrative.</small>`,
 ]
   .map((p) => `<span class="mt-par">${p}</span>`)
   .join("");
