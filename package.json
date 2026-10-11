@@ -1,0 +1,13 @@
+{
+  "name": "optimal-anatomy-figures",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive isometric explainer figures for Optimal Health, built with the Anatomy skill.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "setup": "bash scripts/setup-cloud.sh",
+    "build": "node scripts/build-all.mjs"
+  },
+  "license": "MIT"
+}

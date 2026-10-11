@@ -1,0 +1,93 @@
+/*
+ * Optimal theme for Anatomy figures.
+ *
+ * Load AFTER the kit's ISO_CSS. Put `class="iso optimal"` on the wrapper:
+ *   - no data-theme  -> "Forest night"  (exam-room TV, dark)
+ *   - data-theme="light" -> "Cream"     (beoptimal.ca, the primary target)
+ *
+ * Values come from the live site (beoptimal-landing src/index.css), the
+ * Performance package design and the ALE visualizer spec. The kit's grey
+ * ramps are warmed so solids sit on the site's cream paper, and the single
+ * "lit" accent is Optimal forest green instead of pure black/white.
+ */
+
+.iso.optimal {
+  /* Forest night (dark) */
+  --anatomy-page: #152511;
+  --anatomy-card: #1c3118;
+  --anatomy-text: #c9cdbf;
+  --anatomy-strong: #fffcf7;
+  --anatomy-muted: #8e9884;
+  --anatomy-paper: #1c3118;
+  --anatomy-face: #253821;
+  --anatomy-top: #283c24;
+  --anatomy-shade-0: #172812;
+  --anatomy-shade-1: #1a2c16;
+  --anatomy-shade-2: #1e321a;
+  --anatomy-shade-3: #22371e;
+  --anatomy-lit-top: #34492f;
+  --anatomy-lit-shade: #2a3f26;
+  --anatomy-hi: #e9e6dc;
+  --anatomy-mid: #7e8a74;
+  --anatomy-lo: #4d5c46;
+  --anatomy-faint: #33452e;
+  --anatomy-lit: #fffcf7;
+  --anatomy-halo: #0b1508;
+  --anatomy-halo-opacity: 0.9;
+  --anatomy-dot: #e9e6dc;
+  --anatomy-red: #e0745f;
+  --anatomy-green: #8cc67f;
+  --anatomy-blue: #7fa8d9;
+  --anatomy-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Optimal extras (use sparingly; colour only when colour is the subject) */
+  --opt-display: "Castoro", Georgia, serif;
+  --opt-ui: "Public Sans", system-ui, sans-serif;
+  --opt-forest: #2c4e25;
+  --opt-forest-light: #519044;
+  --opt-sage: #5e7a59;
+  --opt-borderline: #c97b2d;
+  --opt-out: #b3402f;
+  --opt-heat: #ff9776;
+}
+
+.iso.optimal[data-theme="light"] {
+  /* Cream (light) */
+  --anatomy-page: #fef8f1;
+  --anatomy-card: #fffcf7;
+  --anatomy-text: #3e3d39;
+  --anatomy-strong: #252525;
+  --anatomy-muted: #76736d;
+  --anatomy-paper: #fffcf7;
+  --anatomy-face: #fffefb;
+  --anatomy-top: #fffefb;
+  --anatomy-shade-0: #ddd7cc;
+  --anatomy-shade-1: #e7e2d9;
+  --anatomy-shade-2: #f0ede5;
+  --anatomy-shade-3: #f6f3ec;
+  --anatomy-lit-top: #fffefb;
+  --anatomy-lit-shade: #efebe2;
+  --anatomy-hi: #252525;
+  --anatomy-mid: #8a867e;
+  --anatomy-lo: #b9b4aa;
+  --anatomy-faint: #d9d3c8;
+  --anatomy-lit: #2c4e25;
+  --anatomy-halo: #8a8070;
+  --anatomy-halo-opacity: 0.3;
+  --anatomy-dot: #3a3833;
+  --anatomy-red: #b3402f;
+  --anatomy-green: #3f7a35;
+  --anatomy-blue: #3e6a8f;
+}
+
+/* Card typography: brand fonts for titles and readouts, kit mono for plate corners */
+.iso.optimal .iso-plate-title,
+.iso.optimal [data-role="title"] {
+  font-family: var(--opt-display);
+  letter-spacing: -0.02em;
+}
+.iso.optimal [data-role="readout"],
+.iso.optimal .iso-readout {
+  font-family: var(--opt-ui);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+}
