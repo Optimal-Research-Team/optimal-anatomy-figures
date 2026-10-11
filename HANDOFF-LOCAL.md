@@ -1,6 +1,6 @@
 # Continuing locally (or in a new session)
 
-Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 1.
+Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 2.
 
 ## Set up on a Mac (about 5 minutes)
 
@@ -20,7 +20,7 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | # | Figure | State | Where |
 |---|---|---|---|
 | 1 | Menopause thermostat | **Round 1 done**: audit passed, line ends 0 both themes, phone 390/360/320 checked, NOTES written | `figures/01-menopause-thermostat/` |
-| 2 | InBody 580 | Research drafted, not built | `reference/research/truth-2-draft.md` |
+| 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
 | 3 | IV iron | Research drafted (with a compartment-model sketch), not built | `reference/research/truth-3-draft.md`, `iron-sim-draft.mjs` |
 | 4 | Creator 600 | Research drafted, not built | `reference/research/truth-4-draft.md` |
 | 5 | VO2max | Research drafted, not built; FRIEND cycle percentile table incomplete | `reference/research/truth-5-draft.md` |
@@ -31,6 +31,7 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 - `build.mjs`: geometry with the kit, every solid and cable recorded into `A.recorder`, `A.settle` for painter's order, and the card via `shared/page.mjs`. `--light` for Cream, `--audit` to prove the geometry.
 - `live.js`: defines `mount(figure)`; motion, tour, input and readout.
 - `figure.json` feeds the gallery; `NOTES.md` records mapping, parts, numbers, decisions and embed snippet.
+- `shared/figkit.mjs` has the drawing helpers (box, cyl, turned, prism, ball, stud, cable, bench) that draw and record in one call.
 - `shared/page.mjs` writes the standalone page and the `<optimal-fig-…>` custom element; `shared/optimal-theme.css` has the brand tokens and the phone-first card.
 
 ## Verify (definition of done, HANDOFF §2)

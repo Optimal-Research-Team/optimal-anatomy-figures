@@ -1,0 +1,28 @@
+/* Fig 2 · fluid, cells, meters and the screen: tints of the figure's own inks. */
+.iso.optimal { --ib-ecw: #21361d; --ib-icw: #2e4529; --ib-meter: #22371e; --ib-screen: #0f1b0c; --ib-screen-ink: #cfe3c8; }
+.iso.optimal[data-theme="light"] { --ib-ecw: #e4ded2; --ib-icw: #fbf9f4; --ib-meter: #fffefb; --ib-screen: #f4f1e8; --ib-screen-ink: #2c4e25; }
+.ib-ecw { fill: var(--ib-ecw); stroke: none; }
+.ib-cell { fill: var(--ib-icw); stroke: var(--anatomy-lo); stroke-width: 0.45; vector-effect: non-scaling-stroke; }
+.ib-dots circle { fill: var(--anatomy-lit); stroke: none; }
+.ib-dots circle[data-in] { fill: var(--anatomy-lit); stroke: var(--anatomy-card); stroke-width: 0.3; vector-effect: non-scaling-stroke; }
+.ib-meter { fill: var(--ib-meter); stroke: none; }
+.ib-hub { fill: var(--anatomy-hi); }
+.ib-screw, .ib-detent { fill: var(--anatomy-mid); }
+.ib-detent[data-on] { fill: var(--anatomy-lit); }
+.ib-bezel { fill: var(--anatomy-shade-0); stroke: none; }
+.ib-screen { fill: var(--ib-screen); stroke: none; }
+.ib-screen-text { fill: var(--ib-screen-ink); font-family: var(--opt-ui); font-weight: 600; font-feature-settings: "tnum" 1; }
+.ib-screen-bar { fill: var(--ib-screen-ink); opacity: 0.32; }
+.ib-screen-bar[data-on] { opacity: 1; }
+[data-needle][data-on] { stroke: var(--anatomy-lit); }
+.ib-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ib-par { display: block; margin-top: 6px; }
+.ib-par:first-child { margin-top: 0; }
+.ib-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+.ib-stage [data-seg] { cursor: pointer; }
+.ib-glass .iso-fill { fill: var(--ib-glass); fill-opacity: 0.16; }
+.ib-glass .iso-shade, .ib-glass .iso-top { opacity: 0.32; }
+.ib-shine { fill: var(--ib-shine); opacity: 0.55; }
+.ib-wall .iso-fill { fill: var(--ib-ecw); }
+.iso.optimal { --ib-glass: #9fbf96; --ib-shine: #f3f7ee; }
+.iso.optimal[data-theme="light"] { --ib-glass: #dfe9e4; --ib-shine: #ffffff; }
