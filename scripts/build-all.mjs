@@ -17,7 +17,8 @@ const PLAN = [
   { dir: "02-inbody-580", n: 2, title: "Five cylinders on a bridge", line: "How the InBody 580 reads water inside and outside your cells." },
   { dir: "03-iv-iron", n: 3, title: "The depot with a gate", line: "Why hepcidin stalls iron pills, and how IV iron goes around the gate." },
   { dir: "04-creator-600", n: 4, title: "The runner rig", line: "How cadence and foot strike change the load on your hips and knees." },
-  { dir: "05-vo2max", n: 5, title: "The ramp and the cart", line: "How a ramp test finds the ceiling of the oxygen you can use." },
+  { dir: "05-vo2max", n: 5, title: "The ramp and the mask", line: "A VO2max ramp on a bike with a wireless mask." },
+  { dir: "06-vo2max-treadmill", n: 6, title: "The treadmill ramp", line: "The same VO2max test on the Creator 600 treadmill." },
 ];
 
 rmSync(dist, { recursive: true, force: true });

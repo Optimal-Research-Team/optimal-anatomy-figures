@@ -1077,18 +1077,26 @@ Spread multipliers on the median: P10 ≈ 0.69×, P25 ≈ 0.83×, P75 ≈ 1.18×
 - Ratios from the verified FRIEND medians (cycle ÷ treadmill; different cohorts): men 20–29 0.87, women 20–29 0.82, men 70–79 0.80, women 70–79 0.81. So cycle runs about **13–20 % lower**, not the 10–15 % in the brief. HIGH as arithmetic, MEDIUM as interpretation.
 - The 2017 paper also reports that measured cycle values were well below the old shortcut of "treadmill norm − 15 %", especially in the middle decades. MEDIUM (snippet).
 
+#### The wireless mask analyser (Optimal uses VO2 Master; Peter, 2026-10-11)
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| What it measures | Breath-by-breath flow (ventilation) and expired O₂ on the mask; VO₂ computed per breath | [27][28] | MEDIUM (manufacturer FAQ and manual via search) |
+| CO₂ | Not measured by the standard unit: VCO₂ assumes an average RQ of 0.85 (relevant to resting metabolic rate); a CO₂ sensor is described as an addition | [27] | MEDIUM. So the figures print no RER. |
+| Link | Bluetooth to the company's free iOS and Android app (phone or tablet) | [27][29] | MEDIUM |
+| Sensor accuracy | O₂ ±1 %; flow ±2 % with syringe calibration (±4 % without) | [27] | MEDIUM (manufacturer) |
+| Weight, battery, range | 320 g with mask; AA battery, 8 h; Bluetooth 10–15 m | [30] | LOW (distributor listing, model MW-1200; may not be the Pro) |
+
 **How Fig 5 uses these numbers** (`figures/05-vo2max/model.mjs`; one modelled person, 45 years, 75 kg)
 
 | Shown or animated | Value | From |
 |---|---|---|
 | Test phases (timeline) | 3 min seated rest, 3 min unloaded pedalling, ramp to the ceiling (≈10 min) plus 1 min of plateau, 3 min recovery | [1][3][5] |
-| Power (readout, brake magnets, plot x) | ramp rate = (VO₂max − unloaded VO₂) / (10.3 × 10): 12.4 / 19.7 / 26.9 / 34.2 W/min for ceilings 25 / 35 / 45 / 55; peak 143 / 227 / 311 / 395 W | equation 1 [1][3][9] |
-| VO₂ (readout, plot y) | rest 3.5 ml/kg/min; unloaded 150 + 6 × 75 = 600 ml/min (8.0 ml/kg/min); +10.3 ml/min per W; first-order lag τ = 0.6 min; smooth ceiling | [21]; [9] MEDIUM; [7] HIGH; τ LOW (shape only) |
+| Power (readout, brake magnets, tablet plot x) | ramp rate = (VO₂max − unloaded VO₂) / (10.3 × 10): 12.4 / 19.7 / 26.9 / 34.2 W/min for ceilings 25 / 35 / 45 / 55; peak 143 / 227 / 311 / 395 W | equation 1 [1][3][9] |
+| VO₂ (readout, tablet number and plot y) | rest 3.5 ml/kg/min; unloaded 150 + 6 × 75 = 600 ml/min (8.0 ml/kg/min); +10.3 ml/min per W; first-order lag τ = 0.6 min; smooth ceiling | [21]; [9] MEDIUM; [7] HIGH; τ LOW (shape only) |
 | Ceiling choices | 25 / 35 / 45 / 55 ml/kg/min | model values, not norms; no percentile shown (see the FRIEND blocker above) |
 | Heart rate (readout) | 65 bpm at rest, rising in line with VO₂ to 208 − 0.7 × 45 = 176.5 at the ceiling | [16] HIGH for the maximum; resting value and linearity LOW |
-| RER (readout) | 0.80 at rest → 0.90 at 55 % of VO₂max → 1.15 at the ceiling; crosses 1.0 near 80 % | LOW shape; RER ≥ 1.10 at max is the usual criterion [11] HIGH |
-| Breathing (turbine spin, breath in the hose, gas-cell bars) | rate 14 + 36x² breaths/min; VE = VCO₂ × 27, rising to × 37 above 85 %; tidal volume = VE ÷ rate; each breath out moves the hose air on by tidal volume ÷ 9.6 cm² | LOW; motion only, never printed |
-| Gas cells (bars only) | mixed expired O₂ ≈ 20.93 % − VO₂/VE, CO₂ ≈ VCO₂/VE (Haldane, with inspired ≈ expired volume) | algebra (equation in the cart table); never printed |
+| Breathing (the analyser's light and the tablet's breath marker) | rate 14 + 36x² breaths/min | LOW; motion only, never printed |
+| No RER | the mask unit doesn't measure CO₂ [27] | — |
 | Cadence (pedalling) | 60 rpm | [6] MEDIUM |
 | Caption: mortality | 122,007 adults; low vs elite (≥ 97.7th percentile) adjusted HR 5.04; median follow-up 8.4 y | [18] HIGH |
 | Caption: bike vs treadmill | bike about 13–22 % lower | [22][24][26] |
@@ -1172,6 +1180,10 @@ Symbols: BM = body mass (kg), W = work rate (W), R = ramp rate (W/min), t in min
 24. Kaminsky LA, Arena R, Myers J. Reference standards for cardiorespiratory fitness measured with cardiopulmonary exercise testing: data from the Fitness Registry and the Importance of Exercise National Database. *Mayo Clin Proc* 2015;90(11):1515–1523 (volume/pages from memory). PMID 26455884. https://pubmed.ncbi.nlm.nih.gov/26455884/
 25. Secondary reproductions of FRIEND 2015 treadmill percentiles: PLOS ONE 2019 Brazilian CPET reference paper (table reproducing FRIEND), https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0209897 ; plus a FRIEND-citing calculator page for the women's and other-decade medians (page not identified; MEDIUM).
 26. Kaminsky LA, Arena R, Myers J, et al. Updated reference standards for cardiorespiratory fitness measured with cardiopulmonary exercise testing: data from the Fitness Registry and the Importance of Exercise National Database (FRIEND). *Mayo Clin Proc* 2022;97(2):285–293. doi:10.1016/j.mayocp.2021.08.020. PMID 34809986. https://www.mayoclinicproceedings.org/article/S0025-6196(21)00645-5/fulltext . The 22 % / 4.5 ml/kg/min treadmill–cycle difference and the sex gaps are via https://en.wikipedia.org/wiki/VO2_max citing this paper.
+27. VO2 Master. FAQ and manual (Rev 1.0.9, Aug 2025). https://vo2master.com/manual ; product page https://vo2master.com/vmpro/ (seen via search extracts, 2026-10-11)
+28. VO2 Master. "The Drive with Peter Attia Q&A: You asked, VO2 Master answered." https://vo2master.com/blog/the-drive-with-peter-attia-qa/
+29. UBC. "Venture profile: VO2 Master." https://star.ubc.ca/?p=2027
+30. Q'sfix distributor listing (model MW-1200). https://pr.www.ipros.com/en/qsfix/product/detail/2001195310 (LOW; may not be the Pro)
 
 **Leads to verify next session (not used as sources above):**
 - Macfarlane DJ, "Automated metabolic gas analysis systems: a review," *Sports Med* 2001, for cart components and calibration.

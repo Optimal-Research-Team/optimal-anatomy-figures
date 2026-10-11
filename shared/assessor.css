@@ -1,0 +1,14 @@
+/* The assessor's tablet (shared/assessor.mjs) and its live screen (shared/vo2-plot.js). */
+.iso.optimal { --as-screen: #0f1b0c; --as-ink: #c9e3c1; --as-dim: #4f6b48; }
+.iso.optimal[data-theme="light"] { --as-screen: #1d2a1a; --as-ink: #d9efd2; --as-dim: #5d7a56; }
+.as-screen { fill: var(--as-screen); }
+.vp-grid { fill: none; stroke: var(--as-dim); stroke-width: 0.22; opacity: 0.55; }
+.vp-axis { fill: none; stroke: var(--as-dim); stroke-width: 0.35; }
+.vp-guide { fill: none; stroke: var(--as-dim); stroke-width: 0.35; stroke-dasharray: 0.9 0.9; }
+.vp-ceiling { fill: none; stroke: var(--opt-heat); stroke-width: 0.4; stroke-dasharray: 1 0.7; }
+.vp-trace { fill: none; stroke: var(--opt-heat); stroke-width: 0.6; stroke-linejoin: round; stroke-linecap: round; }
+.vp-dot { fill: var(--as-ink); }
+.vp-tick { fill: var(--as-dim); font-family: var(--opt-ui); font-weight: 500; }
+.vp-big { fill: var(--as-ink); font-family: var(--opt-ui); font-weight: 600; font-feature-settings: "tnum" 1; }
+.vp-unit { fill: var(--as-dim); font-family: var(--opt-ui); font-weight: 500; }
+.vp-breath { fill: var(--as-ink); }
