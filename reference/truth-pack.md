@@ -1222,6 +1222,31 @@ Sources: [A4-1] BYU-Idaho, *Cardiac Measurements and Pressure Volume Loops*, htt
 
 ---
 
+## A5. The lung: air sac and capillary (anatomical series)
+
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| Red cell transit through a pulmonary capillary, at rest | ≈ 0.75 s (another textbook gives ≈ 0.8 s, with estimates from 0.1 to 3 s) | [A5-1][A5-2] | MEDIUM |
+| Transit in exercise | falls toward ≈ 0.25 s; flow can roughly triple | [A5-3] | LOW (study-aid source) |
+| Where loading stops keeping up | below ≈ 0.25 s an appreciable alveolar to end-capillary PO₂ gap opens | [A5-2] | MEDIUM |
+| Why transit falls less than flow rises | capillary recruitment; diffusing capacity can double in exercise | [A5-4] | MEDIUM |
+| Healthy lungs reach equilibrium | except possibly in strenuous exercise, at altitude or in disease | [A5-5] | MEDIUM (animal study) |
+| Alveolar PO₂ ≈ 100 mmHg; mixed venous PO₂ ≈ 40 mmHg at rest | textbook | [A5-2] context; standard values | MEDIUM |
+| Venous PO₂ in exercise (32 / 25 / 20 mmHg) | falls as muscles extract more | modelling choice | LOW (drawing only) |
+| Haemoglobin curve | Hill fit, P50 26.8 mmHg, n 2.7 | standard adult values | LOW (not re-sourced) |
+| Cardiac output by effort (4.2 / 9.2 / 15.8 / 19.9 L/min) | from A4's model | A4 | as A4 |
+
+### How A5 uses these numbers
+
+- **Transit** = 0.75 s × (4.2 ÷ output)^0.6: 0.75 / 0.47 / 0.34 / 0.29 s. The exponent below 1 stands for recruitment ([A5-4]); its value is a modelling choice that lands all-out near the sourced ≈ 0.25 s.
+- **Loading:** cell PO₂ closes the gap to 100 mmHg exponentially, to within 1 mmHg by 0.25 s ([A5-2]'s threshold). Saturation comes from the Hill curve.
+- **Result:** arriving 75 / 62 / 45 / 31 % full, leaving 97 % in every state. "Time to spare" on the monitor is transit − 0.25 s.
+- **Oxygen and CO₂ dots:** one O₂ dot per 7 % of saturation gained; about 0.8 CO₂ dots per O₂ dot (a resting exchange ratio, illustrative only, not a measured RER).
+
+Sources: [A5-1] BioNumbers 101731, *Typical transit time for erythrocyte in pulmonary capillary* (from Nunn, *Applied Respiratory Physiology*), https://bionumbers.hms.harvard.edu/bionumber.aspx?id=101731 · [A5-2] Nunn's *Applied Respiratory Physiology*, excerpt on capillary transit time, https://www.dxy.cn/bbs/newweb/pc/post/47108686 · [A5-3] Brainscape, *Pulmonary Diffusion and Pulmonary Circulation* flashcards, https://brainscape.com/flashcards/pulmonary-diffusion-and-pulmonary-circul-1627439/packs/2929478 · [A5-4] University of Turku, refereed article on diffusing capacity in exercise, https://research.utu.fi/converis/portal/detail/Publication/2556592?lang=en_GB · [A5-5] University at Buffalo, *Distribution of pulmonary capillary transit times*, https://researchconnect.buffalo.edu/en/publications/distribution-of-pulmonary-capillary-transit-times/ (all seen via search extracts, 2026-10-11).
+
+---
+
 ## Brief: what each figure needs
 
 ### 1. Menopause: thermoneutral zone
