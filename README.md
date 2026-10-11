@@ -8,7 +8,7 @@ Interactive isometric explainer figures for **Optimal Health** (Barrie, ON) serv
 |---|---|---|---|---|
 | 1 | The narrowing thermostat | Hot flashes and the thermoneutral zone | Figure | Round 1 · for review |
 | 2 | Five cylinders on a bridge | InBody 580 bioimpedance: ECW vs total water, segments | Figure | Round 1 · for review |
-| 3 | The depot with a gate | Hepcidin, oral vs IV iron | Figure | Planned |
+| 3 | The depot with a gate | Hepcidin, oral vs IV iron | Figure | Round 1 · for review |
 | 4 | The runner rig | Creator 600 gait: cadence, foot strike, joint load | Hero | Planned |
 | 5 | The ramp and the cart | VO2max ramp test on a bike with a metabolic cart | Hero + WebGL | Planned |
 

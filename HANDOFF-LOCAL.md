@@ -1,6 +1,6 @@
 # Continuing locally (or in a new session)
 
-Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 2.
+Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 3.
 
 ## Set up on a Mac (about 5 minutes)
 
@@ -21,9 +21,20 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 |---|---|---|---|
 | 1 | Menopause thermostat | **Round 1 done**: audit passed, line ends 0 both themes, phone 390/360/320 checked, NOTES written | `figures/01-menopause-thermostat/` |
 | 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
-| 3 | IV iron | Research drafted (with a compartment-model sketch), not built | `reference/research/truth-3-draft.md`, `iron-sim-draft.mjs` |
+| 3 | IV iron | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/03-iv-iron/` |
 | 4 | Creator 600 | Research drafted, not built | `reference/research/truth-4-draft.md` |
 | 5 | VO2max | Research drafted, not built; FRIEND cycle percentile table incomplete | `reference/research/truth-5-draft.md` |
+| A1–A9 | Anatomical series (beating heart, gut cell, hypothalamus, …) | Planned after Fig 5; style test first | **`BACKLOG.md`** |
+
+## Time remaining (estimate, 2026-10-11 ~19:50 UTC)
+
+| Work | Estimate |
+|---|---|
+| Fig 4 Creator 600 (Hero, builds `shared/mannequin.mjs`) | 3.5–4.5 h |
+| Fig 5 VO2max (Hero + WebGL, reuses the mannequin) | 3.5–4.5 h |
+| Design rounds on Figs 1–5 (+30–50 %) | 4–6 h |
+| Anatomical series A1–A9 incl. style test (`BACKLOG.md`) | 15–19 h, + rounds |
+| **Total** | **~27–35 h** |
 
 ## How a figure is built (the pattern Fig 1 set)
 

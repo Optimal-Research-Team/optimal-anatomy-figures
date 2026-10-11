@@ -1,0 +1,26 @@
+/* Fig 3 · red only for red cells; the recheck window, the bed, the glass in the figure's own inks. */
+.iso.optimal { --fe-red: #e0745f; --fe-red-side: #b8563f; --fe-bed: #1a2c16; --fe-level: #8cc67f; }
+.iso.optimal[data-theme="light"] { --fe-red: #c9503a; --fe-red-side: #a63f2c; --fe-bed: #f3efe6; --fe-level: #2c4e25; }
+.fe-bed { fill: var(--fe-bed); stroke: none; }
+.fe-recheck { fill: var(--opt-heat-wash); stroke: none; }
+.fe-glass { fill: var(--anatomy-shade-0); stroke: none; }
+.fe-level { fill: var(--fe-level); stroke: none; opacity: 0.85; }
+.fe-window { fill: var(--anatomy-shade-0); }
+.fe-digits { fill: var(--anatomy-strong); font-family: var(--opt-ui); font-weight: 600; font-feature-settings: "tnum" 1; }
+.fe-red .iso-fill, .fe-red .iso-top { fill: var(--fe-red); }
+.fe-red .iso-shade { fill: var(--fe-red-side); }
+.fe-red .iso-edge { stroke: var(--fe-red-side); }
+.fe-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.fe-par { display: block; margin-top: 6px; }
+.fe-par:first-child { margin-top: 0; }
+.fe-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+.fe-scrub { display: flex; align-items: center; gap: 12px; margin: 10px 4px 0; }
+.fe-play { appearance: none; border: 0; min-height: 44px; min-width: 72px; padding: 0 16px; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px var(--opt-rule); color: var(--anatomy-text); font: 500 14px/1 var(--opt-ui); cursor: pointer; touch-action: manipulation; }
+.fe-play:focus-visible { outline: 2px solid var(--opt-fig); outline-offset: 2px; }
+.fe-week { font: 500 13px/1 var(--opt-ui); color: var(--anatomy-muted); min-width: 56px; text-align: right; font-feature-settings: "tnum" 1; }
+.fe-range { flex: 1; min-width: 0; height: 44px; margin: 0; background: transparent; accent-color: var(--opt-btn-on); -webkit-appearance: none; appearance: none; touch-action: pan-y; }
+.fe-range::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--opt-rule); }
+.fe-range::-moz-range-track { height: 4px; border-radius: 2px; background: var(--opt-rule); }
+.fe-range::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -12px; border-radius: 50%; background: var(--opt-btn-on); border: 3px solid var(--anatomy-card); box-shadow: 0 0 0 1px var(--opt-rule); }
+.fe-range::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--opt-btn-on); border: 3px solid var(--anatomy-card); }
+.fe-range:focus-visible { outline: 2px solid var(--opt-fig); outline-offset: 2px; }
