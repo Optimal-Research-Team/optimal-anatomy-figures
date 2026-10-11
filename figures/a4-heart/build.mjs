@@ -52,45 +52,24 @@ const LINES = [
   "All out, about the top rate for a 45-year-old: little time to fill, but each beat is near its biggest.",
 ];
 
-const tubeStatic = (pts, w) => {
-  // a simple vessel for the parts that never move (built here, drawn behind the heart)
-  const L = [];
-  const R = [];
-  for (let i = 0; i < pts.length; i++) {
-    const a = pts[Math.max(0, i - 1)];
-    const b = pts[Math.min(pts.length - 1, i + 1)];
-    let nx = -(b[1] - a[1]);
-    let ny = b[0] - a[0];
-    const l = Math.hypot(nx, ny);
-    nx /= l;
-    ny /= l;
-    L.push([pts[i][0] + (nx * w) / 2, pts[i][1] + (ny * w) / 2]);
-    R.push([pts[i][0] - (nx * w) / 2, pts[i][1] - (ny * w) / 2]);
-  }
-  return `M${[...L, ...R.reverse()].map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join("L")}Z`;
-};
-
 const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="The heart cut open from the front, beating. Oxygen-poor blood (blue) comes in through the venae cavae to the right atrium, passes the tricuspid valve into the right ventricle and leaves through the pulmonary valve for the lungs. Oxygen-rich blood (red) returns through the pulmonary veins to the left atrium, passes the mitral valve into the thick-walled left ventricle and leaves through the aortic valve into the aorta. An ECG trace runs underneath.">
 <defs>
   <radialGradient id="a4-muscle" cx="38%" cy="34%" r="72%"><stop offset="0" class="a4-m0"/><stop offset="0.65" class="a4-m1"/><stop offset="1" class="a4-m2"/></radialGradient>
   <radialGradient id="a4-glow-g" cx="50%" cy="50%" r="50%"><stop offset="0" class="a4-g0"/><stop offset="1" class="a4-g1"/></radialGradient>
 </defs>
 <ellipse data-part="glow" class="a4-glow" cx="312" cy="350" rx="230" ry="215" fill="url(#a4-glow-g)"/>
-<path class="a4-art a4-vessel" d="${tubeStatic([[470, 110], [480, 170], [484, 250]], 34)}"/>
-<path class="a4-ven a4-vessel" data-part="rpa"/>
-<path class="a4-art a4-vessel" data-part="pv"/>
-<path class="a4-ven a4-vessel" data-part="ivc"/>
+<clipPath id="a4-muscleclip"><path data-part="outerClip"/></clipPath>
+<g data-v="rpa"></g><g data-v="pv"></g><g data-v="ivc"></g><g data-v="desc"></g><g data-v="svc"></g>
 <path class="a4-muscle" data-part="outer" fill="url(#a4-muscle)"/>
+<g clip-path="url(#a4-muscleclip)"><path class="a4-fibre" data-part="fibres"/></g>
 <path class="a4-ven a4-pool" data-part="ra"/><path class="a4-ven a4-pool" data-part="rv"/>
 <path class="a4-art a4-pool" data-part="la"/><path class="a4-art a4-pool" data-part="lv"/>
 <path class="a4-chordae" data-part="chordae"/>
 <path class="a4-pap" data-part="pap"/>
 <path class="a4-valve" data-part="valves"/>
-<path class="a4-ven a4-vessel" data-part="svc"/>
-<path class="a4-art a4-vessel" data-part="branches"/>
-<path class="a4-art a4-vessel" data-part="aorta"/>
-<path class="a4-ven a4-vessel" data-part="pt"/>
-<g class="a4-cells-ven" data-part="cellsR"></g><g class="a4-cells-art" data-part="cellsL"></g>
+<g data-v="branches"></g><g data-v="aorta"></g><g data-v="pt"></g>
+<path class="a4-cell a4-cell-ven" data-part="cellsR"/><path class="a4-pal a4-pal-ven" data-part="palR"/>
+<path class="a4-cell a4-cell-art" data-part="cellsL"/><path class="a4-pal a4-pal-art" data-part="palL"/>
 <rect class="a4-ecg-bg" x="${ECG.x0 - 16}" y="${ECG.y - 44}" width="${ECG.w + 32}" height="60" rx="8"/>
 <path class="a4-ecg-base" d="M${ECG.x0} ${ECG.y}H${ECG.x0 + ECG.w}"/>
 <path class="a4-ecg" data-part="ecg"/><circle class="a4-ecg-dot" data-part="ecgdot" r="3"/>

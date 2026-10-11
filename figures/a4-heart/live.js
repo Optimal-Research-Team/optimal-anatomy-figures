@@ -61,8 +61,50 @@ function mount(fig) {
     const pts = [...L, ...R.reverse()];
     return `M${pts.map((p) => `${f1(p[0])} ${f1(p[1])}`).join("L")}Z`;
   }
+  /** A vessel: tube, a sheen on the side facing the light (upper left), and cut ends showing the lumen. */
+  function vessel(name, list, cls) {
+    let h = "";
+    for (const [pts, w0, w1, capA, capB] of list) {
+      const c = curve(pts);
+      const wAt = (i) => w0 + (w1 - w0) * (i / (c.length - 1));
+      const nAt = (i) => {
+        const a = c[Math.max(0, i - 1)];
+        const b = c[Math.min(c.length - 1, i + 1)];
+        const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        return [-(b[1] - a[1]) / l, (b[0] - a[0]) / l];
+      };
+      let side = 0;
+      c.forEach((_, i) => {
+        const n = nAt(i);
+        side += -n[0] - n[1];
+      });
+      side = side >= 0 ? 1 : -1;
+      const i0 = Math.floor(c.length * 0.06);
+      const i1 = Math.ceil(c.length * 0.94);
+      let sh = "";
+      for (let i = i0; i < i1; i++) {
+        const n = nAt(i);
+        const o = side * wAt(i) * 0.24;
+        sh += `${sh ? "L" : "M"}${f1(c[i][0] + n[0] * o)} ${f1(c[i][1] + n[1] * o)}`;
+      }
+      h += `<path class="a4-${cls} a4-vessel" d="${tube(pts, w0, w1)}"/><path class="a4-sheen" d="${sh}" style="stroke-width:${f1(Math.min(w0, w1) * 0.2)}px"/>`;
+      for (const [on, i, w] of [[capA, 0, w0], [capB, c.length - 1, w1]]) {
+        if (!on) continue;
+        const n = nAt(i);
+        const ang = ((Math.atan2(n[1], n[0]) * 180) / Math.PI).toFixed(0);
+        const e = (k) => {
+          const a = (w / 2) * k;
+          const b = a * 0.36;
+          return `M${f1(c[i][0] - n[0] * a)} ${f1(c[i][1] - n[1] * a)}A${f1(a)} ${f1(b)} ${ang} 1 0 ${f1(c[i][0] + n[0] * a)} ${f1(c[i][1] + n[1] * a)}A${f1(a)} ${f1(b)} ${ang} 1 0 ${f1(c[i][0] - n[0] * a)} ${f1(c[i][1] - n[1] * a)}Z`;
+        };
+        h += `<path class="a4-cap a4-cap-${cls}" d="${e(1)}"/><path class="a4-lumen a4-lumen-${cls}" d="${e(0.68)}"/>`;
+      }
+    }
+    q(`[data-v="${name}"]`).innerHTML = h;
+  }
   const centroid = (pts) => pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
   const C = { RA: centroid(G.RA), LA: centroid(G.LA), RV: centroid(G.RV), LV: centroid(G.LV), V: [320, 392] };
+  const FIB = { lv: G.LV.filter((p) => p[1] > G.AVY + 16), rv: G.RV.slice(0, 6) };
 
   // ---------------------------------------------------------------- the deformation field
   let def = { d: 0, sV: 1, sA: 1, sO: 1 };
@@ -132,6 +174,10 @@ function mount(fig) {
   }
   function stepCells(b, dt, hr) {
     const v = 70 * (hr / 60);
+    for (const c of cells) {
+      if (c.a === undefined) (c.a = Math.random() * Math.PI), (c.spin = (Math.random() - 0.5) * 3);
+      c.a += c.spin * dt;
+    }
     spawnR += dt * 6 * (hr / 60);
     spawnL += dt * 6 * (hr / 60);
     while (spawnR > 1) (spawnR -= 1), spawn("R");
@@ -196,14 +242,20 @@ function mount(fig) {
     set('[data-part="la"]', smooth(cav(G.LA, C.LA, sA)));
     set('[data-part="rv"]', smooth(cav(G.RV, C.RV, sV)));
     set('[data-part="lv"]', smooth(cav(G.LV, C.LV, sV)));
-    // vessels: tops fixed, roots ride the valve plane
-    set('[data-part="svc"]', tube([[158, -12], [166, 60], [176, 120], shift([180, 170])], 38, 46));
-    set('[data-part="ivc"]', tube([[84, 380], [108, 330], shift([142, 276])], 40, 38));
-    set('[data-part="aorta"]', tube([shift(G.AORc), shift([342, 196]), [338, 120], [356, 72], [410, 52], [452, 70], [470, 112]], 40, 36));
-    set('[data-part="branches"]', [[[376, 58], [372, 8]], [[408, 50], [412, 4]], [[440, 60], [456, 14]]].map((p) => tube(p, 16, 13)).join(""));
-    set('[data-part="pt"]', tube([shift(G.PULc), shift([276, 186]), [284, 140], [318, 126], [362, 120], [404, 128]], 36, 26));
-    set('[data-part="rpa"]', tube([[284, 142], [244, 124], [196, 116], [150, 120]], 26, 22));
-    set('[data-part="pv"]', tube([[580, 168], [520, 168], shift([466, 176])], 18) + tube([[580, 214], [520, 214], shift([464, 212])], 18));
+    // vessels: tops fixed, roots ride the valve plane; open ends are cut, showing the lumen
+    vessel("svc", [[[[158, -12], [166, 60], [176, 120], shift([180, 176])], 38, 46, false, false]], "ven");
+    vessel("ivc", [[[[84, 384], [108, 330], shift([142, 276])], 40, 38, true, false]], "ven");
+    vessel("desc", [[[[470, 110], [480, 170], [486, 260], [492, 380], [494, 470]], 34, 32, false, true]], "art");
+    vessel("aorta", [[[shift(G.AORc), shift([342, 196]), [338, 120], [356, 72], [410, 52], [452, 70], [470, 112]], 40, 36, false, false]], "art");
+    vessel("branches", [[[[376, 60], [372, 14]], 16, 14, false, true], [[[408, 52], [412, 8]], 16, 14, false, true], [[[440, 62], [456, 18]], 16, 14, false, true]], "art");
+    vessel("pt", [[[shift(G.PULc), shift([276, 186]), [284, 140], [318, 126], [362, 120], [404, 128]], 36, 26, false, true]], "ven");
+    vessel("rpa", [[[[284, 142], [244, 124], [196, 116], [150, 120]], 26, 22, false, true]], "ven");
+    vessel("pv", [[[[566, 168], [520, 168], shift([466, 176])], 18, 18, true, false], [[[566, 214], [520, 214], shift([464, 212])], 18, 18, true, false]], "art");
+    // muscle fibres wrap the ventricles and squeeze with them
+    const fib = (seed, c, k, s) => smooth(seed.map((p) => shift(scaleAbout(p, c, k * s))), false, 1);
+    const sMid = (sV + def.sO) / 2;
+    set('[data-part="fibres"]', [1.12, 1.27, 1.42].map((k) => fib(FIB.lv, C.LV, k, sMid)).join("") + [1.1, 1.22].map((k) => fib(FIB.rv, C.RV, k, sMid)).join(""));
+    set('[data-part="outerClip"]', smooth(outer()));
     // papillary muscles ride the ventricle walls; chordae run from the leaflet tips down to them
     const pap = [cav([G.PAPR], C.RV, 0.82 + 0.18 * sV)[0], cav([G.PAPL[0]], C.LV, 0.82 + 0.18 * sV)[0], cav([G.PAPL[1]], C.LV, 0.82 + 0.18 * sV)[0]];
     set('[data-part="pap"]', pap.map((p, i) => smooth([[p[0] - 7, p[1] + 10], [p[0] - 5, p[1] - 8], [p[0], p[1] - 13], [p[0] + 5, p[1] - 8], [p[0] + 7, p[1] + 10], [p[0], p[1] + 16]], true, 0.9)).join(""));
@@ -212,8 +264,17 @@ function mount(fig) {
     const ch = [[v.tips[0], pap[0]], [v.tips[1], pap[0]], [v.tips[2], pap[1]], [v.tips[3], pap[2]]];
     set('[data-part="chordae"]', ch.map(([a, p]) => [-3, 0, 3].map((o) => `M${f1(a[0])} ${f1(a[1])}L${f1(p[0] + o)} ${f1(p[1] - 11)}`).join("")).join(""));
     // blood cells
-    q('[data-part="cellsR"]').innerHTML = cells.filter((c) => c.side === "R").map((c) => `<circle cx="${f1(c.p[0])}" cy="${f1(c.p[1])}" r="3.2"/>`).join("");
-    q('[data-part="cellsL"]').innerHTML = cells.filter((c) => c.side === "L").map((c) => `<circle cx="${f1(c.p[0])}" cy="${f1(c.p[1])}" r="3.2"/>`).join("");
+    const disc = (c, rx, ry) => {
+      const ux = Math.cos(c.a);
+      const uy = Math.sin(c.a);
+      const ang = ((c.a * 180) / Math.PI).toFixed(0);
+      return `M${f1(c.p[0] - ux * rx)} ${f1(c.p[1] - uy * rx)}A${rx} ${ry} ${ang} 1 0 ${f1(c.p[0] + ux * rx)} ${f1(c.p[1] + uy * rx)}A${rx} ${ry} ${ang} 1 0 ${f1(c.p[0] - ux * rx)} ${f1(c.p[1] - uy * rx)}Z`;
+    };
+    for (const side of ["R", "L"]) {
+      const list = cells.filter((c) => c.side === side);
+      set(`[data-part="cells${side}"]`, list.map((c) => disc(c, 4, 2.7)).join(""));
+      set(`[data-part="pal${side}"]`, list.map((c) => disc(c, 1.8, 1.1)).join(""));
+    }
     // a soft glow as the ventricles squeeze
     q('[data-part="glow"]').setAttribute("opacity", (0.15 + 0.5 * contr).toFixed(2));
   }

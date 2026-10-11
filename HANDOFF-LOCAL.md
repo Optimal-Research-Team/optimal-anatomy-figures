@@ -26,7 +26,7 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 5 | VO2max on a bike | **Round 2 done** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
 | 6 | VO2max on the Creator 600 | **Round 1 done**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
 | A1 | Gut cell's gate (style test) | **Built**: hand-drawn organic SVG, both themes, phones checked; waiting on Peter's call on the look | `figures/a1-gut-cell/` |
-| A4 | The beating heart | **Built**: four chambers, valves, chordae, great vessels, ECG; rate buttons and Slow | `figures/a4-heart/` |
+| A4 | The beating heart | **Built, round 2**: four chambers, valves, chordae, great vessels with cut ends and sheen, muscle fibres, disc cells, ECG; rate buttons and Slow | `figures/a4-heart/` |
 | A5 | The air sac and the red cell | **Built**: alveolus in its capillary net, cells loading by the model, O₂/CO₂ dots, breathing, transit monitor | `figures/a5-alveolus/` |
 | A2 | The hot-flash switch | **Built**: hypothalamus slice, KNDy cells swell and signal, MnPO tips into a flash; pre/post buttons | `figures/a2-hypothalamus/` |
 | A6 | The red cell's 120 days | **Built**: marrow → 120-day arc → spleen macrophage → transferrin; untreated vs IV iron from Fig 3's model | `figures/a6-red-cell-cycle/` |

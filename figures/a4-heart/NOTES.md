@@ -35,11 +35,21 @@
 - **The valve plane moving toward the apex** is real long-axis motion, and the reason the atria fill while the ventricles empty. It's drawn as 15 px at full emptying.
 - **Visual choices:** a rose muscle gradient, a soft glow with each squeeze, a Slow button (¼ speed) for watching the valves.
 
+## Round 2 (2026-10-11, Peter: "do the heart after")
+
+This brings the finish up to A2/A5/A6. The model, timing and numbers are unchanged.
+- **Vessels:** every vessel gets a sheen on the side facing the light, and its open ends are cut, showing the lumen (inferior vena cava, both pulmonary arteries, the arch's three branches, the pulmonary veins, the descending aorta). The square-cut ends are gone.
+- **Venae cavae and descending aorta:** the superior vena cava now runs behind the heart muscle and opens into the right atrium, instead of sitting on top of it. The descending aorta is drawn live behind the heart, down to a cut end.
+- **Muscle fibres:** three rings wrap the left ventricle and two the right ventricle's free wall. They squeeze with the beat through the same deformation field, clipped to the moving outline.
+- **Cells:** tumbling biconcave discs with a pale centre, instead of dots.
+- **Kept:** the textbook convention of the pulmonary trunk crossing in front of the ascending aorta (a schematic layout, as in most teaching diagrams).
+
 ## Verification (2026-10-11)
 
 - No console errors.
 - No sideways scroll at 390, 360 or 320, in both themes.
 - Reduced motion shows one still at mid-ejection: outflow valves open, inflow valves shut.
+- Round 2 recaptured: `shots/desktop-{dark,light}.png`, `shots/phone-{390,360,320}-{dark,light}.png`, `shots/reduced-390-*.png`, `shots/embed.png`, all with no sideways scroll and a clean console.
 
 ## Open for Peter
 
