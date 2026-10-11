@@ -11,7 +11,8 @@ echo "npm   $(npm -v 2>/dev/null || echo MISSING)"
 
 find_chrome() {
   local p
-  for p in "${CHROME_PATH:-}" /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium /usr/bin/chromium-browser \
+  for p in "${REAL_CHROME:-}" /usr/bin/google-chrome /usr/bin/google-chrome-stable /usr/bin/chromium /usr/bin/chromium-browser \
+           /opt/pw-browsers/chromium "${PLAYWRIGHT_BROWSERS_PATH:-/opt/pw-browsers}"/chromium-*/chrome-linux*/chrome \
            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"; do
     [ -n "$p" ] && [ -x "$p" ] && { echo "$p"; return 0; }
   done
@@ -41,8 +42,14 @@ if [ -z "${CH:-}" ]; then
   exit 0
 fi
 
-echo "export CHROME_PATH=\"$CH\"" > .env.chrome
-export CHROME_PATH="$CH"
+if [ "$(id -u)" = "0" ]; then
+  # Root (cloud containers): Chrome needs --no-sandbox, so go through the wrapper.
+  printf 'export REAL_CHROME="%s"\nexport CHROME_PATH="%s"\n' "$CH" "$PWD/scripts/chrome-root.sh" > .env.chrome
+  export REAL_CHROME="$CH" CHROME_PATH="$PWD/scripts/chrome-root.sh"
+else
+  echo "export CHROME_PATH=\"$CH\"" > .env.chrome
+  export CHROME_PATH="$CH"
+fi
 echo "chrome $CH"
 echo "→ run: source .env.chrome"
 

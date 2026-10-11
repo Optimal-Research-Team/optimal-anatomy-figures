@@ -1,0 +1,15 @@
+/* Fig 1 · figure-specific styles. Colour only where heat is the subject. */
+.mt-heat { fill: var(--opt-heat-wash); stroke: none; opacity: 0; }
+.mt-lamp .iso-fill, .mt-lamp .iso-shade, .mt-lamp .iso-top { transition: fill 300ms var(--anatomy-ease), stroke 300ms var(--anatomy-ease); }
+.mt-lamp[data-lamp="warm"][data-on] .iso-fill, .mt-lamp[data-lamp="warm"][data-on] .iso-shade, .mt-lamp[data-lamp="warm"][data-on] .iso-top { fill: var(--opt-heat-ink); stroke: var(--opt-heat-ink); }
+.mt-lamp[data-lamp="cool"][data-on] .iso-fill, .mt-lamp[data-lamp="cool"][data-on] .iso-shade, .mt-lamp[data-lamp="cool"][data-on] .iso-top { fill: var(--opt-cold-ink); stroke: var(--opt-cold-ink); }
+.mt-heat { transition: none; }
+.mt-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.mt-par { display: block; margin-top: 6px; }
+.mt-par:first-child { margin-top: 0; }
+/* The lit column: forest green wash in Cream, deep green in Forest night. */
+.iso.optimal .iso-solid[data-lit] > .iso-top { fill: var(--mt-lit-top); }
+.iso.optimal .iso-solid[data-lit] > .iso-shade { fill: var(--mt-lit-side); }
+.iso.optimal .iso-solid[data-lit] > .iso-fill { fill: var(--mt-lit-side); }
+.iso.optimal { --mt-lit-top: #3f6a37; --mt-lit-side: #2f5229; }
+.iso.optimal[data-theme="light"] { --mt-lit-top: #e2eddf; --mt-lit-side: #c9dcc4; }
