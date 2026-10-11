@@ -1102,6 +1102,17 @@ Spread multipliers on the median: P10 ≈ 0.69×, P25 ≈ 0.83×, P75 ≈ 1.18×
 | Caption: bike vs treadmill | bike about 13–22 % lower | [22][24][26] |
 | Caption: FRIEND bike medians | men 41.9 (20s) and 19.5 (70s); women 31.0 and 14.8 | [22] HIGH |
 
+**How Fig 6 uses these numbers** (`figures/06-vo2max-treadmill/model.mjs`; the same modelled person on the Creator 600)
+
+| Shown or animated | Value | From |
+|---|---|---|
+| Oxygen cost of running (tablet guide, VO₂ target) | VO₂ = 0.2 S + 0.9 S G + 3.5 ml/kg/min (S m/min, G = 0.01): about 3.5 ml/kg/min per km/h | [20] ACSM running equation, MEDIUM-HIGH |
+| Speed (readout, belt, side panel) | jog at the speed costing 65 % of the ceiling for 3 min, ramp to the ceiling in about 10 min, 1 min plateau, 3 min recovery jog: 5.5 → 9.6, 7.4 → 12.6, 9.3 → 15.7 km/h for 35 / 45 / 55 | model, from [1][3] (≈10 min ramps) |
+| Cadence (running gait) | 169 + 7.83 × (speed in m/s − 2.68) spm | [18] Leacox 2025, two points, HIGH |
+| Contact time (duty factor) | 0.39 at 2.75 m/s [17], −0.06 per m/s, kept 0.30–0.46 | LOW shape |
+| Heart rate, the lag, the ceiling | as Fig 5 | as Fig 5 |
+| Caption: treadmill vs bike | treadmill about 22 % above bike | [26] via secondary, MEDIUM |
+
 ### Equations / curves
 
 Symbols: BM = body mass (kg), W = work rate (W), R = ramp rate (W/min), t in min from ramp start, x = VO₂/VO₂max.

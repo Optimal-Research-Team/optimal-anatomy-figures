@@ -1,6 +1,6 @@
 # Continuing locally (or in a new session)
 
-Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 5. All five HANDOFF figures are at round 1.
+Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 6 (Peter's VO₂ rework). Shared: `shared/assessor.mjs` (standing assessor with a tablet), `shared/vo2-plot.js` (the tablet's live plot).
 
 ## Set up on a Mac (about 5 minutes)
 
@@ -23,7 +23,8 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
 | 3 | IV iron | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/03-iv-iron/` |
 | 4 | Creator 600 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; built `shared/mannequin.mjs` + `mannequin-view.js` for Fig 5 | `figures/04-creator-600/` |
-| 5 | VO2max | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; one WebGL layer (breath in the hose); no percentile readout until the FRIEND cycle table is verified | `figures/05-vo2max/` |
+| 5 | VO2max on a bike | **Round 2 done** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
+| 6 | VO2max on the Creator 600 | **Round 1 done**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
 | A1–A9 | Anatomical series (beating heart, gut cell, hypothalamus, …) | Planned after Fig 5; style test first | **`BACKLOG.md`** |
 
 ## Time remaining (estimate, 2026-10-11 ~21:15 UTC)

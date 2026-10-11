@@ -1,0 +1,39 @@
+/* Fig 5 · clear tubing and glass, the cart's screens, the breath layer. */
+.iso.optimal { --vo-screen: #0f1b0c; --vo-ink: #c9e3c1; --vo-dim: #4f6b48; --vo-glass: rgba(201, 227, 193, 0.10); --vo-glass-edge: #8e9884; }
+.iso.optimal[data-theme="light"] { --vo-screen: #1d2a1a; --vo-ink: #d9efd2; --vo-dim: #5d7a56; --vo-glass: rgba(44, 78, 37, 0.06); --vo-glass-edge: #76736d; }
+.vo-stage { position: relative; }
+.vo-gl, .vo-front { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.iso.optimal:not([data-theme="light"]) .vo-gl { mix-blend-mode: screen; }
+.vo-stage[data-gl] .vo-fallback { display: none; }
+.vo-glass .iso-fill, .vo-glass .iso-top, .vo-glass .iso-shade { fill: var(--vo-glass); stroke: none; }
+.vo-hose .tb-body { fill: var(--vo-glass); }
+.vo-hose .tb-shine, .vo-hose .tb-shade { opacity: 0.35; }
+.vo-screen { fill: var(--vo-screen); }
+.vo-window { fill: var(--anatomy-shade-0); }
+.vo-level { fill: var(--anatomy-lit); }
+.vo-cell-label { fill: var(--anatomy-strong); font-family: var(--opt-ui); font-weight: 600; }
+.vo-grid { fill: none; stroke: var(--vo-dim); stroke-width: 0.25; opacity: 0.5; }
+.vo-axis { fill: none; stroke: var(--vo-dim); stroke-width: 0.4; }
+.vo-guide { fill: none; stroke: var(--vo-dim); stroke-width: 0.4; stroke-dasharray: 1 1; }
+.vo-ceiling { fill: none; stroke: var(--opt-heat); stroke-width: 0.45; stroke-dasharray: 1.2 0.8; }
+.vo-trace { fill: none; stroke: var(--opt-heat); stroke-width: 0.7; stroke-linejoin: round; stroke-linecap: round; }
+.vo-dot { fill: var(--vo-ink); }
+.vo-tick { fill: var(--vo-dim); font-family: var(--opt-ui); font-weight: 500; }
+.vo-strap { stroke-width: 1.6; }
+.vo-hole { fill: var(--anatomy-shade-1); stroke: var(--anatomy-lo); stroke-width: 0.4; }
+.vo-vane { fill: none; stroke: var(--anatomy-mid); stroke-width: 1.2; stroke-linecap: round; }
+.vo-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.vo-par { display: block; margin-top: 6px; }
+.vo-par:first-child { margin-top: 0; }
+.vo-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+.vo-scrub { display: flex; align-items: center; gap: 12px; margin: 10px 4px 0; }
+.vo-play { appearance: none; border: 0; min-height: 44px; min-width: 72px; padding: 0 16px; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px var(--opt-rule); color: var(--anatomy-text); font: 500 14px/1 var(--opt-ui); cursor: pointer; touch-action: manipulation; }
+.vo-play:focus-visible { outline: 2px solid var(--opt-fig); outline-offset: 2px; }
+.vo-clock { font: 500 13px/1 var(--opt-ui); color: var(--anatomy-muted); min-width: 40px; text-align: right; font-feature-settings: "tnum" 1; }
+.vo-range { flex: 1; min-width: 0; height: 44px; margin: 0; background: transparent; accent-color: var(--opt-btn-on); -webkit-appearance: none; appearance: none; touch-action: pan-y; }
+.vo-range::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: var(--opt-rule); }
+.vo-range::-moz-range-track { height: 4px; border-radius: 2px; background: var(--opt-rule); }
+.vo-range::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 28px; margin-top: -12px; border-radius: 50%; background: var(--opt-btn-on); border: 3px solid var(--anatomy-card); box-shadow: 0 0 0 1px var(--opt-rule); }
+.vo-range::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--opt-btn-on); border: 3px solid var(--anatomy-card); }
+.vo-range:focus-visible { outline: 2px solid var(--opt-fig); outline-offset: 2px; }
+.vo-led { fill: var(--anatomy-lit); stroke: var(--anatomy-card); stroke-width: 0.4; }
