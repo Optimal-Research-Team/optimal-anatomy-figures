@@ -26,15 +26,16 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 5 | VO2max on a bike | **Round 2 done** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
 | 6 | VO2max on the Creator 600 | **Round 1 done**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
 | A1 | Gut cell's gate (style test) | **Built**: hand-drawn organic SVG, both themes, phones checked; waiting on Peter's call on the look | `figures/a1-gut-cell/` |
-| A2–A9 | Rest of the anatomical series (beating heart, hypothalamus, …) | Planned; follow A1's style once approved | **`BACKLOG.md`** |
+| A4 | The beating heart | **Built**: four chambers, valves, chordae, great vessels, ECG; rate buttons and Slow | `figures/a4-heart/` |
+| A2, A3, A5–A9 | Rest of the anatomical series | Planned; follow A1/A4's style | **`BACKLOG.md`** |
 
 ## Time remaining (estimate, 2026-10-11 evening)
 
 | Work | Estimate |
 |---|---|
 | Design rounds on Figs 1–6 and A1 (+30–50 %), as Peter's feedback comes in | 4–6 h |
-| Anatomical series A2–A9 (`BACKLOG.md`), after the A1 look is approved | 13–17 h, + rounds |
-| **Total** | **~17–23 h** |
+| Anatomical series A2, A3, A5–A9 (`BACKLOG.md`) | 10–14 h, + rounds |
+| **Total** | **~14–20 h** |
 
 **Where to run it.** The cloud credits are nearly used. Run the rest locally (Claude Code on the Mac uses the Max plan's limits, not cloud credits): set up as above, then pick up from `BACKLOG.md`. A1 (`figures/a1-gut-cell/`) is the pattern for the anatomical pieces: hand-drawn organic SVG through `smooth()` (Catmull-Rom to Bézier), the shared card, CSS tokens per theme, a tiny `model.mjs`, and a particle `live.js`.
 

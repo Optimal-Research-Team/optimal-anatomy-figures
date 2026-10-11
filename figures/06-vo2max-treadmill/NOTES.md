@@ -51,6 +51,6 @@ Oxygen cost of running comes from the ACSM running equation: VO₂ = 0.2 S + 0.9
 
 ## Open issues for Peter
 
-1. **Protocol.** Which treadmill protocol do you run: a speed ramp, a grade ramp, or a stepped test like the Bruce? The model can switch.
+1. **Protocol.** Resolved: Peter confirmed a speed ramp, which is what the figure runs. The 1 % incline and the start speeds are assumptions.
 2. **Creator 600 and the analyser.** Does the treadmill's display show anything during a VO₂ test, or is it only the tablet? The drawing keeps the live skeleton on the display.
 3. **To verify with full web access:** the ACSM running equation's validity range (it's meant for speeds above about 8 km/h; the 35 ceiling's warm-up jog is 5.5 km/h), and FRIEND's 22 % treadmill-vs-bike figure (Kaminsky 2022).

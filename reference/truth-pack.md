@@ -1207,6 +1207,19 @@ Symbols: BM = body mass (kg), W = work rate (W), R = ramp rate (W/min), t in min
 - Swain & Leutholtz 1997, for %HRR ≈ %VO₂R.
 - de Souza e Silva CG et al., FRIEND reference equation for treadmill and cycle, *Eur J Prev Cardiol* 2018;25(7):742–750, PMID 29517365. Exists; it includes a mode term; coefficients not verified.
 
+## A4. The heart (anatomical series)
+
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| One beat at 75 bpm | 0.8 s: ventricular systole ≈ 0.3 s, diastole ≈ 0.5 s (another source gives 0.35 / 0.55 s at 67 bpm) | [A4-1][A4-2] | MEDIUM (educational sources) |
+| As heart rate rises | diastole shortens much more than systole | [A4-3] | MEDIUM |
+| Left ventricle at rest | ≈ 120 ml at the end of filling, ≈ 50 ml at the end of ejection: stroke volume 70 ml, ejection fraction ≈ 58 % | [A4-1] | MEDIUM |
+| Stroke volume in strenuous exercise (untrained) | rises from ≈ 70 toward ≈ 120 ml; end-diastolic volume up, end-systolic volume down | [A4-3] | MEDIUM |
+| Atrial squeeze ≈ 0.1 s, its share of filling ≈ 15–25 %, isovolumic phases ≈ 0.05–0.07 s | textbook | not found this session | LOW (drawing only) |
+| Maximum heart rate, 45 years | 208 − 0.7 × age ≈ 176 bpm | §5 [16] Tanaka 2001 | HIGH |
+
+Sources: [A4-1] BYU-Idaho, *Cardiac Measurements and Pressure Volume Loops*, https://books.byui.edu/docx/4415 · [A4-2] CCEA, *The Cardiovascular System* fact file, https://www.ccea.org.uk/downloads/docs/Support/A2%202%20Support/2019/A2%202%20The%20Cardiovascular%20System%20%28Fact%20file%29.pdf · [A4-3] RRCA, *Sport* (cardiac cycle at rest and exercise), https://www.rrca.org.uk/Portals/0/adam/Content/53819xob00qwej4ZRNARkg/Link/Sport.pdf (all seen via search extracts, 2026-10-11).
+
 ---
 
 ## Brief: what each figure needs

@@ -19,6 +19,7 @@ const PLAN = [
   { dir: "04-creator-600", n: 4, title: "The runner rig", line: "How cadence and foot strike change the load on your hips and knees." },
   { dir: "05-vo2max", n: 5, title: "The ramp and the mask", line: "A VO2max ramp on a bike with a wireless mask." },
   { dir: "06-vo2max-treadmill", n: 6, title: "The treadmill ramp", line: "The same VO2max test on the Creator 600 treadmill." },
+  { dir: "a4-heart", n: "A4", title: "The beating heart", line: "Four chambers, four valves: how output climbs from rest to all-out." },
   { dir: "a1-gut-cell", n: "A1", title: "The gut cell's gate", line: "Anatomical style test: iron in, iron out, and hepcidin closing the gates." },
 ];
 

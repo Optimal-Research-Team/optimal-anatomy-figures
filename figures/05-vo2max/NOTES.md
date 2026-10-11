@@ -61,6 +61,6 @@ The slope measured off the model's ramp is 10.29 ml/min per W (Hansen 1987: 10.2
 ## Open issues for Peter
 
 1. **FRIEND cycle percentiles.** Someone with journal access needs Kaminsky 2017 Table 2 or Kaminsky 2022 Table 3 (cycle rows) before a percentile readout can ship.
-2. **The bike.** Which bike do you test on, and does the VO2 Master app read its watts (power meter pairing)? If it doesn't, the tablet would plot against time and the watts stay on the bike's head.
+2. **The bike.** Resolved: Peter confirmed the app pairs with the bike's power meter, so plotting VO₂ against watts stands. Which bike, to match its look, is still open.
 3. **To verify with full web access:** the VO2 Master spec sheet (CO₂, battery, weight); resting heart rate and the shape of the heart-rate rise; the VO₂ time constant (Wasserman).
 4. **Site copy.** The Performance one-pager says "breath-by-breath gas analysis". That matches the mask unit. "One of the strongest known predictors of longevity" fits Mandsager and Kokkinos as an association; the caption keeps "association, not a promise".
