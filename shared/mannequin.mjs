@@ -58,7 +58,8 @@ export const MANNEQUIN = (() => {
    *   heading  ° the body faces, from +x toward +y (0 = facing +x)
    *   pelvis   hip-joint height above base
    *   trunk    ° forward lean of the trunk about the hip line
-   *   legs     { R, L }: sagittal { hip, knee, ankle } as [forward, up] relative to base, and `sole` (rad, toe up +)
+   *   legs     { R, L }: sagittal { hip, knee, ankle } as [forward, up] relative to base, `sole` (rad, toe up +),
+ *            optional `toe` (rad) and `width` ({ hip, knee, ankle } lateral offsets)
    *   arms     { R, L }: { shoulder: ° from vertical (+ forward), elbow: ° bend }
    */
   function skeletonOf({ base, heading = 0, pelvis, trunk = 0, legs, arms }) {
@@ -77,9 +78,10 @@ export const MANNEQUIN = (() => {
     J.chin = onTrunk(BODY.chin);
     for (const [k, side] of [["R", -1], ["L", 1]]) {
       const leg = legs[k];
-      J[`hip${k}`] = at(leg.hip[0], side * BODY.hipHalf, leg.hip[1]);
-      J[`knee${k}`] = at(leg.knee[0], side * BODY.kneeHalf, leg.knee[1]);
-      J[`ankle${k}`] = at(leg.ankle[0], side * BODY.ankleHalf, leg.ankle[1]);
+      const w = leg.width ?? {}; // optional lateral offsets: { hip, knee, ankle }
+      J[`hip${k}`] = at(leg.hip[0], side * (w.hip ?? BODY.hipHalf), leg.hip[1]);
+      J[`knee${k}`] = at(leg.knee[0], side * (w.knee ?? BODY.kneeHalf), leg.knee[1]);
+      J[`ankle${k}`] = at(leg.ankle[0], side * (w.ankle ?? BODY.ankleHalf), leg.ankle[1]);
       // foot frame: origin at the heel's ground point, u along the sole toward the toe, v up off the sole
       const s = leg.sole;
       const u = add(mul(fwd, Math.cos(s)), mul(up, Math.sin(s)));

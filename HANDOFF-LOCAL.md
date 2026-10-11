@@ -1,6 +1,6 @@
 # Continuing locally (or in a new session)
 
-Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 4.
+Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 5. All five HANDOFF figures are at round 1.
 
 ## Set up on a Mac (about 5 minutes)
 
@@ -23,17 +23,18 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
 | 3 | IV iron | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/03-iv-iron/` |
 | 4 | Creator 600 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; built `shared/mannequin.mjs` + `mannequin-view.js` for Fig 5 | `figures/04-creator-600/` |
-| 5 | VO2max | Research drafted, not built; FRIEND cycle percentile table incomplete | `reference/research/truth-5-draft.md` |
+| 5 | VO2max | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; one WebGL layer (breath in the hose); no percentile readout until the FRIEND cycle table is verified | `figures/05-vo2max/` |
 | A1–A9 | Anatomical series (beating heart, gut cell, hypothalamus, …) | Planned after Fig 5; style test first | **`BACKLOG.md`** |
 
-## Time remaining (estimate, 2026-10-11 ~21:40 UTC)
+## Time remaining (estimate, 2026-10-11 ~21:15 UTC)
 
 | Work | Estimate |
 |---|---|
-| Fig 5 VO2max (Hero + WebGL, reuses the mannequin) | 3–4 h |
-| Design rounds on Figs 1–5 (+30–50 %) | 4–6 h |
+| Design rounds on Figs 1–5 (+30–50 %), as Peter's feedback comes in | 4–6 h |
 | Anatomical series A1–A9 incl. style test (`BACKLOG.md`) | 15–19 h, + rounds |
-| **Total** | **~22–29 h** |
+| **Total** | **~19–25 h** |
+
+**Where to run it.** Cloud session credits ran at about $20–25 an hour; after Fig 5 roughly $85 is left, enough for a few hours of design rounds but not the anatomical series. Run the anatomical series locally (Claude Code on the Mac uses the Max plan's usage limits, not cloud credits): set up as above, then start with the A1 style test in `BACKLOG.md`.
 
 ## How a figure is built (the pattern Fig 1 set)
 
