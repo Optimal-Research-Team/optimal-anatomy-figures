@@ -1235,6 +1235,22 @@ Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Ranc
 
 ---
 
+## A6. The red cell's 120 days (anatomical series)
+
+Uses §3: red-cell lifespan ≈ 120 days [Franco 2012]; macrophage recycling ≈ 20–25 mg/day (model woman ≈ 13 mg/day at Hb 105) [Hentze 2010]; absorption 1–2 mg/day [Andrews 1999]; IV ferric derisomaltose taken up by liver and spleen macrophages [TGA PI]; the ferritin assay caveat after IV iron. All curves come from Fig 3's model.
+
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| Red cells made per second, adult | ≈ 2 million (≈ 2 × 10¹¹ a day) | [K] textbook figure; consistent with ≈ 25 × 10¹² cells ÷ 120 days | LOW-MEDIUM (verify before quoting on a page) |
+| Iron-deficient red cells are smaller and paler (microcytic, hypochromic) | qualitative | [K] textbook | HIGH (fact) |
+
+### How A6 uses these numbers
+
+- **Iron into new cells per day** = c0 + the net rise in circulating red-cell iron + 0.5 mg/day loss, where c0 = Hb₀ iron ÷ 120 = 12.8 mg/day (Fig 3's model woman). One drawn cell = cNorm = 16.1 mg (Hb 132 iron ÷ 120).
+- **Ferritin and Hb** come straight from Fig 3's `simulate("iv")`. Granules = 5 + 35 × log(ferritin ÷ 8) ÷ log(470 ÷ 8). Transferrin dots: one per 1.5 mg. Both are drawing proxies.
+
+---
+
 ## A5. The lung: air sac and capillary (anatomical series)
 
 | Quantity | Value | Source | Confidence |

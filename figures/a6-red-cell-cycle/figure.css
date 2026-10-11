@@ -1,0 +1,83 @@
+/* A6 · the red cell's loop: cream bone with deep-red marrow, a dark-red spleen, cells in
+   textbook red with pale centres, gold ferritin, straw transferrin. */
+.iso.optimal {
+  --a6-mr0: #8a2c30; --a6-mr1: #5a171c; --a6-cortex: #e8dcc2; --a6-cortex-edge: #b7a57e; --a6-trab: #d9c9a3; --a6-fat: rgba(240, 222, 170, 0.32);
+  --a6-nurse: #e6cdb8; --a6-nurse-nuc: #7d6896; --a6-eb-early: #8f7cc9; --a6-eb-late: #e0584a; --a6-eb-nuc: #3f2f78;
+  --a6-sinus: #3a1014; --a6-sinus-edge: #c06a5a;
+  --a6-sp0: #6e2328; --a6-sp1: #3e1115; --a6-capsule: #c88a7a; --a6-cords: rgba(255, 170, 150, 0.16); --a6-white: rgba(236, 214, 204, 0.4); --a6-art: #c0485a;
+  --a6-mc0: #f1dccb; --a6-mc1: #cfae98; --a6-mac-edge: #8a5a4a; --a6-mac-nuc: #8a6d9e; --a6-phago: #b77e6e; --a6-gran: #c98a1c; --a6-gran-edge: #6e4a0c;
+  --a6-arc: rgba(255, 200, 186, 0.07); --a6-arc-edge: #b5645a; --a6-ret: rgba(246, 214, 140, 0.12); --a6-ret-edge: #9a8a5a;
+  --a6-cell: #e04a38; --a6-pallor-full: #f39a84; --a6-pale: #e8a497; --a6-pallor-pale: #fbe0d6; --a6-young: #c4598a; --a6-retic: #fbd2e6; --a6-old: #93291f; --a6-pallor-old: #b84a3c;
+  --a6-tf: #ffd27a; --a6-ivp: #e0a040; --a6-iv: #b9c2c9;
+  --a6-tick: rgba(233, 230, 220, 0.6);
+  --a6-mon-bg: #0f1b0c; --a6-mon-ink: #c9e3c1; --a6-mon-dim: #33452e; --a6-fer: #f2b33d; --a6-hb: #ff7b6b;
+}
+.iso.optimal[data-theme="light"] {
+  --a6-mr0: #c2474a; --a6-mr1: #8e2a2e; --a6-cortex: #f4ead4; --a6-cortex-edge: #9f8c62; --a6-trab: #efe2c2; --a6-fat: rgba(255, 244, 205, 0.6);
+  --a6-nurse: #f6e5d6; --a6-nurse-nuc: #6d588a; --a6-eb-early: #7f6cc0; --a6-eb-late: #e0584a; --a6-eb-nuc: #33246a;
+  --a6-sinus: #6e1c22; --a6-sinus-edge: #9a4a3e;
+  --a6-sp0: #b2464a; --a6-sp1: #7a2226; --a6-capsule: #7a3a30; --a6-cords: rgba(255, 210, 196, 0.28); --a6-white: rgba(255, 240, 232, 0.55); --a6-art: #8a2230;
+  --a6-mc0: #fff3e8; --a6-mc1: #ead2bf; --a6-mac-edge: #7a4a3a; --a6-mac-nuc: #6d588a; --a6-phago: #c98e7e; --a6-gran: #b67a10; --a6-gran-edge: #5e3e06;
+  --a6-arc: rgba(214, 120, 104, 0.07); --a6-arc-edge: #a8574c; --a6-ret: rgba(214, 170, 60, 0.12); --a6-ret-edge: #a8925a;
+  --a6-cell: #d63b2b; --a6-pallor-full: #f08a74; --a6-pale: #eba79a; --a6-pallor-pale: #fff0ea; --a6-young: #b4467a; --a6-retic: #fbd2e6; --a6-old: #8a2219; --a6-pallor-old: #b24234;
+  --a6-tf: #d49a16; --a6-ivp: #a8650c; --a6-iv: #7d8a94;
+  --a6-tick: rgba(62, 61, 57, 0.65);
+  --a6-mon-bg: #1d2a1a; --a6-mon-ink: #d9efd2; --a6-mon-dim: #3d5436; --a6-fer: #f2b33d; --a6-hb: #ff8a7a;
+}
+.a6-mr0 { stop-color: var(--a6-mr0); } .a6-mr1 { stop-color: var(--a6-mr1); }
+.a6-sp0 { stop-color: var(--a6-sp0); } .a6-sp1 { stop-color: var(--a6-sp1); }
+.a6-mc0 { stop-color: var(--a6-mc0); } .a6-mc1 { stop-color: var(--a6-mc1); }
+.a6-svg .a6-mon path, .a6-svg .a6-mon rect, .a6-svg .a6-mon circle { vector-effect: non-scaling-stroke; }
+.a6-cortex { fill: none; stroke: var(--a6-cortex); stroke-width: 11; stroke-linejoin: round; }
+.a6-bone { stroke: var(--a6-cortex-edge); stroke-width: 14; stroke-linejoin: round; }
+.a6-trab { fill: none; stroke: var(--a6-trab); stroke-width: 5.2; stroke-linecap: round; opacity: 0.88; }
+.a6-trab-node { fill: var(--a6-trab); opacity: 0.88; }
+.a6-fat { fill: var(--a6-fat); }
+.a6-nurse { fill: var(--a6-nurse); opacity: 0.92; }
+.a6-nurse-nuc { fill: var(--a6-nurse-nuc); }
+.a6-eb-cyto { fill: color-mix(in srgb, var(--a6-eb-late) calc(var(--m) * 100%), var(--a6-eb-early)); stroke: rgba(0, 0, 0, 0.25); stroke-width: 0.6; }
+.a6-eb-nuc { fill: var(--a6-eb-nuc); }
+.a6-sinus { fill: var(--a6-sinus); stroke: var(--a6-sinus-edge); stroke-width: 1; }
+.a6-spleen { stroke: none; }
+.a6-capsule { fill: none; stroke: var(--a6-capsule); stroke-width: 3.2; stroke-linejoin: round; }
+.a6-cords { fill: none; stroke: var(--a6-cords); stroke-width: 2.4; stroke-linecap: round; }
+.a6-white { fill: var(--a6-white); }
+.a6-art { fill: var(--a6-art); }
+.a6-mac { stroke: var(--a6-mac-edge); stroke-width: 1.2; }
+.a6-mac-nuc { fill: var(--a6-mac-nuc); opacity: 0.9; }
+.a6-phago { fill: var(--a6-phago); opacity: 0.55; }
+.a6-gran { fill: var(--a6-gran); stroke: var(--a6-gran-edge); stroke-width: 0.6; }
+.a6-arc-edge { fill: var(--a6-arc); stroke: var(--a6-arc-edge); stroke-width: 1.4; stroke-linejoin: round; }
+.a6-ret { fill: var(--a6-ret); stroke: var(--a6-ret-edge); stroke-width: 1.1; stroke-dasharray: 5 3; }
+.a6-c { stroke: rgba(0, 0, 0, 0.22); stroke-width: 0.5; }
+.a6-c-full { fill: var(--a6-cell); } .a6-pallor-full { fill: var(--a6-pallor-full); }
+.a6-c-pale { fill: var(--a6-pale); } .a6-pallor-pale { fill: var(--a6-pallor-pale); }
+.a6-c-young { fill: var(--a6-young); } .a6-retic { fill: var(--a6-retic); }
+.a6-c-old { fill: var(--a6-old); } .a6-pallor-old { fill: var(--a6-pallor-old); }
+.a6-tf { fill: var(--a6-tf); }
+.a6-ivp { fill: var(--a6-ivp); }
+.a6-iv { transition: opacity 0.5s; }
+.a6-iv-line { fill: none; stroke: var(--a6-iv); stroke-width: 3; stroke-linecap: round; }
+.a6-iv-hub { fill: var(--a6-iv); }
+.a6-tick { fill: none; stroke: var(--a6-tick); stroke-width: 1.4; }
+.a6-tick-txt { fill: var(--a6-tick); font: 500 17px/1 var(--opt-ui); font-variant-numeric: tabular-nums; }
+.a6-mon-bg { fill: var(--a6-mon-bg); }
+.a6-mlabel { font: 600 18px/1 var(--opt-ui); }
+.a6-mlabel-fer { fill: var(--a6-fer); } .a6-mlabel-hb { fill: var(--a6-hb); }
+.a6-axis { fill: none; stroke: var(--a6-mon-ink); stroke-width: 1; opacity: 0.45; }
+.a6-mtick { fill: var(--a6-mon-ink); font: 500 17px/1 var(--opt-ui); opacity: 0.8; }
+.a6-trace { fill: none; stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+.a6-trace-ghost { fill: none; stroke-width: 1.3; stroke-dasharray: 3 4; opacity: 0.4; }
+.a6-fer { stroke: var(--a6-fer); } .a6-hbl { stroke: var(--a6-hb); }
+.a6-cursor { fill: none; stroke: var(--a6-mon-ink); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
+.a6-cdot { stroke: var(--a6-mon-bg); stroke-width: 2; }
+.a6-cdot-fer { fill: var(--a6-fer); } .a6-cdot-hb { fill: var(--a6-hb); }
+.iso.optimal .iso-swatch[data-mark="cell"] path { stroke: var(--a6-cell); stroke-width: 5; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="pale"] path { stroke: var(--a6-pale); stroke-width: 5; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="ferritin"] path { stroke: var(--a6-gran); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.1 4.5; }
+.iso.optimal .iso-swatch[data-mark="tf"] path { stroke: var(--a6-tf); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.1 4.5; }
+.a6-scene { margin: 10px 4px 0; font: 500 14px/1.45 var(--opt-ui); color: var(--anatomy-text); min-height: 5.8em; }
+.a6-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a6-par { display: block; margin-top: 6px; }
+.a6-par:first-child { margin-top: 0; }
+.a6-par small { font-size: 12.5px; color: var(--anatomy-muted); }
