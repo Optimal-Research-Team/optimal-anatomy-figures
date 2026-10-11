@@ -13,7 +13,7 @@ Build them **simplest first**, one at a time, and get each one to "done" (below)
 1. Read `CLAUDE.md` (house rules), then `.claude/skills/anatomy/SKILL.md` in full, then `.claude/skills/anatomy/references/craft.md` and `references/walkthrough.md`.
 2. Run `bash scripts/setup-cloud.sh`. It checks Node, finds or installs a headless Chrome for the skill's `capture.mjs` / `drive.mjs` / `lines.mjs`, and prints `CHROME_PATH`. If the Chrome download is blocked by the network policy, say so in your first message and keep building. You can still build and audit, but screenshot verification waits until Chrome is available.
 3. Build the smallest example to prove the toolchain: `node .claude/skills/anatomy/examples/dial-indicator/build.mjs` (and `--light`).
-4. Read `reference/truth-pack.md` for the figure you're on. **Every number in a readout, caption or motion comes from there, with its source.** If you need a number that isn't there, research it and add it to the truth pack with a source before you use it.
+4. **Truth first, per figure.** `reference/truth-pack.md` lists what each figure needs. Before writing a figure's model, research those numbers (WebSearch/WebFetch, primary sources) and fill in that figure's section with a source and confidence for every value. **Every number in a readout, caption or motion comes from there.** Budget about 15 minutes of research per Figure and 25 per Hero.
 5. Run `date`, then post the plan for Figure 1: the size class, the one-sentence mapping ("what moves, and what that motion means"), and a parts list of at least 40 parts. Then build.
 
 ---
