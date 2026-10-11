@@ -1,0 +1,371 @@
+{
+  "title": "Protocol engravings: Longevity and Menopause Protocol pages",
+  "generated": "2026-10-11",
+  "zip": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/515c92dd-50a4-48ec-a941-b3b82ce3784f.zip",
+  "style": {
+    "model": "gpt_image_2_5 (GPT Image 2.5) on Higgsfield, quality high, resolution 2k",
+    "style_reference_media_ids": [
+      "2c5669f9-b6e6-4ecb-92cc-fe67c92f5812",
+      "799228c5-e400-401c-9f43-74ae966498f9",
+      "822d8daa-8bef-4dc1-84fd-6b771cea7657",
+      "c4175498-8b93-43b0-ba67-a6308cb49c2f"
+    ],
+    "style_reference_note": "The same four plates (liver, pine branch, heart, red cells) used for the IV iron page engravings.",
+    "ink_rgb": [
+      55,
+      71,
+      40
+    ],
+    "processing": "process.py: luminance -> ink alpha, trim to ink + 2.5% pad, flatten single ink on white, Lanczos resize, WebP q76 (large) / q74 (small)"
+  },
+  "reuse": {
+    "id": "blood-tubes",
+    "from": "Optimal-Research-Team/iron-infusions-waitlist img/c7803519e98e06b201fa3d46059035cf.jpg",
+    "url": "https://optimal-research-team.github.io/iron-infusions-waitlist/img/c7803519e98e06b201fa3d46059035cf.jpg",
+    "use": "Optional decorative corner plate: Longevity §12 'Your annual bloodwork, explained' card and Menopause §12 'Lab day, at a glance' card (alt='')"
+  },
+  "items": [
+    {
+      "id": "artery-plaque",
+      "priority": "P1",
+      "page": "longevity",
+      "section": "§8 Cardiovascular risk: lipids, apoB and Lp(a)",
+      "action": "Replace the NIH atherosclerosis illustration",
+      "kind": "wide",
+      "aspect": "4:3",
+      "prompt": "Antique anatomical steel-plate engraving in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on a pure white background, no colour fills, no gradients. Subject, two specimens side by side with clear white space between them, drawn like a classic anatomy-atlas plate: each is a short cut segment of a medium-sized artery shown in three-quarter perspective so the cut end faces the viewer and shows the wall in cross-section. On the left, a healthy artery with a thick, smooth, evenly layered muscular wall and a wide open round channel. On the right, the same artery with a crescent-shaped fatty plaque built up inside the wall on one side, a soft lumpy core beneath a thin smooth cap, bulging inward so the open channel is narrowed to about half its width and pushed off-centre. The channels are empty, no blood cells. Both specimens the same size and visual weight, floating on white. No text, no labels, no arrows, no leader lines, no numbers, no border, no signature.",
+      "alt": "Engraving of two cut sections of an artery: on the left a healthy artery with a wide open channel; on the right a fatty plaque inside the wall narrowing the channel.",
+      "caption": "How atherosclerosis develops: apoB-carrying particles lodge in the artery wall and build plaque over decades. Left, a healthy artery; right, plaque inside the wall narrowing the channel.",
+      "files": [
+        {
+          "name": "engraving-artery-plaque-1040w.webp",
+          "w": 1040,
+          "h": 520,
+          "kb": 121,
+          "sha1_12": "53e05eb1b90a",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/2794faa7-25c3-469f-89ac-6e5dfd302deb.webp"
+        },
+        {
+          "name": "engraving-artery-plaque-640w.webp",
+          "w": 640,
+          "h": 320,
+          "kb": 43,
+          "sha1_12": "250166ac745f",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/5cff5ac1-8802-42ba-ae6f-808805bb0701.webp"
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "d6189655-cba1-4525-b93c-d8b38062d2bb",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203952_d6189655-cba1-4525-b93c-d8b38062d2bb.png"
+      },
+      "fit": {
+        "mode": "w",
+        "px": 1040
+      }
+    },
+    {
+      "id": "vo2max-test",
+      "priority": "P1",
+      "page": "longevity",
+      "section": "§1.2 VO2 max: peak aerobic capacity",
+      "action": "Replace the stock photo (man on a bike in a mask)",
+      "kind": "wide",
+      "aspect": "4:3",
+      "prompt": "Steel-plate engraving vignette in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on pure white, no colour fills. Subject, a contemporary sports-medicine scene: a fit woman around 45, side view, pedalling a modern stationary bike ergometer, wearing a plain athletic tank top and cycling shorts, with a soft silicone face mask covering her nose and mouth held on by a mesh head harness. A flexible breathing tube runs from the front of the mask to a compact metabolic analyser cart on a small wheeled stand with a flat-screen monitor, standing just beyond the bike. Generic modern lab equipment with no branding. Focused, steady effort, not strain. Clearly present-day, not Victorian. Small vignette composition that fades softly into white at the edges. No text, no labels, no numbers on the screen, no logos, no border, no signature.",
+      "alt": "Engraving of a woman pedalling a stationary bike in a face mask, with a breathing tube running to a metabolic cart and monitor.",
+      "caption": "A VO₂ max test on a stationary bike: the mask sends every breath to a metabolic cart, which measures how much oxygen you use.",
+      "files": [
+        {
+          "name": "engraving-vo2max-test-1040w.webp",
+          "w": 1040,
+          "h": 871,
+          "kb": 133,
+          "sha1_12": "50c1940087a3",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/3fe51c79-1b39-4368-9ac6-f83e547bf90a.webp"
+        },
+        {
+          "name": "engraving-vo2max-test-640w.webp",
+          "w": 640,
+          "h": 536,
+          "kb": 41,
+          "sha1_12": "ca2e97d356b3",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "dab05d01-9b33-4189-bf83-b7aec461db3e",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203951_dab05d01-9b33-4189-bf83-b7aec461db3e.png"
+      },
+      "fit": {
+        "mode": "w",
+        "px": 1040
+      }
+    },
+    {
+      "id": "grip-dynamometer",
+      "priority": "P1",
+      "page": "longevity",
+      "section": "§1.3 Strength: retirement savings for the body",
+      "action": "New three-up plate above the benchmarks table (1 of 3)",
+      "kind": "trio",
+      "aspect": "1:1",
+      "prompt": "Steel-plate engraving in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on a pure white background, no colour fills, no gradients. Subject: an adult hand and forearm, seen from the side, squeezing a modern handheld grip dynamometer: a hand-strength meter with a round analogue dial gauge at the top and a two-bar adjustable handle, the fingers wrapped firmly around the handle. Rendered as a precise scientific-instrument style plate. The dial face has only plain tick marks and a needle. Isolated object, centred with generous white margin, no background scene. No text, no numbers, no labels, no logos, no border, no signature.",
+      "alt": "Engraving of a hand squeezing a grip dynamometer with a dial gauge.",
+      "caption": "Grip: squeeze a hand dynamometer; best of either hand.",
+      "files": [
+        {
+          "name": "engraving-grip-dynamometer-649w.webp",
+          "w": 649,
+          "h": 720,
+          "kb": 67,
+          "sha1_12": "7eb464d2897e",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/4e64699c-babf-451d-91ed-fdf541878e2f.webp"
+        },
+        {
+          "name": "engraving-grip-dynamometer-396w.webp",
+          "w": 396,
+          "h": 440,
+          "kb": 21,
+          "sha1_12": "d3b51ae4267f",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "32104009-823c-4d41-aaff-05cf157365af",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203952_32104009-823c-4d41-aaff-05cf157365af.png"
+      },
+      "fit": {
+        "mode": "m",
+        "px": 720
+      }
+    },
+    {
+      "id": "farmers-carry",
+      "priority": "P1",
+      "page": "longevity",
+      "section": "§1.3 Strength: retirement savings for the body",
+      "action": "New three-up plate above the benchmarks table (2 of 3)",
+      "kind": "trio",
+      "aspect": "3:4",
+      "prompt": "Steel-plate engraving in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on a pure white background, no colour fills, no gradients. Subject: a full-length contemporary woman in her forties with an athletic build, side view, walking upright mid-stride while carrying a heavy dumbbell in each hand at her sides, arms straight, shoulders level, tall posture, calm focused expression, hair tied back, wearing a plain t-shirt, training leggings and simple trainers. A farmer's carry. Modern everyday training clothes, clearly present-day, not period costume. Rendered like a figure plate from a classic atlas. Figure centred with generous white margin all around, only a faint floor shadow. No text, no labels, no numbers, no logos, no border, no signature.",
+      "alt": "Engraving of a woman walking tall with a heavy dumbbell in each hand.",
+      "caption": "Farmer's carry: walk tall with a weight in each hand for one minute.",
+      "files": [
+        {
+          "name": "engraving-farmers-carry-571w.webp",
+          "w": 571,
+          "h": 960,
+          "kb": 48,
+          "sha1_12": "e1ec46155abb",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/bcec91a0-4cb0-4eca-abc0-681e9a3aa90c.webp"
+        },
+        {
+          "name": "engraving-farmers-carry-333w.webp",
+          "w": 333,
+          "h": 560,
+          "kb": 14,
+          "sha1_12": "e6b0f10ab87f",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "582cb3b6-bdb6-4748-adc9-4acf7a5421d1",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203950_582cb3b6-bdb6-4748-adc9-4acf7a5421d1.png"
+      },
+      "fit": {
+        "mode": "h",
+        "px": 960
+      }
+    },
+    {
+      "id": "dead-hang",
+      "priority": "P1",
+      "page": "longevity",
+      "section": "§1.3 Strength: retirement savings for the body",
+      "action": "New three-up plate above the benchmarks table (3 of 3)",
+      "kind": "trio",
+      "aspect": "3:4",
+      "prompt": "Steel-plate engraving in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on a pure white background, no colour fills, no gradients. Subject: a full-length contemporary man in his forties, front three-quarter view, doing a dead hang: hanging still from a horizontal steel pull-up bar with both hands in an overhand grip, arms fully straight, shoulders relaxed, body calm and vertical, legs together with feet a little off the ground, wearing a plain t-shirt, athletic shorts and simple trainers. Only the bar is drawn, its ends fading out to white. Clearly present-day, not period costume. Rendered like a figure plate from a classic atlas. Figure centred with generous white margin. No text, no labels, no numbers, no logos, no border, no signature.",
+      "alt": "Engraving of a man hanging from a pull-up bar with straight arms.",
+      "caption": "Dead hang: hang from a bar with straight arms, timed.",
+      "files": [
+        {
+          "name": "engraving-dead-hang-542w.webp",
+          "w": 542,
+          "h": 960,
+          "kb": 36,
+          "sha1_12": "3cd9eefaccfe",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/91af04d5-34a5-4ae2-b156-15c78a58d2da.webp"
+        },
+        {
+          "name": "engraving-dead-hang-316w.webp",
+          "w": 316,
+          "h": 560,
+          "kb": 10,
+          "sha1_12": "06c80d842c2a",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "bfab3d10-d4f9-45df-b959-871d5046171a",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203951_bfab3d10-d4f9-45df-b959-871d5046171a.png"
+      },
+      "fit": {
+        "mode": "h",
+        "px": 960
+      }
+    },
+    {
+      "id": "finnish-sauna",
+      "priority": "P3",
+      "page": "longevity",
+      "section": "§3 Heat: the sauna protocol",
+      "action": "Optional new plate directly before 'The dose the Finnish studies used' card",
+      "kind": "wide",
+      "aspect": "4:3",
+      "prompt": "Steel-plate engraving vignette in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on pure white, no colour fills. Subject: the interior of a traditional Finnish wood-panelled sauna, with no people: two tiers of slatted wooden benches along tongue-and-groove wooden walls, a wood-burning stove topped with a heap of rounded sauna stones, a wooden bucket with a long-handled wooden ladle on the lower bench, a small wooden-framed wall thermometer with a blank face, and a small window letting in soft daylight. Warm, quiet, unhurried. Small vignette composition that fades softly into white at the edges. No text, no numbers, no labels, no border, no signature.",
+      "alt": "Engraving of the inside of a traditional wooden sauna: tiered benches, a stove heaped with stones, a bucket and ladle.",
+      "caption": "A traditional Finnish sauna. The Finnish studies used saunas like this, at 80–100 °C; infrared cabins typically run cooler, at 45–65 °C.",
+      "files": [
+        {
+          "name": "engraving-finnish-sauna-1040w.webp",
+          "w": 1040,
+          "h": 777,
+          "kb": 207,
+          "sha1_12": "df41beca27f7",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/2a21191d-6ddd-4dce-ad10-7a6c41db8d5d.webp"
+        },
+        {
+          "name": "engraving-finnish-sauna-640w.webp",
+          "w": 640,
+          "h": 478,
+          "kb": 61,
+          "sha1_12": "a418df6cca45",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "c552a80d-b963-4342-8464-9f03407b51c3",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_213650_c552a80d-b963-4342-8464-9f03407b51c3.png"
+      },
+      "fit": {
+        "mode": "w",
+        "px": 1040
+      }
+    },
+    {
+      "id": "bone-spine-hip",
+      "priority": "P2",
+      "page": "menopause",
+      "section": "§3 Why bone and heart are part of the conversation",
+      "action": "New plate after the 'Bone.' paragraph, before the bone-density chart",
+      "kind": "wide",
+      "aspect": "4:3",
+      "prompt": "Antique anatomical steel-plate engraving in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on a pure white background, no colour fills, no gradients. Subject, two bone specimens side by side with clear white space between them, like a classic anatomy-atlas plate. On the left, a single human lumbar vertebra cut vertically down the middle, seen in three-quarter view, showing its dense smooth outer shell and the fine sponge-like lattice of trabecular bone filling the vertebral body. On the right, the upper end of a human thigh bone (the rounded femoral head, the neck and the greater trochanter) cut lengthwise, showing the thin outer cortex and the fine trabecular lattice inside the head and neck, the shaft fading out below. Both specimens the same visual weight, floating on white. No text, no labels, no arrows, no leader lines, no numbers, no border, no signature.",
+      "alt": "Engraving of a lumbar vertebra and the top of a thigh bone, each cut open to show the sponge-like bone inside.",
+      "caption": "The spine and the hip, where bone density is measured, cut open to show the lattice of bone inside.",
+      "files": [
+        {
+          "name": "engraving-bone-spine-hip-1040w.webp",
+          "w": 1040,
+          "h": 734,
+          "kb": 111,
+          "sha1_12": "250dac4cb2ac",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/404947c3-a0cd-447b-97fb-5cd13db72b40.webp"
+        },
+        {
+          "name": "engraving-bone-spine-hip-640w.webp",
+          "w": 640,
+          "h": 452,
+          "kb": 39,
+          "sha1_12": "7de0dc2524f2",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "bdf5d327-6350-4318-a22f-07541ab84701",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203951_bdf5d327-6350-4318-a22f-07541ab84701.png"
+      },
+      "fit": {
+        "mode": "w",
+        "px": 1040
+      }
+    },
+    {
+      "id": "bedside-night",
+      "priority": "P2",
+      "page": "menopause",
+      "section": "§6 Sleep, when nights are broken",
+      "action": "New plate just before the night-sweat comfort list",
+      "kind": "wide",
+      "aspect": "4:3",
+      "prompt": "Steel-plate engraving vignette in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on pure white, no colour fills. Subject, a contemporary bedroom still life with no people: a simple modern wooden bedside table next to the edge of a bed; on the table, a small electric desk fan, a tall glass of water, and a folded towel with a folded spare t-shirt on top. On the bed, a light duvet folded back in layers and a pillow. Behind, a window with a sheer curtain, slightly open. Calm and practical. Clearly present-day, not Victorian. Small vignette composition that fades softly into white at the edges. No text, no labels, no logos, no border, no signature.",
+      "alt": "Engraving of a bedside table with a small fan, a glass of water and a folded towel and t-shirt, next to a bed with the duvet folded back.",
+      "caption": "Within reach of the bed: a fan, cold water, a spare top and a towel.",
+      "files": [
+        {
+          "name": "engraving-bedside-night-1040w.webp",
+          "w": 1040,
+          "h": 776,
+          "kb": 173,
+          "sha1_12": "e5c4d6924aef",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/b09ba52a-1f7a-492d-8341-4a0bfdfe9fae.webp"
+        },
+        {
+          "name": "engraving-bedside-night-640w.webp",
+          "w": 640,
+          "h": 478,
+          "kb": 51,
+          "sha1_12": "fbd1ac359f41",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "ac5243fd-bc59-48a1-afca-fe68eaa5cc63",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203950_ac5243fd-bc59-48a1-afca-fe68eaa5cc63.png"
+      },
+      "fit": {
+        "mode": "w",
+        "px": 1040
+      }
+    },
+    {
+      "id": "goblet-squat",
+      "priority": "P2",
+      "page": "menopause",
+      "section": "§7 Strength, bone and protein",
+      "action": "New figure after the NICE / Osteoporosis Canada paragraph, before 'Your week, as a dose'",
+      "kind": "figure",
+      "aspect": "3:4",
+      "prompt": "Steel-plate engraving in exactly the same style, ink colour and line technique as the reference images: fine parallel hatching and crosshatching, single muted sage-green ink on a pure white background, no colour fills, no gradients. Subject: a full-length contemporary woman in her early fifties, three-quarter side view, doing a goblet squat with good form: holding one kettlebell by its handle close to her chest with both hands, hips back and down to about thighs parallel with the floor, back straight and chest up, heels flat, knees in line with her toes, calm focused expression, short practical hair, wearing a plain t-shirt, training leggings and simple trainers. Clearly present-day, not period costume. Rendered like a figure plate from a classic atlas. Figure centred with generous white margin, only a faint floor shadow. No text, no labels, no numbers, no logos, no border, no signature.",
+      "alt": "Engraving of a woman in her fifties doing a squat while holding a kettlebell at her chest.",
+      "caption": "A goblet squat, one simple strength exercise.",
+      "files": [
+        {
+          "name": "engraving-goblet-squat-547w.webp",
+          "w": 547,
+          "h": 960,
+          "kb": 76,
+          "sha1_12": "cfa2be1a408c",
+          "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/d782b461-1580-4ef7-957e-1d4156676ff2.webp"
+        },
+        {
+          "name": "engraving-goblet-squat-319w.webp",
+          "w": 319,
+          "h": 560,
+          "kb": 20,
+          "sha1_12": "8fe2ccb6d6dd",
+          "url": null
+        }
+      ],
+      "master": {
+        "higgsfield_job_id": "82b9602f-ad4f-43b8-b46b-c354bc051f39",
+        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3CmFrrNWoOzFjjZZ8CweOy0bSBM/hf_20261011_203951_82b9602f-ad4f-43b8-b46b-c354bc051f39.png"
+      },
+      "fit": {
+        "mode": "h",
+        "px": 960
+      }
+    }
+  ]
+}
