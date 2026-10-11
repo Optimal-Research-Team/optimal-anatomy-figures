@@ -28,14 +28,15 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | A1 | Gut cell's gate (style test) | **Built**: hand-drawn organic SVG, both themes, phones checked; waiting on Peter's call on the look | `figures/a1-gut-cell/` |
 | A4 | The beating heart | **Built**: four chambers, valves, chordae, great vessels, ECG; rate buttons and Slow | `figures/a4-heart/` |
 | A5 | The air sac and the red cell | **Built**: alveolus in its capillary net, cells loading by the model, O₂/CO₂ dots, breathing, transit monitor | `figures/a5-alveolus/` |
-| A2, A3, A6–A9 | Rest of the anatomical series | Planned; follow A1/A4/A5's style | **`BACKLOG.md`** |
+| A2 | The hot-flash switch | **Built**: hypothalamus slice, KNDy cells swell and signal, MnPO tips into a flash; pre/post buttons | `figures/a2-hypothalamus/` |
+| A3, A6–A9 | Rest of the anatomical series | Planned; follow A1/A2/A4/A5's style | **`BACKLOG.md`** |
 
 ## Time remaining (estimate, 2026-10-11 evening)
 
 | Work | Estimate |
 |---|---|
 | Design rounds on Figs 1–6 and A1 (+30–50 %), as Peter's feedback comes in | 4–6 h |
-| Anatomical series A2, A3, A6–A9 (`BACKLOG.md`) | 8–12 h, + rounds |
+| Anatomical series A3, A6–A9 (`BACKLOG.md`) | 7–10 h, + rounds |
 | **Total** | **~14–20 h** |
 
 **Where to run it.** The cloud credits are nearly used. Run the rest locally (Claude Code on the Mac uses the Max plan's limits, not cloud credits): set up as above, then pick up from `BACKLOG.md`. A1 (`figures/a1-gut-cell/`) is the pattern for the anatomical pieces: hand-drawn organic SVG through `smooth()` (Catmull-Rom to Bézier), the shared card, CSS tokens per theme, a tiny `model.mjs`, and a particle `live.js`.

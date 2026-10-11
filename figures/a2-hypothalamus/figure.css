@@ -1,0 +1,74 @@
+/* A2 · the hypothalamus: Forest night reads as a fluorescence slide (magenta KNDy cells, green
+   heat-loss centre on dark tissue); Cream reads as a stained section (purple and teal on pink). */
+.iso.optimal {
+  --a2-t0: #2b2334; --a2-t1: #16121c; --a2-edge: #5d4d68;
+  --a2-thal: rgba(255, 255, 255, 0.035); --a2-speck: rgba(175, 165, 205, 0.24); --a2-sulcus: rgba(205, 195, 225, 0.28);
+  --a2-vessel: #6e2735; --a2-vessel-edge: #a8485a; --a2-loops: #c04a5c;
+  --a2-white: #3a3546; --a2-white-edge: #6a6178; --a2-fibre: rgba(220, 215, 235, 0.13);
+  --a2-gland: #3d3045; --a2-ant: #4c3448; --a2-gland-edge: #7b6a86; --a2-bone: #3f3a30; --a2-bone-edge: #7d7462;
+  --a2-kndy: #e055b8; --a2-kndy-nuc: #ffd2f0; --a2-kndy-dark: #6e1a5a; --a2-nkb: #ffa3e4; --a2-axon: rgba(224, 85, 184, 0.55);
+  --a2-kg0: rgba(255, 92, 200, 0.75); --a2-kg1: rgba(255, 92, 200, 0);
+  --a2-mn: #48d29a; --a2-mn-nuc: #d4ffe9; --a2-rec: #c9ffe6; --a2-mg0: rgba(72, 210, 154, 0.55); --a2-mg1: rgba(72, 210, 154, 0);
+  --a2-hot: #ffb057; --a2-hg0: rgba(255, 150, 70, 0.55); --a2-hg1: rgba(255, 150, 70, 0); --a2-out: rgba(72, 210, 154, 0.35);
+  --a2-estro: #ffd166;
+  --a2-loc-bg: rgba(255, 255, 255, 0.04); --a2-loc-brain: #4a4155;
+}
+.iso.optimal[data-theme="light"] {
+  --a2-t0: #f8e4e7; --a2-t1: #edc7ce; --a2-edge: #b07f8a;
+  --a2-thal: rgba(120, 60, 90, 0.05); --a2-speck: rgba(110, 60, 120, 0.26); --a2-sulcus: rgba(120, 70, 90, 0.35);
+  --a2-vessel: #df7f8a; --a2-vessel-edge: #a8485a; --a2-loops: #c0485a;
+  --a2-white: #fcf4ef; --a2-white-edge: #c9a3a8; --a2-fibre: rgba(150, 110, 120, 0.26);
+  --a2-gland: #ebc9d0; --a2-ant: #e4aab8; --a2-gland-edge: #a87584; --a2-bone: #f1e8d8; --a2-bone-edge: #b8a888;
+  --a2-kndy: #8e2f88; --a2-kndy-nuc: #f4cdf0; --a2-kndy-dark: #3a0d38; --a2-nkb: #c2189b; --a2-axon: rgba(142, 47, 136, 0.55);
+  --a2-kg0: rgba(194, 24, 155, 0.42); --a2-kg1: rgba(194, 24, 155, 0);
+  --a2-mn: #138a63; --a2-mn-nuc: #c8f0df; --a2-rec: #0b5c41; --a2-mg0: rgba(19, 138, 99, 0.4); --a2-mg1: rgba(19, 138, 99, 0);
+  --a2-hot: #e0731e; --a2-hg0: rgba(240, 130, 40, 0.45); --a2-hg1: rgba(240, 130, 40, 0); --a2-out: rgba(19, 138, 99, 0.4);
+  --a2-estro: #c98a00;
+  --a2-loc-bg: rgba(0, 0, 0, 0.03); --a2-loc-brain: #dcb6c0;
+}
+.a2-t0 { stop-color: var(--a2-t0); } .a2-t1 { stop-color: var(--a2-t1); }
+.a2-kg0 { stop-color: var(--a2-kg0); } .a2-kg1 { stop-color: var(--a2-kg1); }
+.a2-mg0 { stop-color: var(--a2-mg0); } .a2-mg1 { stop-color: var(--a2-mg1); }
+.a2-hg0 { stop-color: var(--a2-hg0); } .a2-hg1 { stop-color: var(--a2-hg1); }
+.a2-brain { stroke: var(--a2-edge); stroke-width: 1.4; }
+.a2-thal { fill: var(--a2-thal); }
+.a2-adh { fill: var(--a2-thal); stroke: var(--a2-sulcus); stroke-width: 1; }
+.a2-speck { fill: var(--a2-speck); }
+.a2-sulcus { fill: none; stroke: var(--a2-sulcus); stroke-width: 1.4; stroke-linecap: round; }
+.a2-vessel { fill: var(--a2-vessel); stroke: var(--a2-vessel-edge); stroke-width: 0.8; }
+.a2-loops { fill: none; stroke: var(--a2-loops); stroke-width: 2.4; stroke-linecap: round; }
+.a2-white { fill: var(--a2-white); stroke: var(--a2-white-edge); stroke-width: 1.1; }
+.a2-fibre { fill: none; stroke: var(--a2-fibre); stroke-width: 1; }
+.a2-acdots { fill: var(--a2-fibre); }
+.a2-mamm { fill: var(--a2-thal); stroke: var(--a2-sulcus); stroke-width: 1.2; }
+.a2-lamina { fill: none; stroke: var(--a2-white-edge); stroke-width: 1.6; stroke-linecap: round; }
+.a2-stalk, .a2-post { fill: var(--a2-gland); stroke: var(--a2-gland-edge); stroke-width: 1.1; }
+.a2-ant { fill: var(--a2-ant); stroke: var(--a2-gland-edge); stroke-width: 1.1; }
+.a2-sella { fill: var(--a2-bone); stroke: var(--a2-bone-edge); stroke-width: 1.1; }
+.a2-den { fill: var(--a2-kndy); opacity: 0.8; }
+.a2-soma { fill: var(--a2-kndy); stroke: var(--a2-kndy-dark); stroke-width: 0.5; }
+.a2-nuc { fill: var(--a2-kndy-nuc); opacity: 0.85; }
+.a2-nucleolus { fill: var(--a2-kndy-dark); }
+.a2-axon { fill: none; stroke: var(--a2-axon); stroke-width: 1.3; stroke-linecap: round; }
+.a2-bead { fill: var(--a2-kndy); opacity: 0.8; }
+.a2-nkb { fill: var(--a2-nkb); }
+.a2-mden { fill: var(--a2-mn); opacity: 0.8; transition: fill 0.4s; }
+.a2-msoma { fill: var(--a2-mn); stroke: var(--a2-kndy-dark); stroke-width: 0.4; transition: fill 0.4s; }
+.a2-mnuc { fill: var(--a2-mn-nuc); opacity: 0.85; }
+.a2-rec { fill: var(--a2-rec); }
+.a2-hot .a2-msoma, .a2-hot .a2-mden { fill: var(--a2-hot); }
+.a2-out { fill: none; stroke: var(--a2-out); stroke-width: 1.3; stroke-dasharray: 1 0; }
+.a2-outpulse { fill: var(--a2-hot); }
+.a2-estro { fill: var(--a2-estro); }
+.a2-heat, .a2-mglow, .a2-kglow { pointer-events: none; }
+.a2-loc-bg { fill: var(--a2-loc-bg); stroke: var(--opt-rule); stroke-width: 1; }
+.a2-loc-brain { fill: var(--a2-loc-brain); }
+.a2-loc-mark { fill: none; stroke: var(--a2-nkb); stroke-width: 1.6; }
+.iso.optimal .iso-swatch[data-mark="kndy"] path { stroke: var(--a2-kndy); stroke-width: 4; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="mnpo"] path { stroke: var(--a2-mn); stroke-width: 4; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="estro"] path { stroke: var(--a2-estro); stroke-width: 4; stroke-linecap: round; }
+.a2-scene { margin: 10px 4px 0; font: 500 14px/1.45 var(--opt-ui); color: var(--anatomy-text); min-height: 4.4em; }
+.a2-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a2-par { display: block; margin-top: 6px; }
+.a2-par:first-child { margin-top: 0; }
+.a2-par small { font-size: 12.5px; color: var(--anatomy-muted); }

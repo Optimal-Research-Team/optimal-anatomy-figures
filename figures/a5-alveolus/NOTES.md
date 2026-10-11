@@ -45,6 +45,7 @@
 
 - No console errors.
 - No sideways scroll at 390, 360 or 320, in both themes.
+- `lines.mjs`: 0 (no kit lines; all hand-drawn).
 - Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png`, `shots/desktop-max-dark.png` (all out), `shots/reduced-390-*.png`, `shots/embed.png`.
 
 ## Embed

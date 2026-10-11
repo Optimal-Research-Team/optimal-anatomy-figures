@@ -1222,6 +1222,19 @@ Sources: [A4-1] BYU-Idaho, *Cardiac Measurements and Pressure Volume Loops*, htt
 
 ---
 
+## A2. The hypothalamus (anatomical series)
+
+Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Rance 2013; Mittelman-Smith 2012; Dacks 2011; Mittelman-Smith 2015; Krajewski-Hall 2019; Jayasena 2015). Nothing new is sourced.
+
+### How A2 uses these numbers
+
+- **KNDy soma area:** 194 % of premenopausal after menopause [Rance & Young 1991] (direction HIGH, % LOW), drawn as diameter × √1.94.
+- **More NKB signalling after menopause** (gene expression up, hypertrophy) [Rance & Young 1991][Rometo 2007] is drawn as twice the burst rate and twice the packets. ILLUSTRATIVE: no human firing rates exist.
+- **NKB → NK3R in the MnPO drives heat loss** [Rance 2013][Mittelman-Smith 2012][Dacks 2011]; NKB infusion causes flushes in women [Jayasena 2015]. These are drawn as the drive that tips the heat-loss centre.
+- **Hot-flash rate readout** comes from Fig 1's `rateOf(e)`: ≈ 1.1 an hour symptomatic [Meldrum 1979; Freedman 1998; Low 2008].
+
+---
+
 ## A5. The lung: air sac and capillary (anatomical series)
 
 | Quantity | Value | Source | Confidence |
