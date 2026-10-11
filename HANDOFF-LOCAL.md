@@ -1,6 +1,6 @@
 # Continuing locally (or in a new session)
 
-Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 3.
+Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 4.
 
 ## Set up on a Mac (about 5 minutes)
 
@@ -22,19 +22,18 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 1 | Menopause thermostat | **Round 1 done**: audit passed, line ends 0 both themes, phone 390/360/320 checked, NOTES written | `figures/01-menopause-thermostat/` |
 | 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
 | 3 | IV iron | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/03-iv-iron/` |
-| 4 | Creator 600 | Research drafted, not built | `reference/research/truth-4-draft.md` |
+| 4 | Creator 600 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; built `shared/mannequin.mjs` + `mannequin-view.js` for Fig 5 | `figures/04-creator-600/` |
 | 5 | VO2max | Research drafted, not built; FRIEND cycle percentile table incomplete | `reference/research/truth-5-draft.md` |
 | A1–A9 | Anatomical series (beating heart, gut cell, hypothalamus, …) | Planned after Fig 5; style test first | **`BACKLOG.md`** |
 
-## Time remaining (estimate, 2026-10-11 ~19:50 UTC)
+## Time remaining (estimate, 2026-10-11 ~21:40 UTC)
 
 | Work | Estimate |
 |---|---|
-| Fig 4 Creator 600 (Hero, builds `shared/mannequin.mjs`) | 3.5–4.5 h |
-| Fig 5 VO2max (Hero + WebGL, reuses the mannequin) | 3.5–4.5 h |
+| Fig 5 VO2max (Hero + WebGL, reuses the mannequin) | 3–4 h |
 | Design rounds on Figs 1–5 (+30–50 %) | 4–6 h |
 | Anatomical series A1–A9 incl. style test (`BACKLOG.md`) | 15–19 h, + rounds |
-| **Total** | **~27–35 h** |
+| **Total** | **~22–29 h** |
 
 ## How a figure is built (the pattern Fig 1 set)
 
@@ -43,6 +42,7 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 - `live.js`: defines `mount(figure)`; motion, tour, input and readout.
 - `figure.json` feeds the gallery; `NOTES.md` records mapping, parts, numbers, decisions and embed snippet.
 - `shared/figkit.mjs` has the drawing helpers (box, cyl, turned, prism, ball, stud, cable, bench) that draw and record in one call.
+- The mannequin (Fig 4, reuse in Fig 5): `shared/mannequin.mjs` places joints (`skeletonOf`) and lists parts (`partsOf`); `shared/mannequin-view.js` draws them in the page each frame (limbs are cheap cone frusta, the trunk is drawn once and translated, ≈4 ms a frame); `shared/mannequin.css` has the wood palettes. Fig 4's `build.mjs` shows how to inline all three and the lathe.
 - `shared/page.mjs` writes the standalone page and the `<optimal-fig-…>` custom element; `shared/optimal-theme.css` has the brand tokens and the phone-first card.
 
 ## Verify (definition of done, HANDOFF §2)

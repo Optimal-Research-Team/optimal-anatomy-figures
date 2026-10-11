@@ -35,8 +35,8 @@ export function figkit(P) {
   function put(name, ref, svg, shapes = [], { bias = 0, piece = "stand", move, attrs = "" } = {}) {
     return R.put({ name, at: ref, bias, svg, shapes, piece, move, attrs });
   }
-  function box(name, plan, z0, h, style = {}, { steps = 3, bevel = 0, inner = "", extra = "", bias = 0, piece, move, ground = false, attrs } = {}) {
-    const shape = record(A.slab(plan, z0, h, { name, ground }, steps));
+  function box(name, plan, z0, h, style = {}, { steps = 3, bevel = 0, inner = "", extra = "", bias = 0, piece, move, ground = false, attrs, meta = {} } = {}) {
+    const shape = record(A.slab(plan, z0, h, { name, ground, ...meta }, steps));
     put(name, [plan.x + plan.w / 2, plan.y + plan.d / 2, z0 + h / 2], S(k.slabOf(plan, z0, h, P, steps, bevel), { tone: "mid", ...style, inner }) + extra, [shape], { bias, piece, move, attrs });
     return shape;
   }
@@ -54,8 +54,8 @@ export function figkit(P) {
     return shape;
   }
   const pin = (name, F, s0, s1, r, style = {}, opts = {}) => turned(name, F, [[s0, r], [s1, r]], style, opts);
-  function prism(name, F, poly, s0, s1, style = {}, { extra = "", inner = "", bias = 0, piece, move, attrs, before = "", ref } = {}) {
-    const shape = record(A.prism(F, poly, s0, s1, { name }));
+  function prism(name, F, poly, s0, s1, style = {}, { extra = "", inner = "", bias = 0, piece, move, attrs, before = "", ref, meta = {} } = {}) {
+    const shape = record(A.prism(F, poly, s0, s1, { name, ...meta }));
     const cx = poly.reduce((a, p) => a + p[0], 0) / poly.length;
     const cy = poly.reduce((a, p) => a + p[1], 0) / poly.length;
     const centre = ref ?? G.add3(G.add3(G.add3(F.o, G.mul3(F.a, (s0 + s1) / 2)), G.mul3(F.u, cx)), G.mul3(F.v, cy));

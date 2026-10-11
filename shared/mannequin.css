@@ -1,0 +1,33 @@
+/* The mannequin (shared/mannequin.mjs): turned wood segments, steel ball joints, tracking dots. */
+.iso.optimal {
+  /* Forest night: dark walnut, so the figure sits in the room rather than glowing */
+  --mq-face: #6b5a44;
+  --mq-shade-0: #3f3326;
+  --mq-shade-1: #4b3d2d;
+  --mq-shade-2: #574735;
+  --mq-shade-3: #63523e;
+  --mq-top: #7a684f;
+  --mq-edge: #e9e6dc;
+}
+.iso.optimal[data-theme="light"] {
+  /* Cream: pale beech */
+  --mq-face: #f3e6cf;
+  --mq-shade-0: #cdb592;
+  --mq-shade-1: #d9c4a3;
+  --mq-shade-2: #e4d2b5;
+  --mq-shade-3: #ecdec5;
+  --mq-top: #f8eedc;
+  --mq-edge: #3e3d39;
+}
+.mq-wood {
+  --anatomy-face: var(--mq-face);
+  --anatomy-paper: var(--mq-face);
+  --anatomy-shade-0: var(--mq-shade-0);
+  --anatomy-shade-1: var(--mq-shade-1);
+  --anatomy-shade-2: var(--mq-shade-2);
+  --anatomy-shade-3: var(--mq-shade-3);
+  --anatomy-top: var(--mq-top);
+}
+.mq-dot { fill: var(--anatomy-lit); stroke: var(--anatomy-card); stroke-width: 0.5; }
+.mq-glow { fill: var(--opt-heat); stroke: none; }
+.mq-glow-ring { fill: none; stroke: var(--opt-heat-ink); stroke-width: 0.6; }
