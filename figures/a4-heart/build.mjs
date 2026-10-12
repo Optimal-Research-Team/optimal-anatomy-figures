@@ -47,25 +47,49 @@ const geo = {
   PULout: [[[284, 142], [362, 120], [398, 127]], [[284, 142], [196, 116], [156, 120]]],
   AORout: [[[338, 120], [356, 72], [410, 52], [452, 70], [470, 112], [478, 160]], [[338, 120], [356, 72], [376, 58], [373, 18]], [[338, 120], [356, 72], [408, 50], [411, 14]]],
 };
-// ---------------------------------------------------------------- the camera: the cut face in the A-series view
+// ---------------------------------------------------------------- the camera: a three-quarter view, so the heart reads as a solid
 // World: x = section x, y = toward the viewer (the cut is the plane y = DEP), z = up (−section y).
-const DEP = 200;
+// A4 turns further than the series camera (azimuth 40° instead of 62°): the cut face is seen at an angle and
+// the heart's round back half shows as a large solid volume (Peter: "the heart needs to be MORE three dimensional").
+const AZ = 40;
+const EL = 26;
+const DEP = 260;
 const S3 = (sx, y, sy) => [sx, y, -sy];
 const RAD = Math.PI / 180;
 const cen = geo.OUT.reduce((a, p) => [a[0] + p[0] / geo.OUT.length, a[1] + p[1] / geo.OUT.length], [0, 0]);
-// what the cut face reaches: the heart's outline and every vessel (centrelines ± half their width)
-const VESSEL_PTS = [[158, -12], [166, 60], [84, 384], [108, 330], [470, 110], [494, 470], [356, 72], [410, 52], [452, 70], [376, 60], [372, 14], [412, 8], [456, 18], [284, 140], [404, 128], [150, 120], [566, 168], [566, 214]];
-const BOUNDS3 = [...geo.OUT, ...VESSEL_PTS.flatMap(([x, y]) => [[x - 20, y - 20], [x + 20, y + 20]])].map(([x, y]) => S3(x, DEP, y));
-// the far half's rim can reach beyond the outline: bound it with the outline rolled back 30° and 60°
+// the great vessels as whole tubes in 3-D: [section x, section y, depth behind the cut]
+const V3 = [
+  { name: "desc", cls: "art", r: [17, 16], caps: [false, true], behind: true, pts: [[470, 112, 128], [480, 160, 146], [488, 260, 156], [494, 380, 158], [496, 470, 158]] },
+  { name: "rpa", cls: "ven", r: [12, 11], caps: [false, true], pts: [[296, 128, 24], [262, 118, 52], [214, 114, 72], [156, 120, 86]] },
+  { name: "rspv", cls: "art", r: [9, 9], caps: [true, false], pts: [[568, 168, 74], [520, 170, 68], [466, 178, 60]] },
+  { name: "ripv", cls: "art", r: [9, 9], caps: [true, false], pts: [[568, 214, 74], [520, 214, 68], [464, 212, 60]] },
+  { name: "ivc", cls: "ven", r: [20, 19], caps: [true, false], pts: [[84, 388, 48], [106, 334, 46], [140, 280, 44]] },
+  { name: "aorta", cls: "art", r: [20, 18], caps: [false, false], pts: [[346, 252, 40], [342, 196, 40], [338, 132, 42], [348, 84, 50], [392, 56, 74], [438, 62, 102], [466, 98, 124], [470, 114, 130]] },
+  { name: "bca", cls: "art", r: [8, 7], caps: [false, true], pts: [[368, 70, 56], [366, 38, 56], [364, 12, 56]] },
+  { name: "lcca", cls: "art", r: [7, 6.5], caps: [false, true], pts: [[404, 60, 80], [406, 32, 80], [408, 8, 80]] },
+  { name: "lsca", cls: "art", r: [7, 6.5], caps: [false, true], pts: [[436, 68, 100], [444, 42, 100], [452, 18, 100]] },
+  { name: "svc", cls: "ven", r: [19, 21], caps: [true, false], pts: [[160, -12, 34], [166, 60, 36], [174, 120, 40], [180, 176, 42]] },
+  { name: "pt", cls: "ven", r: [18, 16], caps: [false, false], pts: [[273, 214, 18], [276, 186, 16], [282, 150, 16], [296, 128, 24]] },
+  { name: "lpa", cls: "ven", r: [12, 11], caps: [false, true], pts: [[296, 128, 24], [330, 116, 30], [370, 114, 52], [404, 126, 72]] },
+];
+const FLOOR_Y = 556;
+const BOUNDS3 = [...geo.OUT.map(([x, y]) => S3(x, DEP, y))];
+for (const v of V3) for (const [x, y, d] of v.pts) for (const o of [-1, 1]) BOUNDS3.push(S3(x + o * v.r[0], DEP - d, y + o * v.r[0]));
+// the back half: the outline rolled back over a quarter-round (as live.js draws it)
+const OUT_SIGN = (() => {
+  let a = 0;
+  geo.OUT.forEach((p, i, arr) => (a += p[0] * arr[(i + 1) % arr.length][1] - arr[(i + 1) % arr.length][0] * p[1]));
+  return a > 0 ? 1 : -1; // outward normals for this winding (section y points down), as live.js finds them
+})();
 geo.OUT.forEach((p, i, a) => {
   const pr = a[(i - 1 + a.length) % a.length];
   const nx = a[(i + 1) % a.length];
   const l = Math.hypot(nx[0] - pr[0], nx[1] - pr[1]) || 1;
-  const n = [(nx[1] - pr[1]) / l, -(nx[0] - pr[0]) / l];
-  const rho = 0.9 * Math.hypot(p[0] - cen[0], p[1] - cen[1]);
-  for (const ph of [30, 60]) BOUNDS3.push(S3(p[0] - n[0] * (1 - Math.cos(ph * RAD)) * rho, DEP - Math.sin(ph * RAD) * rho * 0.95, p[1] - n[1] * (1 - Math.cos(ph * RAD)) * rho));
+  const n = [(OUT_SIGN * (nx[1] - pr[1])) / l, (-OUT_SIGN * (nx[0] - pr[0])) / l];
+  const rho = 0.92 * Math.hypot(p[0] - cen[0], p[1] - cen[1]);
+  for (const ph of [20, 40, 60, 90]) BOUNDS3.push(S3(p[0] - n[0] * (1 - Math.cos(ph * RAD)) * rho, DEP - Math.sin(ph * RAD) * rho * 0.85, p[1] - n[1] * (1 - Math.cos(ph * RAD)) * rho));
 });
-const PB = k.fitProjection(BOUNDS3, W, 600, { pad: 10, azimuth: 62, elevation: 24 });
+const PB = k.fitProjection(BOUNDS3, W, 690, { pad: 6, azimuth: AZ, elevation: EL });
 const HEART_BOTTOM = Math.max(...BOUNDS3.map((p) => k.iso(p, PB)[1]));
 const FB = figkit(PB);
 const FRONT_M = FB.planeMatrix(S3(0, DEP, 0), [1, 0, 0], [0, 0, -1]);
@@ -76,7 +100,7 @@ const b1 = k.iso(S3(0, DEP - 1, 0), PB).map((v, i) => v - o2[i]);
 const det = ex[0] * ey[1] - ey[0] * ex[1];
 const WD1 = [(b1[0] * ey[1] - ey[0] * b1[1]) / det, (ex[0] * b1[1] - b1[0] * ex[1]) / det].map((v) => +v.toFixed(4));
 // the monitor: ECG, the left ventricle's volume, and when the valves are open (all from the beat model)
-const MT = Math.ceil(HEART_BOTTOM + 16);
+const MT = Math.ceil(HEART_BOTTOM + 14);
 const MON = {
   top: MT, x0: 168, w: 392, span: 2.4,
   ecg: { y: MT + 44, h: 28 },
@@ -97,17 +121,18 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
   <radialGradient id="a4-muscle" cx="38%" cy="34%" r="72%"><stop offset="0" class="a4-m0"/><stop offset="0.65" class="a4-m1"/><stop offset="1" class="a4-m2"/></radialGradient>
   <radialGradient id="a4-glow-g" cx="50%" cy="50%" r="50%"><stop offset="0" class="a4-g0"/><stop offset="1" class="a4-g1"/></radialGradient>
 </defs>
-<g transform="${FRONT_M}"><g data-part="behind"></g><g data-v="desc"></g></g>
+<g transform="${FRONT_M}"><path class="a4-floor" data-part="floor"/><g data-part="behind"></g></g>
 <g transform="${FRONT_M}"><g class="a4-far" data-part="far"></g></g>
+<g transform="${FRONT_M}"><g data-part="vessels"></g></g>
 <g class="a4-front" transform="${FRONT_M}">
 <defs>
   <mask id="a4-cutmask" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1000" height="1000"><rect x="-200" y="-200" width="1000" height="1000" fill="#fff"/><path data-part="holes" fill="#000"/></mask>
   <clipPath id="a4-muscleclip"><path data-part="outerClip"/></clipPath>
   <clipPath id="a4-clipRA"><path data-part="clipRA"/></clipPath><clipPath id="a4-clipLA"><path data-part="clipLA"/></clipPath>
   <clipPath id="a4-clipRV"><path data-part="clipRV"/></clipPath><clipPath id="a4-clipLV"><path data-part="clipLV"/></clipPath>
+  <clipPath id="a4-clipAll"><path data-part="clipAll"/></clipPath>
   <radialGradient id="a4-cutg" gradientUnits="userSpaceOnUse" cx="300" cy="300" r="260"><stop offset="0" class="a4-c0"/><stop offset="1" class="a4-c1"/></radialGradient>
 </defs>
-<g data-v="rpa"></g><g data-v="pv"></g><g data-v="ivc"></g><g data-v="svc"></g>
 <g class="a4-cav" data-part="cav"></g>
 <g mask="url(#a4-cutmask)">
   <path class="a4-cut" data-part="outer" fill="url(#a4-cutg)"/>
@@ -115,9 +140,7 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
 </g>
 <path class="a4-open-rim" data-part="rims"/>
 <path class="a4-annulus" data-part="annuli"/>
-<path class="a4-valve" data-part="valves"/>
-<g data-v="branches"></g><g data-v="aorta"></g><g data-v="pt"></g>
-<path class="a4-cell a4-cell-ven" data-part="vcellsR"/><path class="a4-cell a4-cell-art" data-part="vcellsL"/>
+<g clip-path="url(#a4-clipAll)"><path class="a4-valve" data-part="valves"/></g>
 </g>
 <g class="a4-mon">
 <rect class="a4-ecg-bg" x="24" y="${MON.top}" width="552" height="170" rx="10"/>
@@ -134,7 +157,7 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
 </g>
 </svg>`;
 
-const DATA = { geo, mon: MON, lines: LINES, far: { w: WD1, A: 62, E: 24, dep: DEP } };
+const DATA = { geo, v3: V3, floorY: FLOOR_Y, mon: MON, lines: LINES, far: { w: WD1, A: AZ, E: EL, dep: DEP } };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");

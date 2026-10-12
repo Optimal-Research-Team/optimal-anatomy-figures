@@ -128,3 +128,28 @@ The section is still the cut face (series camera, azimuth 62°, elevation 24°),
 - Reduced motion draws one still mid-ejection, with the traces filled in.
 - Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png`, `shots/desktop-max-{dark,light}.png` and `shots/reduced-390-*.png`.
 - One beat, slowed, frame by frame: `review/a4-beat-sheet.png`.
+
+## Round 5 (2026-10-12): more three-dimensional
+
+Peter on round 4: "the heart needs to be MORE three dimensional please". The beat model, timing, numbers and caption facts are unchanged. What changed:
+- **Camera:** azimuth 40°, elevation 26°, where the series uses 62° / 24°. This deliberately breaks from the series: the heart turns further toward the viewer, so its round right side and the vessels' depth show. The cut face is still the same section.
+- **Great vessels are whole 3-D tubes** (`tube3` in `live.js`), not half-pipes on the cut. Each is swept along a 3-D centre line with parallel-transport frames (16 sides), shaded by facing with a specular highlight, and capped where it's cut with a wall ring and a dark lumen.
+  - The aortic arch carries its three branches (brachiocephalic, left common carotid, left subclavian) and becomes the descending aorta, which runs behind the heart.
+  - The pulmonary trunk splits into left and right pulmonary arteries.
+  - The SVC and IVC run into the right atrium.
+  - Two pulmonary veins come out of the left atrium.
+- **Back half:**
+  - smoother (96 points round, 14 bands) with a specular sheen, so it reads as a shining round muscle rather than a band;
+  - a coronary artery and its vein, with branches, running along the visible back wall;
+  - a soft floor shadow under the heart ties it to the ground.
+  - The flat epicardial-fat patch from round 4 is gone, because it read as a sticker.
+- **Depth inside:** blood cells are clipped to their own chamber's opening, and the leaflets, chordae and papillary muscles to the openings, so nothing deep in a cavity draws over the cut muscle.
+- **Fix:** the plate bounds now take each outline's winding into account (`OUT_SIGN`), so the outward normals are right and the gap under the heart is gone. The monitor sits just under the heart.
+- **Performance:** 60 fps in headless Chrome at 390 px.
+
+### Verification (round 5)
+
+- `node scripts/verify.mjs a4-heart`: passed. Phones 390/360/320 fit in both themes, reduced motion is still, `lines.mjs` reports 0, and the console is clean.
+- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/desktop-max-{dark,light}.png` (All out).
+- One beat, slowed: `review/a4-heart-beat.gif`.
+

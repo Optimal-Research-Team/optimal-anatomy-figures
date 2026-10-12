@@ -75,10 +75,11 @@
 .a4-leaf-edge { fill: none; stroke: var(--a4-valve-edge); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
 .a4-cell-deep { opacity: 0.5; }
 .a4-epi-fat { opacity: 0.88; }
-.a4-cor { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
-.a4-cor-edge { fill: none; stroke: rgba(0, 0, 0, 0.22); stroke-width: 5.2; stroke-linecap: round; stroke-linejoin: round; }
-.a4-cor-a { stroke-width: 2.6; }
-.a4-cor-edge.a4-cor-edge-a { stroke-width: 4.4; }
+.a4-cor { fill: none; stroke-width: 4.4; stroke-linecap: round; stroke-linejoin: round; }
+.a4-cor-edge { fill: none; stroke: rgba(0, 0, 0, 0.22); stroke-width: 6.6; stroke-linecap: round; stroke-linejoin: round; }
+.a4-cor-a { stroke-width: 3.6; }
+.a4-cor-twig { stroke-width: 1.8; }
+.a4-cor-edge.a4-cor-edge-a { stroke-width: 5.4; }
 .a4-lumen-lit { stroke: none; }
 .a4-lumen-lit-ven, .a4-lumen-lit-art { fill: var(--a4-lumen-lit); }
 .a4-mon-label { fill: var(--a4-ecg); font: 600 17px/1 var(--opt-ui); opacity: 0.85; }
@@ -88,3 +89,6 @@
 .a4-bar-out { fill: var(--a4-bar-out); }
 .a4-vol { fill: none; stroke: var(--a4-vol); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .a4-vol-dot { fill: var(--a4-vol); }
+.a4-floor { fill: var(--a4-floor); filter: blur(10px); }
+.iso.optimal { --a4-floor: rgba(0, 0, 0, 0.45); }
+.iso.optimal[data-theme="light"] { --a4-floor: rgba(90, 40, 30, 0.16); }

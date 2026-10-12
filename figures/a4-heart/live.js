@@ -70,19 +70,6 @@ function mount(fig) {
     const closed = `${ln([...L, ...[...R].reverse()])}Z`;
     return sides ? { d: closed, edges: ln(L) + ln(R), L, R } : closed;
   }
-  /** A vessel, cut open lengthwise like the heart: a wall band each side, the blood down the middle with the
-   *  lit far wall of the half-pipe showing as a soft band. Its back half and cut ends are drawn behind the cut. */
-  const tubes = [];
-  function vessel(name, list, cls) {
-    let h = "";
-    for (const [pts, w0, w1, capA, capB] of list) {
-      tubes.push({ name, pts, w0, w1, cls, caps: [capA, capB] });
-      const t = tube(pts, w0, w1, true);
-      const lit = tube(pts, w0 * 0.28, w1 * 0.28, true);
-      h += `<path class="a4-${cls} a4-vessel a4-vessel-fill" d="${t.d}"/><path class="a4-lumen a4-lumen-${cls} a4-lumen-cut" d="${tube(pts, w0 * 0.7, w1 * 0.7)}"/><path class="a4-lumen-lit a4-lumen-lit-${cls}" d="${lit.d}" transform="translate(${f1(DATA.far.w[0] * w0 * 0.18)} ${f1(DATA.far.w[1] * w0 * 0.18)})"/><path class="a4-vessel-edge" d="${t.edges}"/>`;
-    }
-    q(`[data-v="${name}"]`).innerHTML = h;
-  }
   const centroid = (pts) => pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
   const C = { RA: centroid(G.RA), LA: centroid(G.LA), RV: centroid(G.RV), LV: centroid(G.LV), V: [320, 392] };
   const FIB = { lv: G.LV.filter((p) => p[1] > G.AVY + 16), rv: G.RV.slice(0, 6) };
@@ -131,6 +118,13 @@ function mount(fig) {
     const l = dot3(n, LIGHT);
     return 0.16 + 0.95 * Math.max(0, two ? Math.abs(l) : l);
   };
+  // wet surfaces (the heart's outer wall, the vessels) also catch a specular highlight
+  const HALF = norm3([LIGHT[0] + VIEW[0], LIGHT[1] + VIEW[1], LIGHT[2] + VIEW[2]]);
+  const shine = (n, tones, k = 0.5, pw = 26) => {
+    const base = mixc(tones[0], tones[1], Math.round(clamp(lit(n), 0, 1) * 24) / 24);
+    const sp = Math.round(k * Math.pow(Math.max(0, dot3(n, HALF)), pw) * 10) / 10;
+    return rgb(mixc(base, WHITE, sp));
+  };
   const quad = (pts) => `M${pts.map((v) => `${f1(v[0])} ${f1(v[1])}`).join("L")}Z`;
   const pathOf = (pts) => `M${pts.map((v) => `${f1(v[0])} ${f1(v[1])}`).join("L")}`;
   const cssc = (name, fb) => RB.rgbOf(fig, name, fb);
@@ -172,7 +166,7 @@ function mount(fig) {
     });
   }
   function backHalf(outline) {
-    const pts = closedRing(outline, 72);
+    const pts = closedRing(outline, 96);
     const n = pts.length;
     let area = 0;
     for (let i = 0; i < n; i++) area += pts[i][0] * pts[(i + 1) % n][1] - pts[(i + 1) % n][0] * pts[i][1];
@@ -192,7 +186,7 @@ function mount(fig) {
     };
     const normal = (i, ph) => norm3([Math.cos(ph) * nrm[i][0], -Math.sin(ph), -Math.cos(ph) * nrm[i][1]]);
     const facets = [];
-    const NPH = 9;
+    const NPH = 14;
     for (let i = 0; i < n; i++) {
       const i1 = (i + 1) % n;
       for (let j = 0; j < NPH; j++) {
@@ -201,7 +195,7 @@ function mount(fig) {
         const nn = normal(i, (p0 + p1) / 2);
         if (dot3(nn, VIEW) <= 0.01) continue;
         const a = at(i, p0), b = at(i1, p0), c = at(i1, p1), d = at(i, p1);
-        facets.push({ key: key3((a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2), d: quad([P3(...a), P3(...b), P3(...c), P3(...d)]), fill: tone(T.epi, lit(nn)) });
+        facets.push({ key: key3((a[0] + c[0]) / 2, (a[1] + c[1]) / 2, (a[2] + c[2]) / 2), d: quad([P3(...a), P3(...b), P3(...c), P3(...d)]), fill: shine(nn, T.epi, 0.42) });
       }
     }
     // surface vessels on the left side (viewer's right): the circumflex in the fat of the AV groove,
@@ -224,11 +218,24 @@ function mount(fig) {
       if (!groove(pts[i], nrm[i])) continue;
       const i1 = (i + 1) % n;
       if (!groove(pts[i1], nrm[i1]) || !visible(i, 0.6)) continue;
-      fat += quad([P3(...at(i, 0.18)), P3(...at(i1, 0.18)), P3(...at(i1, 1.0)), P3(...at(i, 1.0))]);
+      fat += quad([P3(...at(i, 0.85)), P3(...at(i1, 0.85)), P3(...at(i1, 1.5)), P3(...at(i, 1.5))]);
     }
-    const vein = runAlong(0.78, (p, nn) => right(p, nn) && p[1] > G.AVY - 10);
-    const artery = runAlong(0.52, (p, nn) => right(p, nn) && p[1] > G.AVY - 18);
-    const surf = `<path class="a4-epi-fat" d="${fat}" fill="${FAT}"/><path class="a4-cor-edge" d="${vein}"/><path class="a4-cor" d="${vein}" stroke="${COR_VEN}"/><path class="a4-cor-edge a4-cor-edge-a" d="${artery}"/><path class="a4-cor a4-cor-a" d="${artery}" stroke="${COR_ART}"/>`;
+    // (at this camera the back wall faces the viewer up to about 0.85 rad round from the cut)
+    const vein = runAlong(0.62, (p, nn) => right(p, nn) && p[1] > G.AVY - 10);
+    const artery = runAlong(0.4, (p, nn) => right(p, nn) && p[1] > G.AVY - 18);
+    // small branches off the marginal artery, running round the back wall
+    let twigs = "";
+    for (let i = 0; i < n; i += 8) {
+      if (!(right(pts[i], nrm[i]) && pts[i][1] > G.AVY + 20) || !visible(i, 0.4)) continue;
+      const tw = [];
+      for (let ph = 0.4; ph <= 0.8; ph += 0.05) {
+        const ii = Math.min(n - 1, i + Math.round((ph - 0.4) * 14));
+        if (visible(ii, ph)) tw.push(P3(...at(ii, ph)));
+      }
+      if (tw.length > 1) twigs += pathOf(tw);
+    }
+    void fat;
+    const surf = `<path class="a4-cor-edge" d="${vein}"/><path class="a4-cor" d="${vein}" stroke="${COR_VEN}"/><path class="a4-cor-edge a4-cor-edge-a" d="${artery}${twigs}"/><path class="a4-cor a4-cor-a" d="${artery}" stroke="${COR_ART}"/><path class="a4-cor a4-cor-twig" d="${twigs}" stroke="${COR_ART}"/>`;
     return { facets, surf };
   }
 
@@ -544,7 +551,6 @@ function mount(fig) {
     const contr = Math.min(1, Math.max(0, (b.edv - b.V) / (b.edv - b.esv)));
     def = { d: 15 * contr, sV, sA: b.A, sO: 1 - 0.22 * (1 - sV) };
     const sAt = 0.78 + 0.22 * b.A;
-    tubes.length = 0;
     const outline = outer();
     const outerD = smooth(outline);
     set('[data-part="outer"]', outerD);
@@ -558,37 +564,9 @@ function mount(fig) {
       LV: chamber(shapes.LV, 0.82 * (0.85 + 0.15 * sV), T.cavL, RIDGE.LV),
     };
     for (const k of ["RA", "LA", "RV", "LV"]) set(`[data-part="clip${k}"]`, cham[k].outline);
-    // vessels: tops fixed, roots ride the valve plane
-    vessel("svc", [[[[158, -12], [166, 60], [176, 120], shift([180, 176])], 38, 46, false, false]], "ven");
-    vessel("ivc", [[[[84, 384], [108, 330], shift([142, 276])], 40, 38, true, false]], "ven");
-    vessel("desc", [[[[470, 110], [480, 170], [486, 260], [492, 380], [494, 470]], 34, 32, false, true]], "art");
-    vessel("aorta", [[[shift(G.AORc), shift([342, 196]), [338, 120], [356, 72], [410, 52], [452, 70], [470, 112]], 40, 36, false, false]], "art");
-    vessel("branches", [[[[376, 60], [372, 14]], 16, 14, false, true], [[[408, 52], [412, 8]], 16, 14, false, true], [[[440, 62], [456, 18]], 16, 14, false, true]], "art");
-    vessel("pt", [[[shift(G.PULc), shift([276, 186]), [284, 140], [318, 126], [362, 120], [404, 128]], 36, 26, false, true]], "ven");
-    vessel("rpa", [[[[284, 142], [244, 124], [196, 116], [150, 120]], 26, 22, false, true]], "ven");
-    vessel("pv", [[[[566, 168], [520, 168], shift([466, 176])], 18, 18, true, false], [[[566, 214], [520, 214], shift([464, 212])], 18, 18, true, false]], "art");
     // the back half: round outer wall with its surface vessels, and the vessels' back halves
     const back = backHalf(outline);
-    const LUMEN = { ven: rgb(VEN), art: rgb(ART) };
-    const WALL = rgb(cssc("--a4-vwall", "#f3d9cf"));
-    const backOf = (t) => {
-      const c = RB.byLength(curve(t.pts), 14);
-      const Ae = [];
-      const Be = [];
-      c.forEach((p, i) => {
-        const a = c[Math.max(0, i - 1)];
-        const bb = c[Math.min(c.length - 1, i + 1)];
-        const l = Math.hypot(bb[0] - a[0], bb[1] - a[1]) || 1;
-        const nn = [-(bb[1] - a[1]) / l, (bb[0] - a[0]) / l];
-        const w = (t.w0 + (t.w1 - t.w0) * (i / (c.length - 1))) / 2;
-        Ae.push([p[0] + nn[0] * w, p[1] + nn[1] * w]);
-        Be.push([p[0] - nn[0] * w, p[1] - nn[1] * w]);
-      });
-      return RB.chords(Ae, Be, { round: 1, nphi: 10, tones: T[t.cls], caps: t.caps, capFill: WALL, lumenFill: LUMEN[t.cls] });
-    };
-    // the descending aorta runs behind the heart: its back half (and its cut face) go under the heart's back half
-    q('[data-part="behind"]').innerHTML = RB.paintObjects(tubes.filter((t) => t.name === "desc").map(backOf));
-    q('[data-part="far"]').innerHTML = RB.paintObjects([back.facets, ...tubes.filter((t) => t.name !== "desc").map(backOf)]) + back.surf;
+    q('[data-part="far"]').innerHTML = RB.paintObjects([back.facets]) + back.surf;
     // inside the cavities: walls and ridges, valves, papillary muscles, chordae and cells
     const tri = avValve(G.TRI[0], G.TRI[1], b.av, C.RV, 27);
     const mit = avValve(G.MIT[0], G.MIT[1], b.av, C.LV, 31);
@@ -635,18 +613,28 @@ function mount(fig) {
     ]
       .map(([a, p]) => [-2.2, 0, 2.2].map((o) => `M${P3(...a).map(f1).join(" ")}L${P3(p[0] + o, p[1] - 3, p[2]).map(f1).join(" ")}`).join(""))
       .join("");
-    const side = (s) => chamberCells.filter((c) => c.side === s);
+    // each cell is clipped to the opening of the chamber it is in (deep cells would otherwise show outside the heart)
+    const roomOf = (c) => (c.stage === 1 ? (c.side === "R" ? "RA" : "LA") : c.side === "R" ? "RV" : "LV");
+    const cellsIn = (deep) =>
+      ["RA", "LA", "RV", "LV"]
+        .map((k) => {
+          const list = chamberCells.filter((c) => roomOf(c) === k);
+          const cls = k[0] === "R" ? "a4-cell-ven" : "a4-cell-art";
+          return list.length ? `<g clip-path="url(#a4-clip${k})"><path class="a4-cell ${cls}${deep ? " a4-cell-deep" : ""}" d="${cellPath(list, deep)}"/></g>` : "";
+        })
+        .join("");
     cavSvg +=
-      `<path class="a4-cell a4-cell-ven a4-cell-deep" d="${cellPath(side("R"), true)}"/><path class="a4-cell a4-cell-art a4-cell-deep" d="${cellPath(side("L"), true)}"/>` +
-      `<path class="a4-annulus-ring" d="${tri.ring}${mit.ring}"/>` +
+      cellsIn(true) +
+      `<g clip-path="url(#a4-clipAll)"><path class="a4-annulus-ring" d="${tri.ring}${mit.ring}"/>` +
       RB.paint(papFacets) +
       leafFacets.map((f) => `<path d="${f.d}" fill="${f.fill}" stroke="${f.fill}" stroke-width="0.6" class="a4-leaf"/>`).join("") +
       `<path class="a4-leaf-edge" d="${tri.edgeD}${mit.edgeD}"/>` +
-      `<path class="a4-chordae" d="${chordD}"/>` +
-      `<path class="a4-cell a4-cell-ven" d="${cellPath(side("R"), false)}"/><path class="a4-cell a4-cell-art" d="${cellPath(side("L"), false)}"/>`;
+      `<path class="a4-chordae" d="${chordD}"/></g>` +
+      cellsIn(false);
     q('[data-part="cav"]').innerHTML = cavSvg;
     // the cut face: muscle with the chamber openings (and the AV orifices) cut out of it
     set('[data-part="holes"]', ["RA", "LA", "RV", "LV"].map((k) => cham[k].outline).join("") + orifice(tri) + orifice(mit));
+    set('[data-part="clipAll"]', ["RA", "LA", "RV", "LV"].map((k) => cham[k].outline).join("") + orifice(tri) + orifice(mit));
     set('[data-part="rims"]', ["RA", "LA", "RV", "LV"].map((k) => cham[k].outline).join(""));
     set('[data-part="annuli"]', [...tri.ends, ...mit.ends].map((p) => `M${f1(p[0] - 4.5)} ${f1(p[1])}a4.5 3.2 0 1 0 9 0a4.5 3.2 0 1 0 -9 0Z`).join(""));
     // muscle fibres in the cut wall wrap the ventricles and squeeze with them
@@ -654,12 +642,107 @@ function mount(fig) {
     const sMid = (sV + def.sO) / 2;
     set('[data-part="fibres"]', [1.12, 1.24, 1.36, 1.48].map((k) => fib(FIB.lv, C.LV, k, sMid)).join("") + [1.1, 1.2].map((k) => fib(FIB.rv, C.RV, k, sMid)).join(""));
     set('[data-part="valves"]', semilunar(b));
-    // cells in the vessels (on the cut, in the open half-pipes)
-    const vesselCells = cells.filter((c) => c.stage === 0 || c.stage === 5);
-    for (const s of ["R", "L"]) {
-      const list = vesselCells.filter((c) => c.side === s);
-      set(`[data-part="vcells${s}"]`, list.map((c) => { const p = P3(c.p[0], c.p[1], c.d * 0.6); return disc(p[0], p[1], c.a, 4, 2.7); }).join(""));
+  }
+
+
+  // ---------------------------------------------------------------- the great vessels: whole tubes in 3-D (drawn once)
+  // Their visible parts (outside the heart) don't move with the beat, so they are built once. Each is a tube round
+  // a Catmull-Rom centreline in depth, framed by parallel transport, culled, lit with a specular highlight and
+  // painted back to front; a cut end shows as a ring of wall round the blood.
+  function tube3(ctrl, r0, r1, tones, caps) {
+    const cr = (p0, p1, p2, p3, t) => {
+      const t2 = t * t, t3 = t2 * t;
+      return [0, 1, 2].map((c) => 0.5 * (2 * p1[c] + (-p0[c] + p2[c]) * t + (2 * p0[c] - 5 * p1[c] + 4 * p2[c] - p3[c]) * t2 + (-p0[c] + 3 * p1[c] - 3 * p2[c] + p3[c]) * t3));
+    };
+    const dense = [];
+    for (let i = 0; i < ctrl.length - 1; i++) {
+      const p0 = ctrl[Math.max(0, i - 1)], p1 = ctrl[i], p2 = ctrl[i + 1], p3 = ctrl[Math.min(ctrl.length - 1, i + 2)];
+      for (let k = 0; k < 12; k++) dense.push(cr(p0, p1, p2, p3, k / 12));
     }
+    dense.push(ctrl[ctrl.length - 1]);
+    const acc = [0];
+    for (let i = 1; i < dense.length; i++) acc.push(acc[i - 1] + Math.hypot(dense[i][0] - dense[i - 1][0], dense[i][1] - dense[i - 1][1], dense[i][2] - dense[i - 1][2]));
+    const L = acc[acc.length - 1];
+    const M = Math.max(6, Math.round(L / 7));
+    const cs = [];
+    for (let q = 0, j = 0; q < M; q++) {
+      const want = (L * q) / (M - 1);
+      while (j < acc.length - 2 && acc[j + 1] < want) j++;
+      const t = (want - acc[j]) / (acc[j + 1] - acc[j] || 1);
+      cs.push(dense[j].map((v, c) => v + (dense[j + 1][c] - v) * t));
+    }
+    const tan = cs.map((p, i) => {
+      const a = cs[Math.max(0, i - 1)];
+      const b = cs[Math.min(cs.length - 1, i + 1)];
+      return norm3(toW([b[0] - a[0], b[1] - a[1], b[2] - a[2]]));
+    });
+    let nrm = norm3(cross3(cross3(tan[0], [0, 0, 1]), tan[0]));
+    if (!isFinite(nrm[0]) || Math.hypot(...nrm) < 0.5) nrm = norm3(cross3(cross3(tan[0], [1, 0, 0]), tan[0]));
+    const N = 16;
+    const rings = cs.map((c, i) => {
+      if (i) {
+        const d = dot3(nrm, tan[i]);
+        nrm = norm3([nrm[0] - d * tan[i][0], nrm[1] - d * tan[i][1], nrm[2] - d * tan[i][2]]);
+      }
+      const bin = cross3(tan[i], nrm);
+      const r = r0 + (r1 - r0) * (i / (cs.length - 1));
+      return Array.from({ length: N }, (_, j) => {
+        const a = (j / N) * 2 * Math.PI;
+        const v = [nrm[0] * Math.cos(a) + bin[0] * Math.sin(a), nrm[1] * Math.cos(a) + bin[1] * Math.sin(a), nrm[2] * Math.cos(a) + bin[2] * Math.sin(a)];
+        return { p: [c[0] + v[0] * r, c[1] - v[2] * r, c[2] - v[1] * r], v };
+      });
+    });
+    const facets = [];
+    for (let i = 0; i < rings.length - 1; i++)
+      for (let j = 0; j < N; j++) {
+        const a = rings[i][j], b = rings[i][(j + 1) % N], c = rings[i + 1][(j + 1) % N], d = rings[i + 1][j];
+        const nn = norm3([a.v[0] + b.v[0] + c.v[0] + d.v[0], a.v[1] + b.v[1] + c.v[1] + d.v[1], a.v[2] + b.v[2] + c.v[2] + d.v[2]]);
+        if (dot3(nn, VIEW) <= 0) continue;
+        facets.push({ key: key3((a.p[0] + c.p[0]) / 2, (a.p[1] + c.p[1]) / 2, (a.p[2] + c.p[2]) / 2), d: quad([P3(...a.p), P3(...b.p), P3(...c.p), P3(...d.p)]), fill: shine(nn, tones) });
+      }
+    [0, rings.length - 1].forEach((i, e) => {
+      if (!caps[e]) return;
+      const out = e ? tan[i] : tan[i].map((v) => -v);
+      if (dot3(out, VIEW) <= 0.02) return;
+      const c = cs[i];
+      const k = key3(c[0], c[1], c[2]) + 1;
+      facets.push({ key: k, d: quad(rings[i].map((x) => P3(...x.p))), fill: rgb(cssc("--a4-vwall", "#f3d9cf")) });
+      facets.push({ key: k + 0.01, d: quad(rings[i].map((x) => P3(c[0] + (x.p[0] - c[0]) * 0.72, c[1] + (x.p[1] - c[1]) * 0.72, c[2] + (x.p[2] - c[2]) * 0.72))), fill: rgb(mixc(tones[0], BLACK, 0.15)) });
+    });
+    facets.sort((x, y) => x.key - y.key);
+    return facets.map((f) => `<path d="${f.d}" fill="${f.fill}" stroke="${f.fill}" stroke-width="0.6" stroke-linejoin="round"/>`).join("");
+  }
+  {
+    const svgOf = (list) => list.map((v) => tube3(v.pts, v.r[0], v.r[1], T[v.cls], v.caps)).join("");
+    q('[data-part="behind"]').innerHTML = svgOf(DATA.v3.filter((v) => v.behind));
+    q('[data-part="vessels"]').innerHTML = svgOf(DATA.v3.filter((v) => !v.behind));
+    // a soft shadow on the floor under the heart (its outline and back half dropped straight down)
+    const pts = [];
+    const ring = closedRing(G.OUT, 48, 2);
+    const [cx, cy] = centroid(ring);
+    ring.forEach((p) => {
+      const r = 0.92 * Math.hypot(p[0] - cx, p[1] - cy);
+      for (const ph of [0, 0.6, 1.2, Math.PI / 2]) {
+        const u = [(p[0] - cx) / (r / 0.92), (p[1] - cy) / (r / 0.92)];
+        pts.push(P3(p[0] - u[0] * (1 - Math.cos(ph)) * r, DATA.floorY, Math.sin(ph) * r * 0.85));
+      }
+    });
+    const hull = (P) => {
+      const a = [...P].sort((m, n) => m[0] - n[0] || m[1] - n[1]);
+      const cr2 = (o, m, n) => (m[0] - o[0]) * (n[1] - o[1]) - (m[1] - o[1]) * (n[0] - o[0]);
+      const lo = [];
+      for (const v of a) {
+        while (lo.length >= 2 && cr2(lo[lo.length - 2], lo[lo.length - 1], v) <= 0) lo.pop();
+        lo.push(v);
+      }
+      const up = [];
+      for (const v of [...a].reverse()) {
+        while (up.length >= 2 && cr2(up[up.length - 2], up[up.length - 1], v) <= 0) up.pop();
+        up.push(v);
+      }
+      return [...lo.slice(0, -1), ...up.slice(0, -1)];
+    };
+    set('[data-part="floor"]', smooth(hull(pts), true, 0.8));
   }
 
   // ---------------------------------------------------------------- state, input, tour
