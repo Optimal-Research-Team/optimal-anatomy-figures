@@ -57,3 +57,11 @@ Calibration targets are SWAN's ≈ 2–2.5 %/yr at the spine (1.8 % at the femor
 
 1. **Menopause Protocol match:** checked against the protocol PDF (v1.0, §3 and §7). The caption now uses its wording and numbers from Greendale 2012: fastest from about a year before to about two years after the final period; about 7 % spine and 6 % hip in those three years; about 10 % spine over ten years.
 2. **No treatment state, by design.** Peter allowed treatments on screen, but the protocol doesn't present hormone therapy as bone protection: it covers bone as screening and strength training. A9 stays mechanism-only to match.
+
+## Round 2 (2026-10-12): 3-D block
+Peter approved the isometric look (A3b). The section is now the front face of a cut-away block of spongy bone and marrow (azimuth 62°, elevation 24°, depth 150), cropped to X0..X1 so the strut is cut at both ends of the block.
+- **Top:** marrow seen from above: fat cells, red and white speckle, a light wash.
+- **Right end:** marrow above and below the strut, and the strut in cross-section with its lamellae and a few osteocytes, shaded.
+- **Drawing:** both faces are flat 2-D textures placed with `planeMatrix`. The live code is untouched and draws in section coordinates inside the front group.
+- **Known simplification:** the strut on the end face keeps its starting thickness. Pits never reach the cut ends (sites start inside X0..X1), so the two faces still agree.
+- **Verified:** both themes; post state; 320 px no h-scroll; reduced motion; console clean; line ends 0.

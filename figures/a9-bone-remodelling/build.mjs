@@ -14,6 +14,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import * as M from "./model.mjs";
+import { figkit, k } from "../../shared/figkit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
@@ -97,12 +98,73 @@ for (let i = 0; i < 34; i++) {
 let bottomLining = "";
 for (let x = X0 + 14; x < X1 - 10; x += 26) bottomLining += `M${f1(x - 9)} ${f1(yBot(x) + 1.4)}q9 3.4 18 0q-9 1 -18 0Z`;
 
-const svg = `<svg class="iso-svg a9-svg" viewBox="0 0 600 420" role="img" aria-label="A strut of spongy bone lying in marrow, cut lengthwise. Inside the bone are layered lamellae, osteocytes in small cavities, and the curved lines of old repairs. Along its top surface, remodelling sites come and go: a large osteoclast digs a scooped cavity, then a row of osteoblasts lays new bone to refill it. Before menopause sites are fewer and each cavity is refilled; after menopause more sites start and each refill falls a little short, so the strut thins over the years.">
+// ---------------------------------------------------------------- the 3-D block: the section is its front face
+// World units = section px: x along the strut, y back into the bone, z up. The block runs X0..X1, so
+// the strut is cut at both ends of the block. The top and the right end are drawn as flat 2-D
+// textures (marrow; marrow + the strut in cross-section) placed on their planes with planeMatrix.
+const MT = 36; // top of the marrow
+const MB = 420;
+const L = X1 - X0;
+const DEP = 150;
+const W3 = (sx, y, sy) => [sx - X0, y, MB - sy];
+const BOUNDS3 = [[0, 0, 0], [L, 0, 0], [0, DEP, 0], [L, DEP, 0], [0, 0, MB - MT], [L, 0, MB - MT], [0, DEP, MB - MT], [L, DEP, MB - MT]];
+const PB = k.fitProjection(BOUNDS3, 600, 470, { pad: 10, azimuth: 62, elevation: 24 });
+const FB = figkit(PB);
+const marrowTexture = (w, h, avoid = () => false) => {
+  let fd = "", hd = "", h2 = "";
+  const pts = [];
+  for (let i = 0; i < 300 && pts.length < Math.round((w * h) / 5200); i++) {
+    const x = 10 + rng() * (w - 20);
+    const y = 10 + rng() * (h - 20);
+    const r = 9 + rng() * 8;
+    if (!avoid(y, r) && pts.every(([a, b, rr]) => Math.hypot(a - x, b - y) > r + rr + 5)) pts.push([x, y, r]);
+  }
+  for (const [x, y, r] of pts) fd += dot(x, y, r);
+  for (let i = 0; i < (w * h) / 180; i++) {
+    const x = 2 + rng() * (w - 4);
+    const y = 2 + rng() * (h - 4);
+    if (avoid(y, 2) || pts.some(([a, b, r]) => Math.hypot(a - x, b - y) < r + 3)) continue;
+    if (rng() < 0.55) hd += dot(x, y, 1.5 + rng() * 1.1);
+    else h2 += dot(x, y, 1.3 + rng());
+  }
+  return `<rect class="a9-marrow" width="${w}" height="${h}"/><path class="a9-hemo" d="${hd}"/><path class="a9-hemo2" d="${h2}"/><path class="a9-fat" d="${fd}"/>`;
+};
+// top: marrow seen from above (u along the strut, v from the back edge to the front)
+const TOP_M = FB.planeMatrix([0, 0, MB - MT], [1, 0, 0], [0, 1, 0]);
+const topFace = `<g transform="${TOP_M}">${marrowTexture(L, DEP)}<rect class="b9-top-light" width="${L}" height="${DEP}"/></g>`;
+// right end: marrow above and below, the strut in cross-section (u from the front edge back, v down from the marrow top)
+const SIDE_M = FB.planeMatrix([L, DEP, MB - MT], [0, -1, 0], [0, 0, -1]);
+const bTop = TOP - MT;
+const bBot = yBot(X1) - MT;
+let sideLam = "";
+for (let k2 = 0; k2 < 21; k2++) {
+  const v = bTop + 6 + k2 * 6.8;
+  if (v < bBot - 3) sideLam += `M0 ${f1(v)}H${DEP}`;
+}
+let sideLac = "";
+for (let i = 0; i < 9; i++) {
+  const u = 8 + rng() * (DEP - 16);
+  const v = bTop + 12 + rng() * (bBot - bTop - 22);
+  sideLac += `M${f1(u - 4.5)} ${f1(v)}q4.5 -2.6 9 0q-4.5 2.6 -9 0Z`;
+}
+const sideFace = `<g transform="${SIDE_M}">${marrowTexture(DEP, MB - MT, (y, r) => y + r > bTop - 4 && y - r < bBot + 4)}
+<rect class="a9-bone" x="0" y="${f1(bTop)}" width="${DEP}" height="${f1(bBot - bTop)}" fill="url(#a9-bone)"/>
+<path class="a9-lamellae" d="${sideLam}"/><path class="a9-lacuna" d="${sideLac}"/>
+<rect class="b9-side-shade" width="${DEP}" height="${MB - MT}"/></g>`;
+const p3 = (pts, close = true) => FB.path3(pts, close);
+const blockShadow = `<path class="b9-shadow" d="${p3([[-6, -6, 0], [L + 10, -6, 0], [L + 10, DEP + 14, 0], [-6, DEP + 14, 0]])}"/>`;
+const blockEdges = `<path class="b9-edge" d="${p3([W3(X0, DEP, MT), W3(X0, 0, MT), W3(X1, 0, MT), W3(X1, 0, MB), W3(X1, DEP, MB)], false)}${p3([W3(X1, 0, MT), W3(X1, DEP, MT)], false)}"/>`;
+const FRONT_M = FB.planeMatrix(W3(0, DEP, 0), [1, 0, 0], [0, 0, -1]);
+
+const svg = `<svg class="iso-svg a9-svg" viewBox="0 0 600 470" role="img" aria-label="A strut of spongy bone lying in marrow, cut lengthwise. Inside the bone are layered lamellae, osteocytes in small cavities, and the curved lines of old repairs. Along its top surface, remodelling sites come and go: a large osteoclast digs a scooped cavity, then a row of osteoblasts lays new bone to refill it. Before menopause sites are fewer and each cavity is refilled; after menopause more sites start and each refill falls a little short, so the strut thins over the years.">
 <defs>
   <linearGradient id="a9-bone" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="a9-b0"/><stop offset="1" class="a9-b1"/></linearGradient>
   <clipPath id="a9-boneclip"><path data-part="boneClip"/></clipPath>
+  <clipPath id="a9-faceclip"><rect x="${X0}" y="${MT}" width="${L}" height="${MB - MT}"/></clipPath>
 </defs>
-<rect class="a9-marrow" x="0" y="36" width="600" height="384" rx="14"/>
+${blockShadow}${topFace}${sideFace}
+<g class="a9-front" transform="${FRONT_M}"><g clip-path="url(#a9-faceclip)">
+<rect class="a9-marrow" x="0" y="36" width="600" height="384"/>
 <path class="a9-sinus" d="${sinus}"/>
 <path class="a9-hemo" d="${hemo}"/><path class="a9-hemo2" d="${hemo2}"/>
 <path class="a9-fat" d="${fat}"/>
@@ -119,7 +181,8 @@ const svg = `<svg class="iso-svg a9-svg" viewBox="0 0 600 420" role="img" aria-l
 <path class="a9-oc" data-part="oc"/><path class="a9-oc-ruffle" data-part="ocRuffle"/><path class="a9-oc-nuc" data-part="ocNuc"/>
 <path class="a9-rev" data-part="rev"/>
 <path class="a9-estro" data-part="estro"/>
-<path class="a9-cut" d="M${X0} ${TOP - 6}V${BOT + 8}M${X1} ${TOP - 6}V${BOT + 8}"/>
+</g></g>
+${blockEdges}
 </svg>`;
 
 const LINES = [

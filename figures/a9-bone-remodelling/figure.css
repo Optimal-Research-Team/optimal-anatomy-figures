@@ -44,3 +44,8 @@
 .a9-par { display: block; margin-top: 6px; }
 .a9-par:first-child { margin-top: 0; }
 .a9-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+/* the 3-D block: top and right end faces */
+.b9-top-light { fill: #fff; opacity: 0.07; }
+.b9-side-shade { fill: #000; opacity: 0.16; }
+.b9-edge { fill: none; stroke: var(--a9-fat-edge); stroke-width: 1; stroke-linejoin: round; }
+.b9-shadow { fill: rgba(0, 0, 0, 0.14); filter: blur(6px); }
