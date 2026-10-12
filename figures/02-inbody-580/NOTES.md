@@ -48,6 +48,6 @@ Frequency buttons (5 / 50 / 250 / 500 kHz) and segment buttons (Arm / Trunk / Le
 
 ## Open issues
 
-1. **Verify against the real result sheet and manual:** whether the 580 prints segmental reactance (not shown here), the exact trunk ohms it reports, and the manual's wording on implanted devices before any copy mentions safety.
+1. **Result sheet (checked 2026-10-12 against InBodyCanada's interpretation guide):** no segmental reactance readout; reactance appears only in the optional whole-body BIVA graph, so Fig 2 rightly prints none. Still to verify against the manual: the exact trunk ohms it reports, and the manual's wording on implanted devices before any copy mentions safety.
 2. **Optional scenario switch** for ECW/TBW (see Decisions).
 3. **Left limbs** are mostly hidden behind the trunk from this angle. If Peter wants all five visible, the body can be turned toward the viewer, at the cost of a less true InBody stance.

@@ -132,7 +132,7 @@ const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readF
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const CAPTION = [
   `Bone is renewed all the time. At each repair site an osteoclast digs a small cavity over two or three weeks, and then osteoblasts spend about three months filling it with new bone. Estrogen keeps the diggers in check.`,
-  `As estrogen falls around menopause, more sites open at once and the filling falls behind the digging. In the large SWAN study, bone density dropped fastest from a year before to two years after the final period: about 2–2.5 % a year at the spine. Over the three years around that period, women lost about 6–7 % on average. Loss slows after that.`,
+  `As estrogen falls around menopause, more sites open at once and the filling falls behind the digging. Bone loss speeds up from about a year before the final period and is fastest until about two years after. In one large study, women lost about 7 % of their spine bone density and about 6 % at the hip in those three years, and about 10 % at the spine over ten years.`,
   `<small>A typical pattern; how much any woman loses varies, and density is one factor among several in fracture risk. This shows the mechanism only: it doesn't estimate anyone's risk or the effect of any treatment. The numbers of sites and the shortfall per site are drawn to match the average rates, not measured. Three years pass in about half a minute.</small>`,
 ]
   .map((p) => `<span class="a9-par">${p}</span>`)

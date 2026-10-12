@@ -36,6 +36,7 @@ function mount(fig) {
 
   // ---------------------------------------------------------------- state
   let target = 1;
+  let block = false; // a neurokinin-receptor blocker: the signal arrives but isn't received
   let e = 1;
   let clock = 0;
   let sinceBurst = 0;
@@ -76,7 +77,7 @@ function mount(fig) {
       const p = packets[i];
       p.s += dt * 150;
       if (p.s >= p.m.L) {
-        if (p.mn) drive += KNDY.k;
+        if (p.mn) drive += KNDY.k * (block ? KNDY.blocked : 1);
         packets.splice(i, 1);
       }
     }
@@ -186,12 +187,14 @@ function mount(fig) {
 
   // ---------------------------------------------------------------- input, tour, loop
   function setState(i, quiet) {
-    target = i === 0 ? 1 : 0;
+    // 0 before, 1 after, 2 hormone therapy (estrogen replaced), 3 non-hormonal blocker
+    target = [1, 0, KNDY.therapy, 0][i];
+    block = i === 3;
+    svg.classList.toggle("a2-blocked", block);
     const s = kndyOf(target);
-    const rate = DATA.rate[i];
-    out.estro.textContent = i === 0 ? "Cycling" : "Low";
-    out.size.textContent = `${Math.round(100 * s.area)}%`;
-    out.rate.textContent = rate < 0.05 ? "Rare" : `≈ ${rate.toFixed(1)} an hour`;
+    out.estro.textContent = ["Cycling", "Low", "Replaced", "Low"][i];
+    out.size.textContent = i === 2 ? "Smaller" : `${Math.round(100 * s.area)}%`;
+    out.rate.textContent = i < 2 ? (DATA.rate[i] < 0.05 ? "Rare" : `≈ ${DATA.rate[i].toFixed(1)} an hour`) : "Fewer, typically";
     line.textContent = DATA.lines[i];
     buttons.forEach((b, j) => {
       b.setAttribute("aria-checked", j === i ? "true" : "false");
@@ -252,7 +255,7 @@ function mount(fig) {
     if (!touring && now - idle > 9000) touring = true;
     if (touring && (tourClock += dt) > 12) {
       tourClock = 0;
-      stateAt = 1 - stateAt;
+      stateAt = (stateAt + 1) % 4;
       setState(stateAt, true);
     }
     step(dt);

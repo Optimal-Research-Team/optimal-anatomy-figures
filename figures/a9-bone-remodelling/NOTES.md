@@ -55,5 +55,5 @@ Calibration targets are SWAN's ≈ 2–2.5 %/yr at the spine (1.8 % at the femor
 
 ## Open for Peter
 
-1. **Must match the Menopause Protocol** (BACKLOG). The protocol text isn't in this repo; please check the caption against it, especially "Loss slows after that" and the SWAN numbers.
-2. **A hormone-therapy state** (estrogen back, sites fewer) would show the mechanism of protection. It's held back for the same Q2 regulatory call as Fig 1's treatment switch.
+1. **Menopause Protocol match:** checked against the protocol PDF (v1.0, §3 and §7). The caption now uses its wording and numbers from Greendale 2012: fastest from about a year before to about two years after the final period; about 7 % spine and 6 % hip in those three years; about 10 % spine over ten years.
+2. **No treatment state, by design.** Peter allowed treatments on screen, but the protocol doesn't present hormone therapy as bone protection: it covers bone as screening and strength training. A9 stays mechanism-only to match.

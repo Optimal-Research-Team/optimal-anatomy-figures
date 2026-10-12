@@ -10,6 +10,14 @@
 
 **Mapping in one sentence:** the belt speeds up a little every few seconds while the mannequin runs in a mask whose wireless analyser blinks each breath. The assessor's tablet plots oxygen uptake against speed: a straight line at about 3.5 ml/kg/min per km/h (at a 1 % incline) that flattens at the ceiling. The display still draws the live skeleton, and the side panel shows the belt speed.
 
+**Round 2 (2026-10-12, Peter: "simple mockup is good, whatever is visually cleaner"):** the Creator screen is now a clean live dashboard:
+- a "Live" dot pulsing with the stride, and the test clock;
+- the belt speed as the hero number;
+- the tracked skeleton standing on a floor line;
+- three tiles: cadence (the model's `cadenceAt(speed)`, sourced, §4 [18]), step length (speed ÷ cadence) and grade (1 %).
+
+It's a generic UI, not a copy of the Creator software. Audit passed and `lines.mjs` reports 0; all captures are retaken.
+
 ## Numbers
 
 All in `reference/truth-pack.md` §5, under "How Fig 6 uses these numbers".

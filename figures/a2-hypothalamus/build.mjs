@@ -222,6 +222,8 @@ ${kndySvg}
 const LINES = [
   "Before menopause: estrogen keeps the KNDy cells small and their signal modest. The heat-loss centre idles, and everyday wanders in body heat pass unnoticed.",
   "After menopause: with little estrogen, the cells swell and send neurokinin B more often. The heat-loss centre runs close to its edge, and a small wander tips it into a hot flash.",
+  "Hormone therapy, where it suits: estrogen is replaced, the KNDy cells quieten, and the heat-loss centre moves back from its edge.",
+  "A non-hormonal prescription option: the cells still signal, but a neurokinin-receptor blocker stops the heat-loss centre from receiving it.",
 ];
 const DATA = { kndy: KNDY, mnpo: MNPO, axons: AXONS, down: DOWN, out: OUT, vessels: VESSELS.map((v) => curve(v, 6).map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])), lines: LINES, rate: [rateOf(1), rateOf(0)] };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
@@ -230,20 +232,21 @@ const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const CAPTION = [
   `Deep in the brain, just above the pituitary, a small cluster of nerve cells called KNDy neurons (for the kisspeptin, neurokinin B and dynorphin they make) also times the pulses of reproductive hormones, and sends neurokinin B to the brain's heat-loss centre, the median preoptic nucleus. Estrogen keeps these cells in check.`,
   `After menopause they are larger (about twice the cross-section in a post-mortem study) and make more neurokinin B. The heat-loss centre then sits near its tipping point, so a tiny everyday rise in body heat sets off a full heat-loss response: flushing, sweating and a faster heart. In a study, neurokinin B given to women caused flushes.`,
-  `<small>A typical pattern in women who have hot flashes; many women have few or none. Time is compressed: the drawn bursts come seconds apart, while hot flashes come about an hour apart. Firing rates are drawn, not measured. Cell size from post-mortem studies of postmenopausal women.</small>`,
+  `Treatment can act at either end. Hormone therapy replaces the estrogen that keeps these cells in check. Non-hormonal neurokinin-receptor blockers leave the cells signalling but stop the heat-loss centre receiving it. Neither is for everyone: each needs a safety review and has its own benefits and risks, and not treating is always an option.`,
+  `<small>A typical pattern in women who have hot flashes; many women have few or none. How much a treatment helps varies from person to person; the drawing shows the mechanism, not an expected result. Time is compressed: the drawn bursts come seconds apart, while hot flashes come about an hour apart. Firing rates are drawn, not measured. Cell size from post-mortem studies of postmenopausal women.</small>`,
 ]
   .map((p) => `<span class="a2-par">${p}</span>`)
   .join("");
 const body = plate({
   fig: "A2",
   title: "The hot-flash switch",
-  hint: "Pick before or after · watch the cells at the base",
+  hint: "Before, after, or with a treatment · watch the cells at the base",
   stats: [
     { key: "estro", label: "Estrogen", value: "Cycling" },
     { key: "size", label: "KNDy cell size", value: "100%" },
     { key: "rate", label: "Hot flashes", value: "Rare" },
   ],
-  controls: [{ name: "state", label: "Menopause", options: [["pre", "Pre-menopause"], ["post", "Post-menopause"]].map(([value, label], i) => ({ value, label, pressed: i === 0 })) }],
+  controls: [{ name: "state", label: "Menopause and treatment", options: [["pre", "Before"], ["post", "After"], ["ht", "Hormone therapy"], ["nk", "Non-hormonal"]].map(([value, label], i) => ({ value, label, pressed: i === 0 })) }],
   keys: [
     { mark: "kndy", label: "KNDy cells and neurokinin B" },
     { mark: "mnpo", label: "Heat-loss centre (MnPO)" },

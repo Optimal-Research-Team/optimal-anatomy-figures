@@ -16,6 +16,8 @@ export const KNDY = {
   k: 0.034, //              drive added per packet: sets the post mean near 0.8 of the tipping point
   swing: 0.22, //           a small natural wander in core temperature (Fig 1's trigger), as drive
   refractory: 6, //         s after a flash before the next can start (drawn)
+  therapy: 0.85, //         estrogen state drawn under hormone therapy: ILLUSTRATIVE (estrogen reverses the hypertrophy in monkeys [Rometo 2007])
+  blocked: 0.2, //          share of the neurokinin B signal still received under a receptor blocker: ILLUSTRATIVE (mechanism [Rance 2013]; no threshold data)
 };
 const lerp = (a, b, t) => a + (b - a) * t;
 /** KNDy state at estrogen e: soma scale (diameter), seconds between bursts, packets per axon. */

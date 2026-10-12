@@ -202,7 +202,7 @@ The InBody 580 sends a tiny alternating current (200 µA) through the body from 
 | Measurement frequencies | **5, 50, 250, 500** (4 frequencies, *not* 3) | kHz | [1][2][3] | HIGH (one regional page, au.inbody.com, lists only 5/50/500 while still saying "20 measurements … 4 frequencies"; treat it as a typo) |
 | Impedance measurements | 20 = 4 frequencies × 5 segments (RA, LA, TR, RL, LL) | count | [1][2][3] | HIGH |
 | Phase angle measurements | 5 segmental phase angles **at 50 kHz only**, plus whole-body phase angle at 50 kHz | count, ° | [2][4][5] | HIGH for 50 kHz segmental and whole-body. The 580 does not report phase angle at other frequencies. |
-| Reactance (Xc) as a printed output | Not confirmed for the 580. The 770 prints segmental Xc; for the 580 I found only impedance (Z) per segment per frequency, plus phase angle. | — | [5][6] | LOW. Don't show "580 reactance readout" without checking. |
+| Reactance (Xc) as a printed output | Not confirmed for the 580. The 770 prints segmental Xc; for the 580 I found only impedance (Z) per segment per frequency, plus phase angle. | — | [5][6] | LOW. Don't show "580 reactance readout" without checking. **Update 2026-10-12:** InBodyCanada's result-sheet guide (PDF from Peter) lists an optional whole-body BIVA graph built from raw R and Xc, plus segmental ECW and ICW analysis, and no segmental reactance readout. |
 | Measurement method | DSM-BIA (direct segmental multi-frequency BIA) + SMF-BIA (simultaneous multi-frequency) | — | [2] | HIGH |
 | Electrode system | Tetrapolar 8-point tactile electrodes: palm + thumb on each hand grip, front sole + heel on each foot | — | [2][7] | HIGH |
 | Electrode roles | Current enters at the palm and front-sole electrodes. Voltage is sensed at the thumb and heel, so measurement starts at the wrist and ankle whatever the grip. | — | [7] | MEDIUM (InBody's own technology page) |
@@ -1232,6 +1232,10 @@ Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Ranc
 - **More NKB signalling after menopause** (gene expression up, hypertrophy) [Rance & Young 1991][Rometo 2007] is drawn as twice the burst rate and twice the packets. ILLUSTRATIVE: no human firing rates exist.
 - **NKB → NK3R in the MnPO drives heat loss** [Rance 2013][Mittelman-Smith 2012][Dacks 2011]; NKB infusion causes flushes in women [Jayasena 2015]. These are drawn as the drive that tips the heat-loss centre.
 - **Hot-flash rate readout** comes from Fig 1's `rateOf(e)`: ≈ 1.1 an hour symptomatic [Meldrum 1979; Freedman 1998; Low 2008].
+- **Treatment states (added 2026-10-12, Peter: "can include treatments on screen"):** class names only, framed as the Menopause Protocol frames them ("where appropriate", "isn't for everyone", safety review first, not treating is always an option).
+  - *Hormone therapy:* estrogen state e = 0.85, ILLUSTRATIVE. Estrogen reverses KNDy hypertrophy in ovariectomised monkeys [Rometo 2007], and estradiol raises the sweating threshold ≈ +0.16 °C [Freedman & Blacker 2002].
+  - *Non-hormonal neurokinin-receptor blocker:* the cells keep signalling (e = 0), and the heat-loss centre receives 20 % of it, ILLUSTRATIVE. The mechanism is [Rance 2013]; there are no threshold data. Fezolinetant (NK3) and elinzanetant (NK1+NK3) are authorized in Canada (§1), but they are not named on screen.
+  - *Readout:* "Fewer, typically". No trial numbers are printed (§1 keeps them NOTES-only).
 
 ---
 
@@ -1256,6 +1260,7 @@ Uses §4: Lenhart 2014 peak patellofemoral force −14 % at 110 % step rate (and
 | Estrogen promotes osteoclast apoptosis and inhibits their differentiation | qualitative | [Est-R] | MEDIUM |
 | SWAN: fastest BMD loss from 1 year before to 2 years after the final menstrual period | ≈ 2.5 %/yr lumbar spine, ≈ 1.8 %/yr femoral neck | [SWAN-R] | MEDIUM-HIGH |
 | SWAN: average loss over the 3 years around the final period | ≈ 6 % femoral neck, ≈ 7 % lumbar spine | [SWAN-3] | MEDIUM-HIGH |
+| Same, as the Optimal Menopause Protocol states it (v1.0 §3, §7) | about 7 % spine and 6 % hip in the three fastest years; about 10 % spine over ten years | Greendale 2012 (SWAN), as cited in the protocol | MEDIUM-HIGH |
 | Lower body weight → faster loss (lowest vs highest tertile 35–55 % faster) | — | [SWAN-3] | MEDIUM (not shown) |
 
 ### How A9 uses these numbers

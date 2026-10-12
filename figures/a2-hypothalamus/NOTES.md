@@ -4,6 +4,12 @@
 
 **Mapping in one sentence:** switch between pre- and post-menopause. Estrogen molecules leaving the vessels thin out. The KNDy cells at the base swell to 194 % of their area and burst twice as often, sending more neurokinin B up their axons. The heat-loss centre's drive (the green glow) then sits near its tipping point, and the drawn natural wander tips it into a hot flash: it turns orange and fires a heat-loss train toward the brainstem.
 
+**Round 2 (2026-10-12, Peter: "can include treatments on screen"):** two states are added, by drug class only and framed as the Menopause Protocol frames them:
+- **Hormone therapy:** estrogen comes back, the KNDy cells shrink and quieten, and the heat-loss centre moves off its edge.
+- **Non-hormonal:** a neurokinin-receptor blocker. The cells keep signalling, but the heat-loss centre's receptors are greyed and receive only a fifth of it, so it never tips.
+
+The caption adds: "Neither is for everyone… safety review… not treating is always an option" and "the drawing shows the mechanism, not an expected result". Both magnitudes are ILLUSTRATIVE (truth pack, "A2").
+
 ## Parts
 
 - **Slice:** grey-matter slab with glial speckle; the anterior commissure; the fornix arching down to the mammillary body; the lamina terminalis; the optic chiasm and nerve stump; the hypothalamic sulcus with the thalamus above it and its adhesion; small vessels.
@@ -57,5 +63,5 @@
 ## Open for Peter
 
 1. **Inset or standalone?** It's built as its own card. It can sit under Fig 1 as "what's happening inside the thermostat".
-2. **Treatment button** (Q2): hormone therapy (estrogen back, cells calm) and a neurokinin-receptor blocker (signal sent but not received), class names only.
+2. **Treatment buttons:** done (round 2). Drug names are deliberately left off.
 3. **The 194 %** comes from a secondary listing of Rance & Young 1991. Check it against the paper before quoting the number on a page; the readout could say "larger" instead.
