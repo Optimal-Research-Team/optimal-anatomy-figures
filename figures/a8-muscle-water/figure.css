@@ -1,0 +1,41 @@
+/* A8 · muscle in cross-section: two fibre types in a stained-section red, fluid between them in
+   a cool blue, capillaries with a red lumen, current as bright ⊙ marks. */
+.iso.optimal {
+  --a8-f1a: #a8434a; --a8-f1b: #7c2a33; --a8-f2a: #c0636a; --a8-f2b: #93404a; --a8-fib-edge: #f0a4a0;
+  --a8-myo: rgba(255, 210, 205, 0.22); --a8-nuc: #5a4aa8;
+  --a8-e0: #1d4a62; --a8-e1: #143447; --a8-peri: #e8dcc6; --a8-peri-edge: #b9a77f;
+  --a8-cap: #e8b4a8; --a8-capl: #c43a32;
+  --a8-cur: #9ff3ff; --a8-cur-glow: rgba(159, 243, 255, 0.25);
+  --a8-loc-arm: #b98a7a; --a8-loc-cut: #9ff3ff;
+}
+.iso.optimal[data-theme="light"] {
+  --a8-f1a: #c95a62; --a8-f1b: #9e3a44; --a8-f2a: #e48d90; --a8-f2b: #c46a70; --a8-fib-edge: #7a2a30;
+  --a8-myo: rgba(110, 20, 30, 0.2); --a8-nuc: #3d2f8a;
+  --a8-e0: #cfe9f4; --a8-e1: #a9d3e6; --a8-peri: #f4ead4; --a8-peri-edge: #9f8c62;
+  --a8-cap: #f6d4cb; --a8-capl: #b8302a;
+  --a8-cur: #0b6f86; --a8-cur-glow: rgba(11, 111, 134, 0.18);
+  --a8-loc-arm: #e3b8a8; --a8-loc-cut: #0b6f86;
+}
+.a8-f1a { stop-color: var(--a8-f1a); } .a8-f1b { stop-color: var(--a8-f1b); }
+.a8-f2a { stop-color: var(--a8-f2a); } .a8-f2b { stop-color: var(--a8-f2b); }
+.a8-e0 { stop-color: var(--a8-e0); } .a8-e1 { stop-color: var(--a8-e1); }
+.a8-peri { fill: var(--a8-peri); stroke: var(--a8-peri-edge); stroke-width: 1.2; }
+.a8-ecw { stroke: var(--a8-peri-edge); stroke-width: 0.8; }
+.a8-fibre { stroke: var(--a8-fib-edge); stroke-width: 1.1; stroke-opacity: 0.7; }
+.a8-myo { fill: var(--a8-myo); }
+.a8-nuc { fill: var(--a8-nuc); opacity: 0.9; }
+.a8-cap { fill: var(--a8-cap); stroke: var(--a8-capl); stroke-width: 0.6; }
+.a8-cap-lumen { fill: var(--a8-capl); }
+.a8-cur-ring { fill: var(--a8-cur-glow); stroke: var(--a8-cur); stroke-width: 1.4; }
+.a8-cur-dot { fill: var(--a8-cur); }
+.a8-loc-arm { fill: var(--a8-loc-arm); opacity: 0.85; }
+.a8-loc-cut { fill: none; stroke: var(--a8-loc-cut); stroke-width: 2; stroke-dasharray: 3 2; }
+.a8-loc-arrow { fill: none; stroke: var(--a8-loc-cut); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.iso.optimal .iso-swatch[data-mark="fibre"] path { stroke: var(--a8-f2a); stroke-width: 6; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="ecw"] path { stroke: var(--a8-e1); stroke-width: 6; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="cur"] path { stroke: var(--a8-cur); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.1 6; }
+.a8-scene { margin: 10px 4px 0; font: 500 14px/1.45 var(--opt-ui); color: var(--anatomy-text); min-height: 4.4em; }
+.a8-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a8-par { display: block; margin-top: 6px; }
+.a8-par:first-child { margin-top: 0; }
+.a8-par small { font-size: 12.5px; color: var(--anatomy-muted); }

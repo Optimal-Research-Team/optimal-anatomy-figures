@@ -1235,6 +1235,24 @@ Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Ranc
 
 ---
 
+## A8. Water in and around muscle fibres (anatomical series)
+
+Uses §2: ECW/TBW typical ≈ 0.380 and the InBody bands (< 0.390 normal, 0.390–0.400 slightly over, > 0.400 over) [17][18]; Fig 2's Fricke model for the share of current crossing membranes (2 / 17 / 23 / 24 % at 5 / 50 / 250 / 500 kHz).
+
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| Skeletal muscle share of body mass | ≈ 40 % | [K] textbook | LOW-MEDIUM |
+| Water content of skeletal muscle | ≈ 75 % | [K] textbook | MEDIUM |
+| Muscle's share of total body water (derived: 0.40 × 0.75 ÷ 0.60) | ≈ 0.5 | derived | LOW |
+| Extracellular space in skeletal muscle | ≈ 10–15 % of volume, taken as 16 % of muscle water | [K] textbook | LOW |
+| Hypertrophy adds myofibrils in parallel (fibres widen); atrophy narrows them | qualitative | [K] textbook | HIGH (direction) |
+
+### How A8 uses these numbers
+
+- **Body ECW/TBW** = (E_muscle + E_rest) ÷ (water_muscle + water_rest). E_rest is chosen so "typical" = 0.380. E_muscle = 0.16 × gap × fibre, I_muscle = 0.84 × fibre². Scenes give 0.380 / 0.369 / 0.399 / 0.413. These are ILLUSTRATIVE magnitudes; the directions are sourced.
+
+---
+
 ## A6. The red cell's 120 days (anatomical series)
 
 Uses §3: red-cell lifespan ≈ 120 days [Franco 2012]; macrophage recycling ≈ 20–25 mg/day (model woman ≈ 13 mg/day at Hb 105) [Hentze 2010]; absorption 1–2 mg/day [Andrews 1999]; IV ferric derisomaltose taken up by liver and spleen macrophages [TGA PI]; the ferritin assay caveat after IV iron. All curves come from Fig 3's model.
