@@ -60,5 +60,6 @@ Oxygen cost of running comes from the ACSM running equation: VO₂ = 0.2 S + 0.9
 ## Open issues for Peter
 
 1. **Protocol.** Resolved: Peter confirmed a speed ramp, which is what the figure runs. The 1 % incline and the start speeds are assumptions.
-2. **Creator 600 screen during a test.** Resolved: Peter asked for a simple, clean mockup, so it shows speed, the skeleton, cadence, step and grade.
-3. **To verify with full web access:** the ACSM running equation's validity range (it's meant for speeds above about 8 km/h; the 35 ceiling's warm-up jog is 5.5 km/h), and FRIEND's 22 % treadmill-vs-bike figure (Kaminsky 2022).
+2. **Creator 600 screen size.** Resolved 2026-10-12: about a 50″ display stood vertically (Peter; Visbody lists a 50″ LG 4K vertical display). The treadmill here shares Fig 4's 50″ proportions. The site copy's "32″" still needs fixing on the site.
+3. **Creator 600 screen during a test.** Resolved: Peter asked for a simple, clean mockup, so it shows speed, the skeleton, cadence, step and grade.
+4. **To verify with full web access:** the ACSM running equation's validity range (it's meant for speeds above about 8 km/h; the 35 ceiling's warm-up jog is 5.5 km/h), and FRIEND's 22 % treadmill-vs-bike figure (Kaminsky 2022).

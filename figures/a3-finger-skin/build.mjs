@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
+import { figkit, k } from "../../shared/figkit.mjs";
 import { TRUTH, flashAt } from "../01-menopause-thermostat/model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -165,14 +166,53 @@ ${[0, 10, 20, 30].map((t, i) => `<path class="a3-axis" d="M${f1(xOfT(t))} ${MON.
 <circle class="a3-dot" data-part="mdot" r="5.5"/>
 </g>`;
 
-// ---------------------------------------------------------------- the picture
-const svg = `<svg class="iso-svg a3-svg" viewBox="0 0 600 630" role="img" aria-label="Fingertip skin in section. Under the ridged surface and the epidermis, small fingers of dermis hold capillary loops that drain into a network of veins. Below lies a small artery. Three coiled shunts, wrapped in muscle, connect the artery directly to the veins, and a nerve keeps them squeezed shut. During a hot flash the shunts open, warm blood floods the veins under the surface, and heat rises off the skin. A monitor shows the finger's skin temperature rising about 2.7 degrees within a minute and staying raised for half an hour.">
-<defs>
-  <linearGradient id="a3-derm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="a3-d0"/><stop offset="1" class="a3-d1"/></linearGradient>
-  <linearGradient id="a3-warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="a3-w0"/><stop offset="1" class="a3-w1"/></linearGradient>
-  <clipPath id="a3-skinclip"><path d="${skinBlock}"/></clipPath>
-</defs>
-<path data-part="heat" class="a3-heat"/>
+// ---------------------------------------------------------------- the isometric block: the section above becomes its front face
+const BL = { L: X1 - X0, D: 170, H: 430 - 96 }; // world units = section px; x along the section, y into the page, z up
+const zTop = (sx) => 430 - ySurf(sx);
+const W3 = (sx, y, sy) => [sx - X0, y, 430 - sy]; // section point on the plane y → world
+const BOUNDS3 = [[0, 0, 0], [BL.L, 0, 0], [0, BL.D, 0], [BL.L, BL.D, 0], [0, 0, BL.H + 90], [BL.L, BL.D, BL.H + 90]];
+const PB = k.fitProjection(BOUNDS3, 600, 452, { pad: 10, azimuth: 62, elevation: 24 });
+const FB = figkit(PB);
+const p3 = (pts, close = true) => FB.path3(pts, close);
+function blockSvg(front) {
+  const D = BL.D;
+  // top: the ridged surface extruded back; strips between crests and valleys shaded alternately
+  const xs = [];
+  for (let sx = X0; sx <= X1 + 1e-9; sx += 2) xs.push(sx);
+  const topD = p3([...xs.map((sx) => W3(sx, D, ySurf(sx))), ...[...xs].reverse().map((sx) => W3(sx, 0, ySurf(sx)))]);
+  let strips = "";
+  const half = RIDGE / 2;
+  for (let c = 30 - RIDGE; c < X1; c += half) {
+    const a0 = Math.max(X0, c);
+    const a1 = Math.min(X1, c + half);
+    if (a1 - a0 < 1) continue;
+    const seg = [];
+    for (let sx = a0; sx <= a1 + 1e-9; sx += 2) seg.push(sx);
+    const lit = Math.round((c - 30) / half) % 2 === 0;
+    strips += `<path class="b3-ridge ${lit ? "b3-ridge-lit" : "b3-ridge-shade"}" d="${p3([...seg.map((sx) => W3(sx, D, ySurf(sx))), ...[...seg].reverse().map((sx) => W3(sx, 0, ySurf(sx)))])}"/>`;
+  }
+  let pores = "";
+  for (let c = 30; c <= X1; c += RIDGE) for (let y = 14; y < D; y += 26) pores += p3([W3(c - 1.4, y, ySurf(c)), W3(c + 1.4, y, ySurf(c)), W3(c + 1.4, y + 2.4, ySurf(c)), W3(c - 1.4, y + 2.4, ySurf(c))]);
+  // the side: the same layers seen along the ridges, so the surface is flat here
+  const sx1 = X1;
+  const band = (sy0, sy1, cls) => `<path class="${cls}" d="${p3([W3(sx1, 0, sy0), W3(sx1, D, sy0), W3(sx1, D, sy1), W3(sx1, 0, sy1)])}"/>`;
+  const zt = ySurf(sx1);
+  const side =
+    band(zt, 430, "b3-side-derm") +
+    band(zt, zt + 9, "a3-corneum") +
+    band(zt + 9, 132, "a3-epi") +
+    band(PLEX_Y - 5, PLEX_Y + 5, "b3-side-plex") +
+    band(ART_Y - 6.5, ART_Y + 6.5, "b3-side-art") +
+    band(398, 430, "b3-side-fat");
+  const sideWarm = `<path data-part="sidewarm" class="b3-warm" opacity="0" d="${p3([W3(sx1, 0, zt), W3(sx1, D, zt), W3(sx1, D, 430), W3(sx1, 0, 430)])}"/>`;
+  const topWarm = `<path data-part="topwarm" class="b3-warm" opacity="0" d="${topD}"/>`;
+  const edges = `<path class="b3-edge" d="${p3([W3(sx1, 0, zt), W3(sx1, 0, 430), W3(sx1, D, 430)], false)}"/>`;
+  const shadow = `<path class="b3-shadow" d="${p3([[-6, -6, 0], [BL.L + 10, -6, 0], [BL.L + 10, D + 14, 0], [-6, D + 14, 0]])}"/>`;
+  const m = FB.planeMatrix(W3(0, D, 0), [1, 0, 0], [0, 0, -1]);
+  return `${shadow}<path class="b3-top" d="${topD}"/>${strips}<path class="b3-pores" d="${pores}"/>${topWarm}<g class="b3-side">${side}${sideWarm}</g>${edges}<g class="b3-front" transform="${m}">${front}</g>`;
+}
+
+const FRONT_SVG = `<path data-part="heat" class="a3-heat"/>
 <path class="a3-derm" d="${skinBlock}" fill="url(#a3-derm)"/>
 <g clip-path="url(#a3-skinclip)">
   <path class="a3-collagen" d="${collagen}"/>
@@ -198,13 +238,21 @@ const svg = `<svg class="iso-svg a3-svg" viewBox="0 0 600 630" role="img" aria-l
 <path class="a3-surface" d="${smooth(surface)}"/>
 <path class="a3-pores" d="${GLANDS.map((g) => dot(g.pore[0], g.pore[1] + 1, 2.2)).join("")}"/>
 <path class="a3-cut" d="M${X0} ${f1(ySurf(X0))}V430M${X1} ${f1(ySurf(X1))}V430"/>
+`;
+const svg = `<svg class="iso-svg a3-svg" viewBox="0 0 600 630" role="img" aria-label="Fingertip skin in section. Under the ridged surface and the epidermis, small fingers of dermis hold capillary loops that drain into a network of veins. Below lies a small artery. Three coiled shunts, wrapped in muscle, connect the artery directly to the veins, and a nerve keeps them squeezed shut. During a hot flash the shunts open, warm blood floods the veins under the surface, and heat rises off the skin. A monitor shows the finger's skin temperature rising about 2.7 degrees within a minute and staying raised for half an hour.">
+<defs>
+  <linearGradient id="a3-derm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="a3-d0"/><stop offset="1" class="a3-d1"/></linearGradient>
+  <linearGradient id="a3-warm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="a3-w0"/><stop offset="1" class="a3-w1"/></linearGradient>
+  <clipPath id="a3-skinclip"><path d="${skinBlock}"/></clipPath>
+</defs>
+${blockSvg(FRONT_SVG)}
 ${monitor}
 </svg>`;
 
 const DATA = { loops: LOOPS.map((l) => ({ up: l.up, down: l.down })), avas: AVAS, plexus, artery, feeds: [78, 214, 352, 494], avaX: AVA_X, nerve: [[X0 - 4, 262], [90, 256], [170, 266], [250, 258], [330, 266], [410, 258], [500, 264], [X1 + 4, 258]], branches: NERVE_BR, surface: surface.map((p) => p.map(r1)), mon: MON, plexY: PLEX_Y, artY: ART_Y };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const SCRIPT = `${strip(readFileSync(join(HERE, "../01-menopause-thermostat/model.mjs"), "utf8"))}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8");
 const CAPTION = [
   `Fingertips, palms and toes have a shortcut in their skin: coiled shunts (arteriovenous anastomoses) that join small arteries straight to the veins under the surface, skipping the capillaries. Each is wrapped in muscle, and a nerve keeps it squeezed shut most of the time.`,
   `In a hot flash the brain's heat-loss centre releases that squeeze. The shunts open, warm blood floods the veins just under the skin, and the finger's skin temperature rises about ${TRUTH.skinRise} °C within a minute while the heart beats about ${TRUTH.hrRise} beats a minute faster. The flash itself lasts a few minutes, but the finger stays warm for about half an hour.`,

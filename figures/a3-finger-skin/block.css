@@ -1,4 +1,4 @@
-/* A3b · the skin block prototype: the A3 section on the front face of an isometric cut-away. */
+/* A3 · the skin block: the section on the front face of an isometric cut-away. */
 .b3-top { fill: var(--a3-corneum); stroke: var(--a3-edge); stroke-width: 0.8; }
 .b3-ridge-lit { fill: var(--a3-corneum); }
 .b3-ridge-shade { fill: color-mix(in srgb, var(--a3-epi) 70%, var(--a3-corneum)); }

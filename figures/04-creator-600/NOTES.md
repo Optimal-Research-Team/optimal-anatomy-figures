@@ -7,7 +7,7 @@
 ## Parts
 
 - **Deck:** housing on six feet, rear end caps with bolts, rear roller, belt with scrolling slats, two step rails with treads.
-- **Front:** motor hood with vent slots, display column with grille, the display (50″ proportions, see open issue 1) with its live screen, and the depth camera module (two apertures and a pilot light) under the screen.
+- **Front:** motor hood with vent slots, display column with grille, the display (a 50″ TV-style panel stood vertically, see Decisions) with its live screen, and the depth camera module (two apertures and a pilot light) under the screen.
 - **Frame:** two slanted uprights let into the deck and the handrails, two handrails with end caps, and the side touch panel on a stalk off the far handrail. The touch panel shows the live cadence.
 - **Instruments:**
   - a plumb laser under the pelvis, with a line across the belt below the centre of mass;
@@ -42,6 +42,7 @@ All in `reference/truth-pack.md` §4, under "How Fig 4 uses these numbers".
 
 ## Decisions
 
+- **Display: 50″, vertical.** Peter confirmed 2026-10-12 that the screen is about a 50″ TV stood on end; Visbody lists a 50″ LG 4K vertical display. Figs 4 and 6 draw it at those proportions and print no size.
 - **Kneecap lamps only, no hip lamps.** HANDOFF asked for L/R hip and knee lamps. The only load measure with published magnitudes in both directions is Lenhart's patellofemoral force. Heiderscheit's hip energy absorption has no magnitude retrieved (only "lower at +10 %"). A hip lamp would need an invented number, so the knees carry the load signal. If Peter wants hip lamps, they could show direction only ("about the same / lower").
 - **The readout says "Step", not "Stride".** It shows one footfall to the next. Garmin and Visbody call this "stride length"; in research, a stride is two steps.
 - **Range ±10 %.** That's what the studies tested. HANDOFF's 150 → 185 spm would run to +12 %.
@@ -78,7 +79,7 @@ The page also loads the two Google fonts (see Fig 1's NOTES).
 
 ## Open issues for Peter
 
-1. **Display size.** Visbody and resellers list a 50″ 4K vertical display; the site and HANDOFF say 32″. The drawing follows the product photos (about 50″ proportions) but prints no size. Please measure the clinic's unit and fix the site copy if it's 50″.
+1. ~~**Display size.**~~ **Closed 2026-10-12.** Peter: the clinic's screen is about a 50″ TV rotated to stand vertically. Visbody's own Creator600 page lists a 50″ LG 4K vertical display (https://visbody.com/de/blog/visbody-creator600-the-ultimate-ai-gait-analysis-treadmill/). The drawing keeps its 50″ proportions and still prints no size. **Site fix still needed:** `/services/creator-600` says "32″ upright display"; it should say 50″ (see `reference/site-copy.md`).
 2. **Hip lamps.** Kept off for lack of a published magnitude (see Decisions). Is direction-only acceptable?
 3. **Site copy, "Efficient runners typically sit under a 10% vertical ratio".** That's Garmin's red cut-off (the bottom ~5 % of runners), so nearly everyone is under 10 %. Safer: "most runners sit under about 10 %; typical is about 7.5–8.6 %". Also, "against the commonly cited 170–180 spm range": the evidence supports a 5–10 % change from your own rate, not a fixed target. The caption says so.
 4. **Joint-load rating.** The Creator's low/medium/high load rating has no published method or validation. The caption calls it "the machine's own estimate from that tracking, not a force measurement". Please confirm that wording is acceptable next to the site's claims.

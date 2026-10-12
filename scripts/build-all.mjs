@@ -21,7 +21,6 @@ const PLAN = [
   { dir: "06-vo2max-treadmill", n: 6, title: "The treadmill ramp", line: "The same VO2max test on the Creator 600 treadmill." },
   { dir: "a2-hypothalamus", n: "A2", title: "The hot-flash switch", line: "Inside the hypothalamus: why less estrogen leaves the heat-loss centre on a hair trigger." },
   { dir: "a3-finger-skin", n: "A3", title: "The finger's heat valves", line: "Inside the +2.7 °C: tiny shunts in the skin open and warm blood floods the surface." },
-  { dir: "a3b-skin-block", n: "A3b", title: "The finger's heat valves · 3-D", line: "The A3 skin section as an isometric cut-away block: the approved look for the anatomy series." },
   { dir: "a4-heart", n: "A4", title: "The beating heart", line: "Four chambers, four valves: how output climbs from rest to all-out." },
   { dir: "a9-bone-remodelling", n: "A9", title: "Digging and filling", line: "Bone is always being renewed; with less estrogen the digging outpaces the filling." },
   { dir: "a7-knee", n: "A7", title: "The kneecap's load", line: "Inside the knee on each landing, and why a quicker step rate eases the kneecap." },

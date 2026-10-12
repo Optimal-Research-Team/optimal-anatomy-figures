@@ -33,8 +33,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | 6 | VO₂max on the Creator 600 | **Round 2**: dashboard mockup on the treadmill screen (speed, cadence, step, grade, live runner trace) | `06-vo2max-treadmill` |
 | A1 | Gut cell's gate | Built flat (style test). **Next for 3-D** | `a1-gut-cell` |
 | A2 | Hot-flash switch (hypothalamus) | Built; **treatment states added**: Hormone therapy / Non-hormonal (class names only) | `a2-hypothalamus` |
-| A3 | Finger's heat valves (flat) | Built. Superseded in look by A3b; keep or retire (open question) | `a3-finger-skin` |
-| A3b | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). Reads A3's model, live and CSS | `a3b-skin-block` |
+| A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
 | A4 | Beating heart | Built, round 2 (flat, organ) | `a4-heart` |
 | A5 | Air sac and red cell | Built flat. **Next for 3-D** | `a5-alveolus` |
 | A6 | Red cell's 120 days | Built (flat, a loop diagram) | `a6-red-cell-cycle` |
@@ -59,11 +58,18 @@ Every figure folder holds:
 7. **Prioritise VO₂ polish:** Figs 5–6 got rounds 3 and 2.
 8. **The anatomy should be "more beautiful" and isometric 3-D.** A3b approved, and A8 and A9 are converted.
 
+**2026-10-12, local session (answers to the §4 questions):**
+
+9. **Creator 600 screen: about 50″.** It's about a 50″ TV rotated to stand vertically. Visbody's own Creator600 page lists a 50″ LG 4K vertical display. Figs 4 and 6 keep their 50″ proportions and print no size. Fig 4 NOTES open issue 1 is closed. **The website copy still says 32″ and needs fixing on the site** (`reference/site-copy.md` flags it).
+10. **Retire flat A3, and flat anatomy figures in general.** Every A-series piece ends up isometric 3-D. Figs 1–6 are already isometric, so this doesn't touch them.
+    - **A3:** the 3-D version *is* A3. The A3b build moved into `figures/a3-finger-skin` with slug `finger-skin`, so the embed stays `optimal-fig-finger-skin`. `figures/a3b-skin-block` is deleted and A3b is gone from the gallery PLAN.
+    - **Every other piece** is converted in place, as A8 and A9 were. No flat version stays in the gallery once its 3-D version exists.
+11. **A1: yes, convert to 3-D.**
+12. **A2, A4, A6 and A7 go 3-D too.** Pick the best approach from §5.2, build it on A7 (knee) first, and send screenshots. Wait for Peter's OK before converting A2, A4 and A6 the same way.
+
 ## 4. Open questions for Peter
 
-- **"It's unit 1 actually":** his answer to "Creator 600 screen: 32″ or 50″?" (Fig 4 NOTES open issue 1). Unclear; ask what it means. Figs 4 and 6 draw the screen at about 50″ proportions (from product photos) and print no size. The site copy says 32″.
-- **A3 vs A3b:** retire the flat A3, or keep both for different pages?
-- **A1 look:** it was a style test for the flat look. Probably convert to 3-D now; confirm.
+- ~~Creator 600 screen size~~, ~~A3 vs A3b~~, ~~A1 look~~: answered 2026-10-12, see §3 items 9–11.
 - **Network:** with `beoptimal.ca`, `bici.cc` and `inbodycanada.ca` allowed (or locally), re-read the site pages directly instead of PDFs.
 
 ## 5. Next steps (priority order)

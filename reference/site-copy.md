@@ -11,6 +11,7 @@ The figures must agree with this copy. It's excerpted from the live beoptimal.ca
 **Hardware**
 - *The full machine:* commercial deck and belt, upright display and touch panel in one unit. Run at your own pace, from an easy jog to a full sprint.
 - *32″ upright display:* shows your live skeletal tracking while you run. A second touch panel runs the session.
+  - **⚠ Wrong on the site (2026-10-12):** the clinic's display is about 50″, stood vertically (Peter; Visbody lists a 50″ LG 4K vertical display). The site copy should say 50″. Figs 4 and 6 already draw 50″ proportions.
 - *Handrail console:* speed and incline at your fingertips, with safety monitoring on throughout.
 
 **Visit:** about 45 min. Short intake, a 5-minute warm-up, a **5-minute recorded run at normal training pace**, then a guided review. Fitted clothing helps the camera track joints. The report comes on the day by QR code.

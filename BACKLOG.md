@@ -35,7 +35,7 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 
 | Piece | 3-D state |
 |---|---|
-| A3 → A3b | done: skin block |
+| A3 | done: skin block (A3b folded into A3 on 2026-10-12; flat A3 retired) |
 | A8 | done: muscle bundle cylinder, body redrawn live |
 | A9 | done: bone-and-marrow block |
 | A1 | next: gut-lining block |
