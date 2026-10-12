@@ -1,0 +1,34 @@
+/* A1 · the gut-lining block: the cell section on the front face of an isometric cut-away. */
+.iso.optimal {
+  --b1-lateral: #3c5236; --b1-cell-dim: #233620; --b1-villus-dim: #283c24; --b1-top: #22361e; --b1-top-main: #2a3f25;
+  --b1-v0: #4d6446; --b1-v1: #33492d; --b1-v2: #233720; --b1-d0: #3b5135; --b1-d1: #2b4026; --b1-d2: #1e301a; --b1-tip: #57704f; --b1-tip-dim: #435a3c;
+  --b1-shade: rgba(0, 0, 0, 0.2); --b1-shadow: rgba(0, 0, 0, 0.35);
+}
+.iso.optimal[data-theme="light"] {
+  --b1-lateral: #d9c6ad; --b1-cell-dim: #ede3d5; --b1-villus-dim: #e6dccd; --b1-top: #e3d0b6; --b1-top-main: #dcc5a7;
+  --b1-v0: #fbf2e6; --b1-v1: #efdfc9; --b1-v2: #d8c3a6; --b1-d0: #f5ede1; --b1-d1: #e8dccb; --b1-d2: #d3c4ae; --b1-tip: #fff8ee; --b1-tip-dim: #f6eee2;
+  --b1-shade: rgba(60, 40, 20, 0.12); --b1-shadow: rgba(60, 40, 20, 0.16);
+}
+/* no see-through in the block: neighbours are muted by tone, not opacity */
+.b1-front .a1-dim, .b1-forest .a1-dim, g[transform] .a1-dim { opacity: 1; }
+.a1-cell.a1-dim { fill: var(--b1-cell-dim); }
+.a1-villus.a1-dim { fill: var(--b1-villus-dim); }
+.a1-nucleus.a1-dim, .a1-mito.a1-dim { opacity: 0.75; }
+.b1-lateral { fill: var(--b1-lateral); }
+.b1-top { fill: var(--b1-top); }
+.b1-top-main { fill: var(--b1-top-main); }
+.b1-junction { fill: none; stroke: var(--a1-membrane); stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; opacity: 0.8; }
+.b1-villus { fill: url(#b1-villus); stroke: var(--a1-membrane); stroke-width: 0.55; }
+.b1-villus.b1-villus-dim { fill: url(#b1-villus-dim); stroke-opacity: 0.7; }
+.b1-villus-tip { fill: var(--b1-tip); }
+.b1-villus-tip.b1-villus-dim { fill: var(--b1-tip-dim); }
+.b1-dmt1 { fill: var(--a1-dmt1); }
+.b1-v0 { stop-color: var(--b1-v0); } .b1-v1 { stop-color: var(--b1-v1); } .b1-v2 { stop-color: var(--b1-v2); }
+.b1-d0 { stop-color: var(--b1-d0); } .b1-d1 { stop-color: var(--b1-d1); } .b1-d2 { stop-color: var(--b1-d2); }
+.b1-rbc-x { fill: var(--a1-rbc); }
+.b1-side-shade { fill: var(--b1-shade); pointer-events: none; }
+.b1-edge { fill: none; stroke: var(--a1-membrane); stroke-width: 1.1; stroke-linejoin: round; }
+.b1-shadow { fill: var(--b1-shadow); filter: blur(7px); }
+.b1-end-villus { filter: brightness(0.9); }
+.b1-collagen { fill: none; stroke: var(--a1-membrane); stroke-width: 0.9; stroke-linecap: round; opacity: 0.45; }
+.b1-fibro { fill: var(--a1-nucleus); stroke: var(--a1-membrane); stroke-width: 0.6; }

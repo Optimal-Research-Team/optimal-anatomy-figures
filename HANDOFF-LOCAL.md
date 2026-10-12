@@ -31,7 +31,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | 4 | Creator 600 | Round 1 done; built `shared/mannequin.*` | `04-creator-600` |
 | 5 | VO₂max on a bike | **Round 3**: smart bike at KICKR BIKE SHIFT proportions (no logo or copied design), power arc on the flywheel cover, wireless mask, assessor with tablet | `05-vo2max` |
 | 6 | VO₂max on the Creator 600 | **Round 2**: dashboard mockup on the treadmill screen (speed, cadence, step, grade, live runner trace) | `06-vo2max-treadmill` |
-| A1 | Gut cell's gate | Built flat (style test). **Next for 3-D** | `a1-gut-cell` |
+| A1 | Gut cell's gate | **Round 2 · 3-D block** (2026-10-12): brush border of 272 microvilli on top, cells cut on the right end, capillary half-tube | `a1-gut-cell` |
 | A2 | Hot-flash switch (hypothalamus) | Built; **treatment states added**: Hormone therapy / Non-hormonal (class names only) | `a2-hypothalamus` |
 | A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
 | A4 | Beating heart | Built, round 2 (flat, organ) | `a4-heart` |
