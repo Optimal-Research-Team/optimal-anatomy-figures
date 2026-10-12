@@ -1,6 +1,7 @@
 // A7 live code: one running stride, slowed. The tibia swings about the condyle by bendAt(φ);
 // the kneecap is placed on its groove where the patellar tendon (fixed length) reaches the
-// tibial tuberosity; tendons, fat pad, ligaments, calf and skin (and the slab's outer surface) follow. While the foot is down,
+// tibial tuberosity; tendons, fat pad, ligaments, calf and skin follow, and the far half of the leg
+// keeps its round skin behind the cut. While the foot is down,
 // the kneecap's contact glows with pfAt(φ) from Fig 4's kneeOf.
 const DATA = __DATA__;
 
@@ -47,6 +48,98 @@ function mount(fig) {
       R.push([p[0] - n[0] * w, p[1] - n[1] * w]);
     });
     return { d: `M${[...L, ...R.reverse()].map((p) => `${f1(p[0])} ${f1(p[1])}`).join("L")}Z`, pts };
+  }
+
+  // ---------------------------------------------------------------- the far half of the leg (round skin behind the cut)
+  // The skin's back and front edges are paired into chords along the leg; each chord is swept round
+  // as a half-circle behind the cut (depth = half its length × FAR.round). Facets facing away are
+  // culled, the rest shaded by facing and painted back to front.
+  const FAR = DATA.far;
+  const sA = Math.sin(FAR.A * RAD), cA = Math.cos(FAR.A * RAD), sE = Math.sin(FAR.E * RAD), cE = Math.cos(FAR.E * RAD);
+  const VIEW = [cA * cE, sA * cE, sE];
+  const LIGHT = (() => {
+    const l = [-0.35, 0.55, 0.76];
+    const m = Math.hypot(...l);
+    return l.map((v) => v / m);
+  })();
+  const css = getComputedStyle(fig);
+  const rgbOf = (name, fb) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec((css.getPropertyValue(name) || fb).trim()) || /^#?([0-9a-f]{6})$/i.exec(fb);
+    return [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16));
+  };
+  const SKIN_HI = rgbOf("--a7-w0", "#f0d3c2");
+  const SKIN_LO = rgbOf("--a7-w1", "#d5a691");
+  const tone = (t) => `rgb(${SKIN_LO.map((lo, i) => Math.round(lo + (SKIN_HI[i] - lo) * t)).join(",")})`;
+  function sampleCR(points, k = 0.9, steps = 8) {
+    const n = points.length;
+    const at = (i) => points[Math.max(0, Math.min(n - 1, i))];
+    const out = [points[0]];
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
+      const c1 = [p1[0] + ((p2[0] - p0[0]) / 6) * k, p1[1] + ((p2[1] - p0[1]) / 6) * k];
+      const c2 = [p2[0] - ((p3[0] - p1[0]) / 6) * k, p2[1] - ((p3[1] - p1[1]) / 6) * k];
+      for (let s = 1; s <= steps; s++) {
+        const t = s / steps;
+        const u = 1 - t;
+        out.push([0, 1].map((c) => u * u * u * p1[c] + 3 * u * u * t * c1[c] + 3 * u * t * t * c2[c] + t * t * t * p2[c]));
+      }
+    }
+    return out;
+  }
+  function byLength(pts, n) {
+    const acc = [0];
+    for (let i = 1; i < pts.length; i++) acc.push(acc[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+    const L = acc[acc.length - 1];
+    const out = [];
+    let j = 0;
+    for (let q = 0; q < n; q++) {
+      const want = (L * q) / (n - 1);
+      while (j < acc.length - 2 && acc[j + 1] < want) j++;
+      const t = (want - acc[j]) / (acc[j + 1] - acc[j] || 1);
+      out.push([pts[j][0] + (pts[j + 1][0] - pts[j][0]) * t, pts[j][1] + (pts[j + 1][1] - pts[j][1]) * t]);
+    }
+    return out;
+  }
+  const NL = 46;
+  const NPHI = 36;
+  function drawFar(back, front) {
+    const A = byLength(sampleCR(back), NL);
+    const B = byLength(sampleCR(front), NL);
+    const lv = A.map((a, i) => {
+      const b = B[i];
+      const h = [(b[0] - a[0]) / 2, (b[1] - a[1]) / 2];
+      const r = Math.hypot(h[0], h[1]);
+      return { m: [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], h, r, u: [h[0] / r, h[1] / r] };
+    });
+    const pt = (l, ph) => {
+      const d = Math.sin(ph) * l.r * FAR.round;
+      return [l.m[0] + Math.cos(ph) * l.h[0] + d * FAR.w[0], l.m[1] + Math.cos(ph) * l.h[1] + d * FAR.w[1]];
+    };
+    const quads = [];
+    for (let i = 0; i < NL - 1; i++) {
+      const l0 = lv[i];
+      const l1 = lv[i + 1];
+      const ux = l0.u[0] + l1.u[0];
+      const uy = l0.u[1] + l1.u[1];
+      const um = Math.hypot(ux, uy) || 1;
+      for (let j = 0; j < NPHI; j++) {
+        const p0 = (j / NPHI) * Math.PI;
+        const p1 = ((j + 1) / NPHI) * Math.PI;
+        const pm = (p0 + p1) / 2;
+        // outward normal in world (x right, y toward the viewer, z up)
+        const n = [(Math.cos(pm) * ux) / um, -Math.sin(pm), (-Math.cos(pm) * uy) / um];
+        const facing = n[0] * VIEW[0] + n[1] * VIEW[1] + n[2] * VIEW[2];
+        if (facing <= 0.01) continue;
+        const lit = Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
+        const c = [(l0.m[0] + l1.m[0]) / 2 + Math.cos(pm) * (l0.h[0] + l1.h[0]) / 2, (l0.m[1] + l1.m[1]) / 2 + Math.cos(pm) * (l0.h[1] + l1.h[1]) / 2];
+        const d = Math.sin(pm) * ((l0.r + l1.r) / 2) * FAR.round;
+        const key = (c[0] * cA + (FAR.dep - d) * sA) * cE - c[1] * sE;
+        const q = [pt(l0, p0), pt(l1, p0), pt(l1, p1), pt(l0, p1)];
+        quads.push({ key, d: `M${q.map((v) => `${f1(v[0])} ${f1(v[1])}`).join("L")}Z`, fill: tone(Math.min(1, 0.18 + 0.95 * lit)) });
+      }
+    }
+    quads.sort((a, b) => a.key - b.key);
+    q('[data-part="far"]').innerHTML = quads.map((v) => `<path d="${v.d}" fill="${v.fill}" stroke="${v.fill}" stroke-width="0.7" stroke-linejoin="round"/>`).join("");
   }
 
   // ---------------------------------------------------------------- kinematics
@@ -123,10 +216,10 @@ function mount(fig) {
     const ho = [CF[0] + RC * Math.cos(195 * RAD), CF[1] + RC * Math.sin(195 * RAD)];
     set("gastro", "d", smoothP([[ho[0] - 2, ho[1] - 12], [ho[0] + 14, ho[1] + 6], W([-44, 112]), W([-62, 170]), W([-86, 168]), W([-72, 112])]));
     set("hamt", "d", `M214 214Q${f1((214 + W([-58, 112])[0]) / 2 - 10)} ${f1((214 + W([-58, 112])[1]) / 2 + 10)} ${f1(W([-58, 112])[0])} ${f1(W([-58, 112])[1])}`);
-    const skin = smoothP([[170, -14], [414, -14], [418, 110], [404, 200], patLocal(alpha, [32, -14]), patLocal(alpha, [30, 22]), W([84, 128]), W([70, 200]), W([62, 256]), W([-108, 256]), W([-112, 190]), W([-92, 118]), [214, CF[1] + 26], [182, 180], [172, 70]], true, 0.9);
-    set("skin", "d", skin);
-    // the slab's outer surface is the same outline swept back (stacked <use> clones of this path)
-    q('[data-part="sil"]')?.setAttribute("d", skin);
+    const frontEdge = [[414, -14], [418, 110], [404, 200], patLocal(alpha, [32, -14]), patLocal(alpha, [30, 22]), W([84, 128]), W([70, 200]), W([62, 256])];
+    const backEdge = [[170, -14], [172, 70], [182, 180], [214, CF[1] + 26], W([-92, 118]), W([-112, 190]), W([-108, 256])];
+    set("skin", "d", smoothP([[170, -14], ...frontEdge, ...[...backEdge].reverse().slice(0, -1)], true, 0.9));
+    drawFar(backEdge, frontEdge);
     // monitor
     const xOf = (p) => MON.x0 + p * (MON.x1 - MON.x0);
     const yOf = (v) => MON.y0 - (v / MON.max) * (MON.y0 - MON.y1);

@@ -1,6 +1,6 @@
 # A7 · The kneecap's load
 
-**What it is:** a thick slice of the knee as an anatomical specimen in isometric 3-D (round 2, 2026-10-12). Its cut face is the knee in side section, front to the right, through one running stride shown 4× slower. It is the inside view of Fig 4 (Creator 600). The section is hand-drawn organic SVG in the A-series style:
+**What it is:** the leg cut in half lengthwise at the knee, in isometric 3-D (round 2, 2026-10-12). Its cut face is the knee in side section, front to the right, through one running stride shown 4× slower. It is the inside view of Fig 4 (Creator 600). The section is hand-drawn organic SVG in the A-series style:
 - the femur, fixed in view, with a trabecular texture and a cut end;
 - the tibia swinging about the condyle;
 - the kneecap gliding in its groove on a fixed-length patellar tendon;
@@ -32,34 +32,39 @@
 - **Offscreen:** rendering stops out of view.
 - **Reduced motion:** one still at mid-stance, the deepest bend and most force.
 
-## Round 2 (2026-10-12): the specimen slab, the approach for the organ pieces
+## Round 2 (2026-10-12): the leg cut in half, the approach for the organ pieces
 
 Peter's decision: every A-piece goes 3-D. The organ pieces (A2, A4, A6, A7) don't fit a tissue block, so A7 tries the approach for all four first; **A2, A4 and A6 wait for Peter's OK.**
 
-**Approach:** HANDOFF-LOCAL §5.2 option (a), "a deep slab", done in true isometric rather than as a plate under a flat drawing.
-- The section becomes the cut face of a thick slice of the organ, in the same camera as the blocks (azimuth 62°, elevation 24°).
-- The organ's outline is swept back through the slice's thickness to make its outer surface.
-- Where the slice is cut across, the cut end shows its own section.
+**Two tries:**
+1. **Specimen slab.** The outline was extruded back at constant thickness (stacked `<use>` clones). Peter: "better, but it looks like an unnatural slice of some kind."
+2. **The leg cut in half lengthwise (current).** The near half is removed and the far half keeps its round skin. This is how a hemisected limb really looks, and how textbook cut-away illustrations draw one.
 
-**Why this over the other two §5.2 options:**
-- (b) shading alone keeps the pieces flat, in a different camera from the blocks;
-- (c) a true isometric rebuild would mean redrawing and re-solving every moving part.
+**Construction:**
+- **Camera:** the series camera (azimuth 62°, elevation 24°).
+- **Cut face:** the original section, placed with `planeMatrix` on the cut plane and clipped flat at the thigh's cut (y = −14).
+  - Muscle and femur tops run past the cut, so the clip leaves them cut square.
+  - New marrow canals in the femur and tibia shafts match the cross-section on top.
+  - Soft tissue fills the skin outline, and fascicle lines run along the quadriceps, hamstrings and calf.
+- **Far half (live, in `live.js` `drawFar`):**
+  - The skin's back and front edges are sampled on the same Catmull-Rom curve as the outline and paired by arc length into 46 chords along the leg.
+  - Each chord is swept round behind the cut as a half-circle (depth = half its length × 0.95; thigh and calf are near-round in cross-section).
+  - Facets facing away from the viewer are culled. The rest are shaded by facing (Lambert, light from upper left front) between the theme's two skin tones and painted back to front.
+  - The knee bend needs no special case, because the chords rotate with the shin.
+  - At this camera only the near-edge crescent shows (as it would on a real half-limb), so it reads round without hiding anything.
+- **Top: the far half of the thigh cut straight across** (static, `planeMatrix` on the horizontal cut plane):
+  - skin and the subcutaneous fat ring;
+  - the femur as a half-ring of cortex with its marrow;
+  - anterior, medial and posterior compartments split by intermuscular septa, with muscle outlines for the rectus femoris, sartorius, gracilis and hamstrings, and fascicle dots;
+  - the femoral artery and vein, the great saphenous vein in the fat, and the sciatic nerve.
 
-**Construction (A7):**
-- **Cut face:** the original section, unchanged, placed with `planeMatrix` on the slice's front plane (y = DEP). `live.js` still draws everything in section coordinates.
-- **Outer surface (skin):** live. One hidden path (`#a7-sil`) carries the skin outline that `live.js` already computes each frame. 50 `<use>` clones of it are translated back through the slice depth (the depth vector expressed in the cut face's own coordinates, `WD` = M⁻¹·v), so the walls follow the swinging shin with no extra geometry.
-  - Fill: a vertical gradient.
-  - The back clone carries the far edge line.
-  - Because a prism's visible surface is exactly its front face plus its swept outline, this is correct in every pose.
-- **Top (thigh cut across):** static bands: skin and fat | hamstrings | femur (cortex and cancellous bone) | quadriceps | skin and fat, with fascicle dots in the muscles.
-- **Shin cut across:** never visible. Its outward normal points away from the viewer for every bend from 0° to 105°, so it isn't drawn.
-- **Cut face, made opaque:** soft tissue fills the skin outline, the muscles are solid, and fascicle lines run along the quadriceps, hamstrings and calf (clipped to each muscle).
-- **Slice depth:** 72 units (about 35 mm at the section's scale).
-- **Size:** the camera is fitted to the section's reach over a whole stride (straight at foot contact, 105° in swing), so nothing clips in any pose. The monitor sits flat underneath, and the view is 600 × 772.
+  Positions are textbook-level ([K]) and carry no numbers.
+- **Shin's cut end:** never visible. Its outward normal faces away for every bend from 0° to 105°.
+- **Frame:** fitted to the cut face's real reach over a whole stride, computed from the same control points `live.js` uses, plus the top cross-section. The knee is back to about its round-1 size, and the view is 600 × 812.
 
-**live.js change:** one line. `draw()` also writes the skin outline to `#a7-sil`.
+**live.js changes:** `drawFar()` (about 90 lines), and the skin outline is now built from its two edges, so the far half and the outline share the same points.
 
-## Verification (2026-10-12, slab, local)
+## Verification (2026-10-12, local)
 
 - `node scripts/verify.mjs a7-knee`: passed.
 - No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
@@ -69,6 +74,7 @@ Peter's decision: every A-piece goes 3-D. The organ pieces (A2, A4, A6, A7) don'
   - `shots/phone-{390,360,320}-{dark,light}.png` and `shots/desktop-{dark,light}.png` (Usual, at the peak kneecap force);
   - `shots/desktop-swing-{dark,light}.png` (deep swing);
   - `shots/reduced-390-*.png`.
+- Round-by-round comparison: `review/a7-rounds-desktop.png`, `review/a7-rounds-phone.png`.
 
 ## Embed
 

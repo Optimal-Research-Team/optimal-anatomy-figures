@@ -1,9 +1,9 @@
 // A7 · The kneecap's load (anatomical series, inset for Fig 4).
 //
-// A thick slice of the knee, as an anatomical specimen in isometric 3-D: the side section is
-// its cut face, the skin is swept back into the slice's outer surface (it follows every frame of
-// the stride), and the top shows the thigh cut across. The section, front to the right, runs
-// through one running stride: femur (fixed in
+// The leg cut in half lengthwise at the knee, in isometric 3-D: the side section is the cut face,
+// the far half keeps its round skin (drawn live, so it follows every frame of the stride), and its
+// top is the thigh cut straight across. The section, front to the right, runs through one running
+// stride: femur (fixed in
 // view), tibia swinging about the condyle, the kneecap (patella) gliding in its groove on the
 // patellar tendon, cartilage on all three bones, menisci, the cruciate ligaments, the fat pad,
 // quadriceps, hamstrings and calf, and the skin around it all. While the foot is on the ground the
@@ -46,7 +46,7 @@ const arc = (c, r, a0, a1, step = 4) => {
 };
 
 // ---------------------------------------------------------------- femur (fixed)
-const FEMUR = [[258, -12], [316, -12], [322, 100], [338, 196], ...arc(CF, RC, -50, 205, 8), [244, 220], [252, 100]];
+const FEMUR = [[258, -34], [316, -34], [322, 100], [338, 196], ...arc(CF, RC, -50, 205, 8), [244, 220], [252, 100]];
 const femurCart = arc(CF, RC - 3, -50, 200, 4);
 let hatch = "";
 for (let i = 0; i < 70; i++) {
@@ -57,8 +57,8 @@ for (let i = 0; i < 70; i++) {
   hatch += `M${f1(x)} ${f1(y)}l${f1(Math.cos(a) * L)} ${f1(Math.sin(a) * L)}`;
 }
 // muscle fascicles on the cut face, running the length of each muscle (clipped to it)
-const QUAD = [[322, -12], [392, -12], [398, 90], [384, 176], [360, 212], [340, 150], [330, 60]];
-const HAM = [[184, -12], [252, -12], [248, 150], [232, 232], [204, 214], [186, 110]];
+const QUAD = [[322, -34], [392, -34], [398, 90], [384, 176], [360, 212], [340, 150], [330, 60]];
+const HAM = [[184, -34], [252, -34], [248, 150], [232, 232], [204, 214], [186, 110]];
 const CALF = [[-44, 96], [-84, 160], [-94, 214], [-80, 252], [-38, 252], [-46, 190]];
 const fascicles = (from, to, n, bow) => {
   let d = "";
@@ -88,6 +88,7 @@ const tibiaG = `<g data-part="tibia">
   <clipPath id="a7-calfclip"><path d="${smooth(CALF, true, 1)}"/></clipPath>
   <path class="a7-calf" d="${smooth(CALF, true, 1)}"/><path class="a7-fasc" clip-path="url(#a7-calfclip)" d="${calfFib}"/>
   <path class="a7-bone" d="${smooth(TIBIA, true, 0.8)}" fill="url(#a7-boneg)"/>
+  <path class="a7-canal" d="${smooth([[-22, 249], [22, 249], [25, 205], [17, 172], [0, 162], [-17, 172], [-27, 205]], true, 0.9)}"/>
   <path class="a7-hatch" d="${tHatch}"/>
   <path class="a7-cart" d="M-54 69Q0 63 52 69"/>
   <path class="a7-men" d="M56 72L30 68L56 58Z"/><path class="a7-men" d="M-60 72L-34 68L-60 56Z"/>
@@ -113,53 +114,93 @@ const monitor = () => `<g class="a7-mon">
 <path class="a7-cursor" data-part="cursor" d="M0 ${MON.y1 - 6}V${MON.y0}"/><circle class="a7-mdot" data-part="mdot" r="5.5"/>
 </g>`;
 
-// ---------------------------------------------------------------- the slab: the section is the cut face of a thick slice of the knee
+// ---------------------------------------------------------------- the leg cut in half: the section is the cut face, the far half stays round
 // Same camera as the other A-series pieces (azimuth 62°, elevation 24°). World: x = section x,
-// y = back into the slice (cut face at y = DEP), z = up (−section y).
-const DEP = 72;
+// y = toward the viewer (the cut face is the plane y = DEP), z = up (−section y). The near half of
+// the leg is taken away; the far half keeps its round skin (drawn live in live.js, because the shin
+// swings), and its top end is the thigh cut straight across.
+const DEP = 140;
 const S3 = (sx, y, sy) => [sx, y, -sy];
-const SEC = { x0: 30, x1: 440, y0: -14, y1: 545 }; // the section's reach over a whole stride
-const BOUNDS3 = [];
-for (const x of [SEC.x0, SEC.x1]) for (const y of [SEC.y0, SEC.y1]) for (const d of [0, DEP]) BOUNDS3.push(S3(x, d, y));
+const ROUND = 0.95; // depth of the far half / half the leg's front-to-back width (thigh and calf are near round)
+const TOPC = { x: 292, r: 122, y: -14 }; // the thigh's cut across the top: chord 170..414
+// the section's reach over a whole stride, from the same control points live.js uses for the skin
+const reach = [[170, -14], [414, -14], [418, 110], [404, 200], [214, 302], [182, 180], [172, 70], [434, 100]];
+for (let th = 10; th <= 110; th += 5) {
+  const c = Math.cos(th * RAD);
+  const s2 = Math.sin(th * RAD);
+  for (const q of [[84, 128], [70, 200], [62, 256], [-108, 256], [-112, 190], [-92, 118]]) reach.push([CF[0] + q[0] * c - q[1] * s2, CF[1] + q[0] * s2 + q[1] * c]);
+}
+for (let a = -30; a <= 55; a += 5) reach.push([CF[0] + 120 * Math.cos(a * RAD), CF[1] + 120 * Math.sin(a * RAD)]);
+const BOUNDS3 = reach.map(([x, y]) => S3(x, DEP, y));
+for (let t = 0; t <= 180; t += 10) BOUNDS3.push(S3(TOPC.x + TOPC.r * Math.cos(t * RAD), DEP - TOPC.r * ROUND * Math.sin(t * RAD), TOPC.y));
 const VW = 600;
-const PB = k.fitProjection(BOUNDS3, VW, 600, { pad: 12, azimuth: 62, elevation: 24 });
+const PB = k.fitProjection(BOUNDS3, VW, 640, { pad: 10, azimuth: 62, elevation: 24 });
 const SLAB_BOTTOM = Math.max(...BOUNDS3.map((p) => k.iso(p, PB)[1]));
 const FB = figkit(PB);
 const FRONT_M = FB.planeMatrix(S3(0, DEP, 0), [1, 0, 0], [0, 0, -1]);
-// the depth of the slice as a translation in the cut face's own coordinates
+// one unit of depth behind the cut, as a translation in the cut face's own coordinates
 const o2 = k.iso(S3(0, DEP, 0), PB);
 const ex = k.iso(S3(1, DEP, 0), PB).map((v, i) => v - o2[i]);
 const ey = k.iso(S3(0, DEP, 1), PB).map((v, i) => v - o2[i]);
-const back = k.iso(S3(0, 0, 0), PB).map((v, i) => v - o2[i]);
+const back1 = k.iso(S3(0, DEP - 1, 0), PB).map((v, i) => v - o2[i]);
 const det = ex[0] * ey[1] - ey[0] * ex[1];
-const WD = [(back[0] * ey[1] - ey[0] * back[1]) / det, (ex[0] * back[1] - back[0] * ex[1]) / det];
-const NCL = Math.ceil(Math.hypot(...back) / 1.1);
-let walls = "";
-for (let i = NCL; i >= 1; i--) walls += `<use href="#a7-sil" class="a7-wall${i === NCL ? " a7-wall-back" : ""}" transform="translate(${f1((WD[0] * i) / NCL)} ${f1((WD[1] * i) / NCL)})"/>`;
-// the top of the slice: the thigh cut across (skin and fat | hamstrings | femur | quadriceps | skin and fat)
-const band3 = (x0, x1, cls, y = -14) => `<path class="${cls}" d="M${x0} ${y}L${x1} ${y}L${f1(x1 + WD[0])} ${f1(y + WD[1])}L${f1(x0 + WD[0])} ${f1(y + WD[1])}Z"/>`;
-let topDots = "";
-for (let i = 0; i < 46; i++) {
-  const band = i % 2 ? [190, 248] : [328, 388];
-  const x = band[0] + rng() * (band[1] - band[0]);
-  const t = 0.08 + rng() * 0.84;
-  topDots += `M${f1(x + WD[0] * t - 1)} ${f1(-14 + WD[1] * t)}a1 0.7 0 1 0 2 0a1 0.7 0 1 0 -2 0Z`;
+const WD1 = [(back1[0] * ey[1] - ey[0] * back1[1]) / det, (ex[0] * back1[1] - back1[0] * ex[1]) / det];
+// the top: the far half of the thigh cut straight across (plane coordinates: x, d = depth behind the cut)
+const CAP_M = FB.planeMatrix(S3(0, DEP, TOPC.y), [1, 0, 0], [0, -1, 0]);
+const RD = TOPC.r * ROUND;
+const half = (r, rd = r * ROUND, cx = TOPC.x, n = 48) => {
+  const pts = [];
+  for (let q = 0; q <= n; q++) {
+    const t = (q / n) * Math.PI;
+    pts.push([cx + r * Math.cos(t), rd * Math.sin(t)]);
+  }
+  return `M${pts.map((p) => `${f1(p[0])} ${f1(p[1])}`).join("L")}Z`;
+};
+const polar = (deg, f) => [TOPC.x + TOPC.r * f * Math.cos(deg * RAD), RD * f * Math.sin(deg * RAD)];
+const ell = (c, rx, ry, rot = 0) => `<ellipse cx="${f1(c[0])}" cy="${f1(c[1])}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${f1(c[0])} ${f1(c[1])})"/>`;
+// intermuscular septa from the femur out to the fat: anterior (quadriceps) | medial (adductors, sartorius, gracilis) | posterior (hamstrings)
+const FEM = { x: 287, r: 29 };
+const septum = (deg) => {
+  const a = [FEM.x + FEM.r * Math.cos(deg * RAD), FEM.r * 0.95 * Math.sin(deg * RAD)];
+  const b = polar(deg + 6, 0.86);
+  return `M${f1(a[0])} ${f1(a[1])}Q${f1((a[0] + b[0]) / 2 + 6)} ${f1((a[1] + b[1]) / 2 + 4)} ${f1(b[0])} ${f1(b[1])}`;
+};
+let capDots = "";
+for (let q = 0; q < 70; q++) {
+  const deg = 4 + rng() * 172;
+  const f = 0.3 + rng() * 0.52;
+  const p = polar(deg, f);
+  if (Math.hypot(p[0] - FEM.x, p[1] / 0.95) < FEM.r + 5) continue;
+  capDots += `M${f1(p[0] - 1.1)} ${f1(p[1])}a1.1 0.9 0 1 0 2.2 0a1.1 0.9 0 1 0 -2.2 0Z`;
 }
-const TOP = `<g class="a7-top">${band3(170, 414, "a7-top-soft")}${band3(184, 252, "a7-top-muscle")}${band3(322, 392, "a7-top-muscle")}${band3(258, 316, "a7-top-bone")}${band3(258, 264, "a7-top-cortex")}${band3(310, 316, "a7-top-cortex")}<path class="a7-top-fasc" d="${topDots}"/>${band3(170, 414, "a7-top-light")}<path class="a7-top-edge" d="M170 -14L414 -14L${f1(414 + WD[0])} ${f1(-14 + WD[1])}L${f1(170 + WD[0])} ${f1(-14 + WD[1])}Z"/></g>`;
-const PLOT_Y = Math.ceil(SLAB_BOTTOM + 8);
+const CAP = `<g class="a7-cap" transform="${CAP_M}">
+<path class="a7-cap-skin" d="${half(TOPC.r)}"/>
+<path class="a7-cap-fat" d="${half(TOPC.r - 4, RD - 4)}"/>
+<path class="a7-cap-muscle" d="${half(TOPC.r - 15, RD - 15)}"/>
+<path class="a7-cap-fasc" d="${capDots}"/>
+<g class="a7-cap-mus">${ell(polar(22, 0.55), 22, 15, 20)}${ell(polar(92, 0.82), 10, 7, 0)}${ell(polar(122, 0.8), 7, 5, 30)}${ell(polar(150, 0.62), 17, 12, -25)}${ell(polar(166, 0.6), 13, 9, -10)}</g>
+<path class="a7-cap-septum" d="${septum(58)}${septum(132)}"/>
+<path class="a7-cap-bone" d="${half(FEM.r, FEM.r * 0.95, FEM.x)}"/>
+<path class="a7-cap-marrow" d="${half(FEM.r - 8, (FEM.r - 8) * 0.95, FEM.x)}"/>
+<g class="a7-cap-art">${ell(polar(76, 0.5), 4.6, 4.2)}</g><g class="a7-cap-vein">${ell([polar(76, 0.5)[0] - 9, polar(76, 0.5)[1] + 2], 5.6, 4.6)}${ell(polar(104, 0.9), 3.4, 3)}</g>
+<g class="a7-cap-nerve">${ell(polar(158, 0.34), 6, 4.4)}</g>
+<path class="a7-cap-light" d="${half(TOPC.r)}"/>
+<path class="a7-cap-edge" d="${half(TOPC.r)}"/>
+</g>`;
+const PLOT_Y = Math.ceil(SLAB_BOTTOM + 6);
 const VH = PLOT_Y + 170 + 6;
 MON = { x0: 88, x1: 552, y0: PLOT_Y + 136, y1: PLOT_Y + 46, max: 1.2, box: [24, PLOT_Y, 552, 170] };
 
-const svg = `<svg class="iso-svg a7-svg" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="A thick slice of the knee seen in 3-D, its cut face showing the knee in side section, front to the right, through one running stride. The thigh bone stays still while the shin bone swings beneath it and the kneecap glides up and down in its groove, held by the patellar tendon. Cartilage covers all three bones, with the menisci and the cruciate ligaments between them, the fat pad behind the tendon, and the thigh and calf muscles around. While the foot is on the ground, the contact under the kneecap glows with the force on it; a monitor plots that force over the stride.">
+const svg = `<svg class="iso-svg a7-svg" viewBox="0 0 ${VW} ${VH}" role="img" aria-label="A leg cut in half lengthwise at the knee and seen in 3-D. The cut face shows the knee in side section, front to the right, through one running stride. The thigh bone stays still while the shin bone swings beneath it and the kneecap glides up and down in its groove, held by the patellar tendon. Cartilage covers all three bones, with the menisci and the cruciate ligaments between them, the fat pad behind the tendon, and the thigh and calf muscles around. While the foot is on the ground, the contact under the kneecap glows with the force on it; a monitor plots that force over the stride.">
 <defs>
   <linearGradient id="a7-boneg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="a7-bg0"/><stop offset="1" class="a7-bg1"/></linearGradient>
   <radialGradient id="a7-glowg" cx="50%" cy="50%" r="50%"><stop offset="0" class="a7-gl0"/><stop offset="1" class="a7-gl1"/></radialGradient>
 </defs>
-<g class="a7-slab" transform="${FRONT_M}">
-<defs><path id="a7-sil" data-part="sil"/><clipPath id="a7-hamclip"><path d="${smooth(HAM, true, 1)}"/></clipPath><clipPath id="a7-quadclip"><path d="${smooth(QUAD, true, 1)}"/></clipPath>
-<linearGradient id="a7-wallg" gradientUnits="userSpaceOnUse" x1="0" y1="-60" x2="0" y2="560"><stop offset="0" class="a7-w0"/><stop offset="1" class="a7-w1"/></linearGradient></defs>
-${walls}
-${TOP}
+<g transform="${FRONT_M}"><g class="a7-far" data-part="far"></g></g>
+${CAP}
+<g class="a7-slab" transform="${FRONT_M}"><g clip-path="url(#a7-cutclip)">
+<defs><clipPath id="a7-cutclip"><rect x="-300" y="${TOPC.y}" width="1200" height="1200"/></clipPath><clipPath id="a7-hamclip"><path d="${smooth(HAM, true, 1)}"/></clipPath><clipPath id="a7-quadclip"><path d="${smooth(QUAD, true, 1)}"/></clipPath>
+</defs>
 <path class="a7-skin" data-part="skin"/>
 <path class="a7-ham" d="${smooth(HAM, true, 1)}"/><path class="a7-fasc" clip-path="url(#a7-hamclip)" d="${hamFib}"/>
 <path class="a7-quad" d="${smooth(QUAD, true, 1)}"/><path class="a7-fasc" clip-path="url(#a7-quadclip)" d="${quadFib}"/>
@@ -167,9 +208,9 @@ ${TOP}
 <path class="a7-hamt" data-part="hamt"/>
 ${tibiaG}
 <path class="a7-bone" d="${smooth(FEMUR, true, 0.7)}" fill="url(#a7-boneg)"/>
+<path class="a7-canal" d="${smooth([[268, -40], [306, -40], [310, 70], [301, 128], [287, 142], [273, 128], [264, 70]], true, 0.9)}"/>
 <path class="a7-hatch" d="${hatch}"/>
 <path class="a7-cart" d="${smooth(femurCart, false, 1)}"/>
-<path class="a7-cutcap" d="M258 -12Q287 -5 316 -12"/>
 <path class="a7-lig" data-part="acl"/><path class="a7-lig" data-part="pcl"/>
 <path class="a7-fat" data-part="fatpad"/>
 <path class="a7-pfglow" data-part="pfglow"/>
@@ -177,7 +218,7 @@ ${tibiaG}
 <path class="a7-fibres" data-part="tfibres"/>
 <g data-part="patella"><ellipse class="a7-pat-cart" cx="-5" cy="0" rx="12" ry="27"/><ellipse class="a7-pat" cx="5" cy="0" rx="15" ry="31" fill="url(#a7-boneg)"/><path class="a7-hatch" d="M-2 -18l10 8M0 -2l12 -6M-2 12l11 6M4 -24l6 14M2 4l9 12"/></g>
 <circle data-part="glow" class="a7-glow" r="44" fill="url(#a7-glowg)" opacity="0"/>
-</g>
+</g></g>
 ${monitor()}
 </svg>`;
 
@@ -188,7 +229,7 @@ const LINES = [
   "10 % more steps at the same pace: on average about 14 % less peak force under the kneecap.",
 ];
 const PCTS = [-10, 0, 5, 10];
-const DATA = { CF, RC, PCTS, lines: LINES, mon: MON };
+const DATA = { CF, RC, PCTS, lines: LINES, mon: MON, far: { w: WD1.map((v) => +v.toFixed(4)), A: 62, E: 24, dep: DEP, round: ROUND } };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const SCRIPT = `${strip(readFileSync(join(HERE, "../04-creator-600/model.mjs"), "utf8"))}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");

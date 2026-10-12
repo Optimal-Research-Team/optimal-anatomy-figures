@@ -40,7 +40,7 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 | A9 | done: bone-and-marrow block |
 | A1 | done: gut-lining block (brush border on top, cells on the end face), 2026-10-12 |
 | A5 | done: lung-tissue block with the air sac opened (2026-10-12) |
-| A7 | done: specimen slab (cut face + swept live outline + cut ends), 2026-10-12 |
+| A7 | done: leg cut in half lengthwise (cut face + round far half drawn live + thigh cross-section on top), 2026-10-12. The flat-walled slab try read as "an unnatural slice" |
 | A2, A4, A6 | same slab approach once Peter OKs A7 |
 
 Recipe: HANDOFF-LOCAL §6.

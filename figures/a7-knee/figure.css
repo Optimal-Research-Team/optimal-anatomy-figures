@@ -52,19 +52,23 @@
 .a7-par:first-child { margin-top: 0; }
 .a7-par small { font-size: 12.5px; color: var(--anatomy-muted); }
 
-/* the slab: a thick slice of the knee as a specimen (round 2) */
-.iso.optimal { --a7-soft: #4a3029; --a7-dermis: #a5786b; --a7-w0: #7d5649; --a7-w1: #4b3029; --a7-wall-edge: #c4978a; --a7-top-soft: #6e4a3f; --a7-top-light: rgba(255, 236, 220, 0.08); }
-.iso.optimal[data-theme="light"] { --a7-soft: #f6e4d4; --a7-dermis: #c99582; --a7-w0: #f0d3c2; --a7-w1: #d5a691; --a7-wall-edge: #a97362; --a7-top-soft: #f7e3d3; --a7-top-light: rgba(255, 255, 255, 0.22); }
+/* round 2: the leg cut in half lengthwise; the cut face is the section, the far half stays round */
+.iso.optimal { --a7-soft: #4a3029; --a7-dermis: #a5786b; --a7-w0: #9a6e5f; --a7-w1: #3a241f; --a7-fat-x: #6a5133; --a7-cap-light: rgba(255, 236, 220, 0.06); --a7-cap-edge: #c4978a; --a7-art-x: #d8584a; --a7-vein-x: #6a6fb0; --a7-nerve-x: #e3c46a; }
+.iso.optimal[data-theme="light"] { --a7-soft: #f6e4d4; --a7-dermis: #c99582; --a7-w0: #f7e2d5; --a7-w1: #c9917b; --a7-fat-x: #f6deaa; --a7-cap-light: rgba(255, 255, 255, 0.18); --a7-cap-edge: #a97362; --a7-art-x: #c9483a; --a7-vein-x: #5f66b4; --a7-nerve-x: #d9b24a; }
 .a7-slab .a7-skin { fill: var(--a7-soft); stroke: var(--a7-dermis); stroke-width: 3; }
 .a7-slab .a7-quad, .a7-slab .a7-ham, .a7-slab .a7-gastro, .a7-slab .a7-calf { opacity: 1; }
-.a7-wall { fill: url(#a7-wallg); }
-.a7-wall-back { stroke: var(--a7-wall-edge); stroke-width: 1.2; stroke-linejoin: round; }
-.a7-w0 { stop-color: var(--a7-w0); } .a7-w1 { stop-color: var(--a7-w1); }
 .a7-fasc { fill: none; stroke: var(--a7-muscle-edge); stroke-width: 1; opacity: 0.35; stroke-linecap: round; }
-.a7-top-soft { fill: var(--a7-top-soft); }
-.a7-top-muscle { fill: var(--a7-muscle); }
-.a7-top-bone { fill: var(--a7-bg1); }
-.a7-top-cortex { fill: var(--a7-bg0); }
-.a7-top-fasc { fill: var(--a7-muscle-edge); opacity: 0.5; }
-.a7-top-light { fill: var(--a7-top-light); }
-.a7-top-edge { fill: none; stroke: var(--a7-wall-edge); stroke-width: 1.1; stroke-linejoin: round; }
+.a7-cap-skin { fill: var(--a7-dermis); }
+.a7-cap-fat { fill: var(--a7-fat-x); }
+.a7-cap-muscle { fill: var(--a7-muscle); }
+.a7-cap-fasc { fill: var(--a7-muscle-edge); opacity: 0.45; }
+.a7-cap-mus ellipse { fill: none; stroke: var(--a7-muscle-edge); stroke-width: 0.9; opacity: 0.7; }
+.a7-cap-septum { fill: none; stroke: var(--a7-fat-x); stroke-width: 2.2; stroke-linecap: round; }
+.a7-cap-bone { fill: var(--a7-bg0); stroke: var(--a7-bone-edge); stroke-width: 0.8; }
+.a7-cap-marrow { fill: var(--a7-fat-x); }
+.a7-cap-art ellipse { fill: var(--a7-art-x); }
+.a7-cap-vein ellipse { fill: var(--a7-vein-x); }
+.a7-cap-nerve ellipse { fill: var(--a7-nerve-x); }
+.a7-cap-light { fill: var(--a7-cap-light); }
+.a7-cap-edge { fill: none; stroke: var(--a7-cap-edge); stroke-width: 1; }
+.a7-canal { fill: var(--a7-fat-x); stroke: var(--a7-bone-edge); stroke-width: 0.6; stroke-opacity: 0.5; }
