@@ -20,6 +20,7 @@ const PLAN = [
   { dir: "05-vo2max", n: 5, title: "The ramp and the mask", line: "A VO2max ramp on a bike with a wireless mask." },
   { dir: "06-vo2max-treadmill", n: 6, title: "The treadmill ramp", line: "The same VO2max test on the Creator 600 treadmill." },
   { dir: "a2-hypothalamus", n: "A2", title: "The hot-flash switch", line: "Inside the hypothalamus: why less estrogen leaves the heat-loss centre on a hair trigger." },
+  { dir: "a3-finger-skin", n: "A3", title: "The finger's heat valves", line: "Inside the +2.7 °C: tiny shunts in the skin open and warm blood floods the surface." },
   { dir: "a4-heart", n: "A4", title: "The beating heart", line: "Four chambers, four valves: how output climbs from rest to all-out." },
   { dir: "a8-muscle-water", n: "A8", title: "Water in and around the fibres", line: "Where InBody's ICW and ECW actually sit, and why a high ratio doesn't say why." },
   { dir: "a6-red-cell-cycle", n: "A6", title: "The red cell's 120 days", line: "Why ferritin jumps in days after IV iron but haemoglobin takes weeks." },

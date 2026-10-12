@@ -1,0 +1,73 @@
+/* A3 · fingertip skin in section: a cream epidermis with a pale horny layer, a rose dermis,
+   textbook red and blue vessels, glomus muscle in mauve, a golden nerve; warmth in amber. */
+.iso.optimal {
+  --a3-d0: #7a4a48; --a3-d1: #5a3436; --a3-edge: #d8a89a;
+  --a3-epi: #c99f88; --a3-epi-edge: #e7c3ad; --a3-corneum: #e8d2bd; --a3-kera: rgba(90, 50, 40, 0.28);
+  --a3-collagen: rgba(255, 220, 205, 0.12); --a3-fat: #c9b07a; --a3-fat-edge: #8f7a4c;
+  --a3-gland: #b8c0dc; --a3-duct: #b8c0dc;
+  --a3-art: #d0463a; --a3-ven: #5a5fa8; --a3-vessel-edge: #f0b0a0;
+  --a3-glomus: #9a7aa8; --a3-glomus-edge: #d9b8e0;
+  --a3-nerve: #e6c35a; --a3-spike: #fff2b0;
+  --a3-cell-art: #ff7d6b; --a3-cell-ven: #b2b8f0;
+  --a3-w0: rgba(255, 150, 70, 0.55); --a3-w1: rgba(255, 120, 60, 0.12); --a3-heat: #ffb070;
+  --a3-mon-bg: #0f1b0c; --a3-mon-ink: #c9e3c1; --a3-mon-dim: #33452e; --a3-curve: #ffb070; --a3-band: rgba(255, 176, 112, 0.14);
+}
+.iso.optimal[data-theme="light"] {
+  --a3-d0: #f2c9bf; --a3-d1: #e2aa9d; --a3-edge: #8a5a4e;
+  --a3-epi: #f6dcc8; --a3-epi-edge: #b98a74; --a3-corneum: #fbeee0; --a3-kera: rgba(120, 70, 50, 0.25);
+  --a3-collagen: rgba(140, 70, 60, 0.16); --a3-fat: #f6e3a8; --a3-fat-edge: #b89a4c;
+  --a3-gland: #8f98c8; --a3-duct: #8f98c8;
+  --a3-art: #d0463a; --a3-ven: #5a5fa8; --a3-vessel-edge: #7a2a22;
+  --a3-glomus: #b48ec2; --a3-glomus-edge: #6e4a7a;
+  --a3-nerve: #c99a1c; --a3-spike: #7a5a00;
+  --a3-cell-art: #a8231a; --a3-cell-ven: #2e3480;
+  --a3-w0: rgba(255, 140, 50, 0.45); --a3-w1: rgba(255, 120, 60, 0.08); --a3-heat: #e07a2a;
+  --a3-mon-bg: #1d2a1a; --a3-mon-ink: #d9efd2; --a3-mon-dim: #3d5436; --a3-curve: #ffb070; --a3-band: rgba(255, 176, 112, 0.16);
+}
+.a3-d0 { stop-color: var(--a3-d0); } .a3-d1 { stop-color: var(--a3-d1); }
+.a3-w0 { stop-color: var(--a3-w0); } .a3-w1 { stop-color: var(--a3-w1); }
+.a3-svg .a3-mon path, .a3-svg .a3-mon rect, .a3-svg .a3-mon circle { vector-effect: non-scaling-stroke; }
+.a3-derm { stroke: none; }
+.a3-collagen { fill: none; stroke: var(--a3-collagen); stroke-width: 2.2; stroke-linecap: round; }
+.a3-fat { fill: var(--a3-fat); stroke: var(--a3-fat-edge); stroke-width: 1; opacity: 0.85; }
+.a3-gland { fill: var(--a3-gland); stroke: var(--a3-edge); stroke-width: 0.6; opacity: 0.85; }
+.a3-duct { fill: none; stroke: var(--a3-duct); stroke-width: 2.4; stroke-linecap: round; opacity: 0.85; }
+.a3-feed { fill: none; stroke: var(--a3-art); stroke-width: 3.2; stroke-linecap: round; }
+.a3-art { fill: var(--a3-art); stroke: var(--a3-vessel-edge); stroke-width: 1; }
+.a3-plex { stroke: var(--a3-vessel-edge); stroke-width: 1; }
+.a3-loop-up { fill: none; stroke: var(--a3-art); stroke-width: 2.2; stroke-linecap: round; }
+.a3-loop-dn { fill: none; stroke: var(--a3-ven); stroke-width: 2.2; stroke-linecap: round; }
+.a3-loop-cap { fill: none; stroke: color-mix(in srgb, var(--a3-art) 50%, var(--a3-ven)); stroke-width: 2.2; stroke-linecap: round; }
+.a3-glomus { fill: var(--a3-glomus); stroke: var(--a3-glomus-edge); stroke-width: 0.5; }
+.a3-ava-wall { fill: var(--a3-glomus); stroke: var(--a3-glomus-edge); stroke-width: 0.8; }
+.a3-ava { stroke: none; }
+.a3-nerve { fill: none; stroke: var(--a3-nerve); stroke-width: 2.6; stroke-linecap: round; stroke-dasharray: 7 2; }
+.a3-spike { fill: var(--a3-spike); }
+.a3-cells-art { fill: var(--a3-cell-art); }
+.a3-cells-ven { fill: var(--a3-cell-ven); }
+.a3-epi { fill: var(--a3-epi); stroke: var(--a3-epi-edge); stroke-width: 1; }
+.a3-kera { fill: var(--a3-kera); }
+.a3-corneum { fill: var(--a3-corneum); opacity: 0.95; }
+.a3-warmth { pointer-events: none; mix-blend-mode: normal; }
+.a3-surface { fill: none; stroke: var(--a3-edge); stroke-width: 1.4; }
+.a3-pores { fill: var(--a3-edge); }
+.a3-cut { fill: none; stroke: var(--a3-edge); stroke-width: 1.2; }
+.a3-heat { fill: none; stroke: var(--a3-heat); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.a3-mon-bg { fill: var(--a3-mon-bg); }
+.a3-mon-title { fill: var(--a3-mon-ink); font: 600 19px/1 var(--opt-ui); }
+.a3-mon-band { fill: var(--a3-curve); font: 600 15px/1 var(--opt-ui); opacity: 0.85; }
+.a3-open-band { fill: var(--a3-band); }
+.a3-grid { fill: none; stroke: var(--a3-mon-dim); stroke-width: 1; stroke-dasharray: 3 4; }
+.a3-axis { fill: none; stroke: var(--a3-mon-ink); stroke-width: 1; opacity: 0.45; }
+.a3-tick { fill: var(--a3-mon-ink); font: 500 17px/1 var(--opt-ui); opacity: 0.8; }
+.a3-curve { fill: none; stroke: var(--a3-curve); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; }
+.a3-curve-ghost { fill: none; stroke: var(--a3-curve); stroke-width: 1.3; stroke-dasharray: 3 4; opacity: 0.4; }
+.a3-dot { fill: var(--a3-curve); stroke: var(--a3-mon-bg); stroke-width: 2; }
+.iso.optimal .iso-swatch[data-mark="ava"] path { stroke: var(--a3-glomus); stroke-width: 5; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="artb"] path { stroke: var(--a3-art); stroke-width: 5; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="nerve"] path { stroke: var(--a3-nerve); stroke-width: 3; stroke-dasharray: 4 1.5; }
+.a3-scene { margin: 10px 4px 0; font: 500 14px/1.45 var(--opt-ui); color: var(--anatomy-text); min-height: 4.4em; }
+.a3-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a3-par { display: block; margin-top: 6px; }
+.a3-par:first-child { margin-top: 0; }
+.a3-par small { font-size: 12.5px; color: var(--anatomy-muted); }

@@ -1235,6 +1235,23 @@ Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Ranc
 
 ---
 
+## A3. The finger's heat valves (anatomical series)
+
+Uses §1 and Fig 1's `flashAt(t)`: finger skin rise +2.7 ± 0.2 °C (range 1–7) [Meldrum 1979; Kronenberg 1994], raised about 31 min [Meldrum 1979], heart rate +9 to +10 bpm [Low 2008], flash about 3.4 min [Low 2008].
+
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| Arteriovenous anastomoses (AVAs) sit in glabrous skin (fingertips, palms, soles) and link arterioles straight to the venous plexus | qualitative | [K] textbook physiology | MEDIUM |
+| AVAs are coiled and wrapped in glomus (modified smooth-muscle) cells; sympathetic vasoconstrictor nerves hold them shut, and withdrawing that tone opens them | qualitative | [K] textbook physiology | MEDIUM |
+| Hot-flash sweating is mostly on the upper body (face, neck, chest), so A3 draws the finger's sweat glands idle | qualitative | [K] clinical description | LOW-MEDIUM |
+
+### How A3 uses these numbers
+
+- **Shunt lumen** = 1.6 + 7.4 × louvre px, and the wall thickens with it. The plexus is 7 + 7 × louvre px wide, and its colour mixes toward arterial by 0.6 × louvre. Dermal warmth opacity = 0.6 × skin ÷ 2.7. These are drawing proxies.
+- **Blood flow per route:** through the arteriole 5/s; capillary loops 1.1/s each; shunts 9 × louvre² per second each. These are drawing proxies with no physiological flow numbers.
+
+---
+
 ## A8. Water in and around muscle fibres (anatomical series)
 
 Uses §2: ECW/TBW typical ≈ 0.380 and the InBody bands (< 0.390 normal, 0.390–0.400 slightly over, > 0.400 over) [17][18]; Fig 2's Fricke model for the share of current crossing membranes (2 / 17 / 23 / 24 % at 5 / 50 / 250 / 500 kHz).
