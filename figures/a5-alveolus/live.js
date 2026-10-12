@@ -57,7 +57,7 @@ function mount(fig) {
   let breath = 0;
   const inAir = (x, y, m = 16) => Math.hypot(x - C[0], y - C[1]) < R - m;
   function newAir(fromMouth) {
-    if (fromMouth) return { x: DATA.top[0] + rnd(-18, 18), y: DATA.top[1] + rnd(6, 16), vx: rnd(-10, 10), vy: rnd(20, 40) };
+    if (fromMouth) return { x: DATA.top[0] + rnd(-22, 22), y: DATA.top[1] + rnd(4, 14), vx: rnd(-26, 26), vy: rnd(40, 70) };
     for (;;) {
       const x = rnd(C[0] - R, C[0] + R);
       const y = rnd(C[1] - R, C[1] + R);
@@ -160,8 +160,8 @@ function mount(fig) {
   const dots = (list, r) => list.map((p) => `M${f1(p[0] - r)} ${f1(p[1])}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`).join("");
   const xOf = (t) => PL.x0 + (Math.min(t, PL.tMax) / PL.tMax) * (PL.x1 - PL.x0);
   const yOf = (s) => PL.y0 - s * (PL.y0 - PL.y1);
-  const lamOf = (t) => DATA.lam0 - 2 * DATA.lam0 * Math.min(1, t / shown.tr);
-  const fracOf = (t) => (C[0] + R * Math.cos((DATA.lat * Math.PI) / 180) * Math.sin((lamOf(t) * Math.PI) / 180) - DATA.a0x) / (DATA.a1x - DATA.a0x);
+  // how far across the traced capillary a cell is after t seconds in it (0 at the arteriole end, 1 at the venule end)
+  const fracOf = (t) => (P[Math.round(i0 + (i1 - i0) * Math.min(1, t / shown.tr))][0] - DATA.a0x) / (DATA.a1x - DATA.a0x);
   const ductAt = (s, o) => {
     const d = DATA.duct;
     const u = s * (d.length - 1);
@@ -179,10 +179,11 @@ function mount(fig) {
     return `<g transform="translate(${f1(p.x)} ${f1(p.y)}) rotate(${f1(p.ang)})"><ellipse class="a5-cell" rx="${f1(rx)}" ry="4.7" fill="${mix(t)}"/><ellipse rx="${f1(rx * 0.42)}" ry="1.9" fill="${mix(t, 0.62)}"/></g>`;
   }
   function draw() {
-    // the sac breathes
+    // the tissue breathes (the whole block swells about its centre)
     const vol = breath < 0.4 ? (1 - Math.cos((Math.PI * breath) / 0.4)) / 2 : (1 + Math.cos((Math.PI * (breath - 0.4)) / 0.6)) / 2;
     const s = 1 + (0.012 + 0.011 * shown.tv) * vol;
-    set('[data-part="sac"]', "transform", `translate(${C[0]} ${C[1]}) scale(${s.toFixed(4)}) translate(${-C[0]} ${-C[1]})`);
+    const [px, py] = DATA.pivot || C;
+    set('[data-part="sac"]', "transform", `translate(${px} ${py}) scale(${s.toFixed(4)}) translate(${-px} ${-py})`);
     // cells
     let back = "";
     let front = "";

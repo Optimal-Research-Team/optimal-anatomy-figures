@@ -1,6 +1,6 @@
 # A5 · The air sac and the red cell
 
-**What it is:** one air sac (alveolus) in a small bunch of neighbours, seen from a little above and wrapped in its capillary net. Hand-drawn organic SVG in the A1/A4 style. The sphere, lining and nets are projected once at build time; the page moves the cells, the gas and the breath.
+**What it is (round 2, 2026-10-12):** a cut-away block of lung tissue in isometric 3-D. The front face opens one air sac (alveolus), and we look into its bowl. Round 1 drew the sac as a sphere in a grape bunch; the parts, the model and the motion are carried over (see "Round 2" below). The geometry is projected once at build time; the page moves the cells, the gas and the breath.
 
 **Mapping in one sentence:** pick an effort and the red cells in the traced capillary speed up to that effort's transit time. Each cell's colour is its own oxygen saturation, computed from its time beside the air (`po2At`, `satOf`). The monitor plots the traced cell against time and marks when it leaves. The shaded "to spare" band (transit − 0.25 s) shrinks from half a second at rest to a few hundredths all out.
 
@@ -41,12 +41,37 @@
 - **Offscreen:** rendering stops out of view.
 - **Reduced motion:** one still with the traced cell partway through loading. Each effort button redraws it.
 
-## Verification (2026-10-11)
+## Round 2 (2026-10-12): 3-D block of lung
 
-- No console errors.
-- No sideways scroll at 390, 360 or 320, in both themes.
-- `lines.mjs`: 0 (no kit lines; all hand-drawn).
-- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png`, `shots/desktop-max-dark.png` (all out), `shots/reduced-390-*.png`, `shots/embed.png`.
+Peter's decision: retire flat anatomy, and A5 goes 3-D. Same camera as A1, A3, A8 and A9 (azimuth 62°, elevation 24°). The block is 560 × 180 deep × 340 tall in section px.
+- **The foam:** 186 seeds packed in 3-D (Poisson-disc, at least 78 apart) give a Voronoi foam of air sacs.
+  - The front, top and end faces are exact plane sections of the same foam: each sac's section is its Voronoi cell clipped by half-planes.
+  - The air spaces therefore meet correctly across every edge of the block.
+  - Each wall is 2 × 4.6 units; an oblique wall reads thicker, as in real sections.
+  - Corners are rounded, so walls thicken where they meet.
+  - Capillaries are drawn as red cells cut across, spaced along each wall's middle line (one in four is darker, venous).
+- **The opened sac:** a sphere centred on the front face, so the cut is through its middle.
+  - **Bowl:** the inner wall seen through the opening, projected exactly with the kit camera and clipped to the opening. That clip is exact for a concave hemisphere: any ray through the opening meets the bowl once.
+  - **On the bowl:** the capillary net (blue to red; the turning point moves with effort), pavement-cell outlines, a surfactant cell, a macrophage and two pores to neighbouring sacs (pores of Kohn).
+  - **Its wall in section:** mostly the traced capillary, with flattened lining nuclei and a surfactant cell bulging in.
+- **The airway:** an alveolar duct rises from the sac's mouth to the top of the block, as a half-pipe cut lengthwise, with the smooth-muscle knobs of the entrance rings. It shows on the top face as a half-disc shaft.
+- **Vessels:** the pulmonary arteriole (left) and venule (right) run in connective-tissue sheaths. The venule leaves through the right end, where it shows cut across.
+- **Breathing:** the whole block swells about its centre (live.js now takes `DATA.pivot`).
+- **live.js changes:** the net's red/blue boundary now follows the traced cell along the path (`fracOf` is path-based, not sphere-based), and fresh air enters a little faster. Everything else is unchanged: cells, oxygen, carbon dioxide, the duct air and the monitor all still draw in section coordinates on the front face.
+- **Caption:** adds "packed like foam". No new numbers.
+- **Anatomy check:** these are textbook-level ([K]) and carry no numbers.
+  - lung parenchyma is a foam of polyhedral alveoli with septa mostly occupied by capillaries;
+  - alveolar ducts carry smooth-muscle knobs at the alveolar entrances;
+  - pores of Kohn link neighbouring alveoli;
+  - pulmonary arterioles and venules run in connective tissue.
+
+## Verification (2026-10-12, 3-D, local)
+
+- `node scripts/verify.mjs a5-alveolus`: passed.
+- No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
+- `lines.mjs`: 0.
+- Reduced motion draws one still with the traced cell partway through loading.
+- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (Rest), plus `shots/desktop-max-{dark,light}.png` (All out).
 
 ## Embed
 

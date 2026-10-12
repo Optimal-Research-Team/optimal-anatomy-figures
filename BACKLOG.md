@@ -39,7 +39,7 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 | A8 | done: muscle bundle cylinder, body redrawn live |
 | A9 | done: bone-and-marrow block |
 | A1 | done: gut-lining block (brush border on top, cells on the end face), 2026-10-12 |
-| A5 | next: lung-tissue block or cut sphere |
+| A5 | done: lung-tissue block with the air sac opened (2026-10-12) |
 | A2, A4, A6, A7 | organ or diagram pieces: ask Peter which treatment (HANDOFF-LOCAL §5.2) |
 
 Recipe: HANDOFF-LOCAL §6.

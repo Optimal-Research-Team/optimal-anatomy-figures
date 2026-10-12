@@ -1,0 +1,37 @@
+/* A5 · the lung block: a foam of air sacs cut on three faces, one sac opened on the front. */
+.iso.optimal {
+  --b5-tissue: #8a4f49; --b5-c0: #4a2a2b; --b5-c1: #351d1f; --b5-c2: #231214; --b5-sh0: #3b2022;
+  --b5-b0: #1f1012; --b5-b1: #3a1f21; --b5-b2: #5a3433; --b5-rim: #e0a091; --b5-edge: #c88a7d;
+  --b5-cap-a: #e2402f; --b5-cap-v: #7a62a8; --b5-sheath: #9c5d55; --b5-knob: #b46e63;
+  --b5-top-light: rgba(255, 230, 220, 0.05); --b5-end-shade: rgba(0, 0, 0, 0.22); --b5-shadow: rgba(0, 0, 0, 0.38);
+}
+.iso.optimal[data-theme="light"] {
+  --b5-tissue: #e7b2a4; --b5-c0: #fffaf7; --b5-c1: #fbebe4; --b5-c2: #f1d2c7; --b5-sh0: #e9c3b7;
+  --b5-b0: #e0ae9f; --b5-b1: #f6dcd2; --b5-b2: #fff7f3; --b5-rim: #9a5245; --b5-edge: #9a5245;
+  --b5-cap-a: #d4382a; --b5-cap-v: #6f62b0; --b5-sheath: #dfa293; --b5-knob: #c27a6b;
+  --b5-top-light: rgba(255, 255, 255, 0.16); --b5-end-shade: rgba(90, 40, 30, 0.12); --b5-shadow: rgba(80, 40, 30, 0.18);
+}
+.b5-tissue { fill: var(--b5-tissue); }
+.b5-air { stroke: var(--b5-rim); stroke-width: 0.8; stroke-opacity: 0.55; }
+.b5-c0 { stop-color: var(--b5-c0); } .b5-c1 { stop-color: var(--b5-c1); } .b5-c2 { stop-color: var(--b5-c2); }
+.b5-b0 { stop-color: var(--b5-b0); } .b5-b1 { stop-color: var(--b5-b1); } .b5-b2 { stop-color: var(--b5-b2); }
+.b5-sh0 { stop-color: var(--b5-sh0); }
+.b5-cap-a { fill: var(--b5-cap-a); opacity: 0.85; }
+.b5-cap-v { fill: var(--b5-cap-v); opacity: 0.7; }
+.b5-bowl-shade { fill: none; stroke: #000; stroke-opacity: 0.22; stroke-width: 16; filter: blur(4px); }
+.b5-pore { fill: var(--b5-c2); stroke: var(--b5-rim); stroke-width: 0.6; stroke-opacity: 0.6; }
+.b5-rim { fill: none; stroke: var(--b5-rim); stroke-width: 1.2; opacity: 0.8; }
+.b5-rim-nuc ellipse { fill: var(--b5-knob); }
+.b5-duct { stroke: none; }
+.b5-duct-wall { fill: none; stroke: var(--b5-rim); stroke-width: 1; opacity: 0.7; }
+.b5-knob, .b5-knob ellipse { fill: var(--b5-knob); }
+.b5-shaft { stroke: var(--b5-rim); stroke-width: 0.8; stroke-opacity: 0.7; }
+.b5-sheath { fill: var(--b5-sheath); stroke: var(--b5-rim); stroke-width: 0.6; stroke-opacity: 0.5; }
+.b5-top-light { fill: var(--b5-top-light); pointer-events: none; }
+.b5-end-shade { fill: var(--b5-end-shade); pointer-events: none; }
+.b5-edge { fill: none; stroke: var(--b5-edge); stroke-width: 1.1; stroke-linejoin: round; }
+.b5-shadow { fill: var(--b5-shadow); filter: blur(7px); }
+.b5-front .a5-cap-edge { stroke-width: 16; }
+.b5-front .a5-cap { stroke-width: 13; }
+.b5-bowl-net.a5-net-edge { stroke-width: 5.4; opacity: 0.35; }
+.b5-bowl-net.a5-net { stroke-width: 3.5; opacity: 0.8; }
