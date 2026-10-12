@@ -1,0 +1,14 @@
+/* A3b · the skin block prototype: the A3 section on the front face of an isometric cut-away. */
+.b3-top { fill: var(--a3-corneum); stroke: var(--a3-edge); stroke-width: 0.8; }
+.b3-ridge-lit { fill: var(--a3-corneum); }
+.b3-ridge-shade { fill: color-mix(in srgb, var(--a3-epi) 70%, var(--a3-corneum)); }
+.b3-ridge { stroke: color-mix(in srgb, var(--a3-edge) 45%, transparent); stroke-width: 0.5; }
+.b3-pores { fill: var(--a3-edge); opacity: 0.55; }
+.b3-side-derm { fill: color-mix(in srgb, var(--a3-d1) 82%, #000); }
+.b3-side-plex { fill: color-mix(in srgb, var(--a3-ven) 80%, #000); }
+.b3-side-art { fill: color-mix(in srgb, var(--a3-art) 82%, #000); }
+.b3-side-fat { fill: color-mix(in srgb, var(--a3-fat) 85%, #000); }
+.b3-side .a3-corneum, .b3-side .a3-epi { filter: brightness(0.86); }
+.b3-warm { fill: var(--a3-w0); pointer-events: none; }
+.b3-edge { fill: none; stroke: var(--a3-edge); stroke-width: 1.1; }
+.b3-shadow { fill: rgba(0, 0, 0, 0.12); filter: blur(6px); }

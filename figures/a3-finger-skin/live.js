@@ -154,6 +154,8 @@ function mount(fig) {
     q('[data-part="ava"]').style.fill = mix(0.4 + 0.6 * open);
     // warmth in the skin and heat rising off it
     set("warm", "opacity", (0.6 * warm).toFixed(2));
+    // the 3-D block version (A3b) also flushes its top and side faces
+    for (const part of ["topwarm", "sidewarm"]) q(`[data-part="${part}"]`)?.setAttribute("opacity", (0.55 * warm).toFixed(2));
     let heat = "";
     if (warm > 0.03)
       for (let k = 0; k < 9; k++) {

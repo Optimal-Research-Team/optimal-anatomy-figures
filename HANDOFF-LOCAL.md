@@ -23,8 +23,8 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
 | 3 | IV iron | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/03-iv-iron/` |
 | 4 | Creator 600 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; built `shared/mannequin.mjs` + `mannequin-view.js` for Fig 5 | `figures/04-creator-600/` |
-| 5 | VO2max on a bike | **Round 2 done** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
-| 6 | VO2max on the Creator 600 | **Round 1 done**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
+| 5 | VO2max on a bike | **Round 3 done**: smart bike rebuilt to KICKR BIKE SHIFT proportions (no logo, no copy), power arc on the flywheel cover. **Round 2** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
+| 6 | VO2max on the Creator 600 | **Round 2 done**: dashboard mockup on the screen (speed, cadence, step, grade, live runner trace). **Round 1**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
 | A1 | Gut cell's gate (style test) | **Built**: hand-drawn organic SVG, both themes, phones checked; waiting on Peter's call on the look | `figures/a1-gut-cell/` |
 | A4 | The beating heart | **Built, round 2**: four chambers, valves, chordae, great vessels with cut ends and sheen, muscle fibres, disc cells, ECG; rate buttons and Slow | `figures/a4-heart/` |
 | A5 | The air sac and the red cell | **Built**: alveolus in its capillary net, cells loading by the model, O₂/CO₂ dots, breathing, transit monitor | `figures/a5-alveolus/` |
@@ -32,6 +32,7 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | A6 | The red cell's 120 days | **Built**: marrow → 120-day arc → spleen macrophage → transferrin; untreated vs IV iron from Fig 3's model | `figures/a6-red-cell-cycle/` |
 | A8 | Water in and around the fibres | **Built**: Voronoi muscle cross-section, ⊙ current by frequency (Fig 2's model), four scenes with ECW/TBW and InBody band | `figures/a8-muscle-water/` |
 | A3 | The finger's heat valves | **Built**: fingertip skin section, glomus shunts open with Fig 1's flashAt(t), plexus floods, heat rises; monitor | `figures/a3-finger-skin/` |
+| A3b | Heat valves · 3-D prototype | **Prototype for review**: A3's section on the front face of an isometric cut-away block (Peter's Q10, "make these isometric 3-D"); shares A3's model and live code | `figures/a3b-skin-block/` |
 | A9 | Digging and filling | **Built**: trabecula in marrow, osteoclasts dig and osteoblasts refill; pre vs post estrogen calibrated to SWAN | `figures/a9-bone-remodelling/` |
 | A7 | The kneecap's load | **Built**: knee side section through a stride, kneecap glide on a fixed tendon, contact glow from Fig 4's kneeOf; step-rate buttons and monitor | `figures/a7-knee/` |
 
