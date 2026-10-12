@@ -56,3 +56,6 @@
 .a4-front .a4-lumen-cut.a4-lumen-ven { fill: var(--a4-ven); }
 .a4-front .a4-lumen-cut.a4-lumen-art { fill: var(--a4-art); }
 .a4-lumen-cut { stroke: var(--a4-wall); stroke-width: 0.5; stroke-opacity: 0.5; }
+.a4-front .a4-vessel-fill { stroke: none; }
+.a4-vessel-edge { fill: none; stroke: var(--a4-wall); stroke-width: 1.4; stroke-linejoin: round; }
+.a4-front .a4-lumen-cut { stroke: none; }

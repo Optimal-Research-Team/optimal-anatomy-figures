@@ -17,6 +17,39 @@ function mount(fig) {
   const kGroups = [...svg.querySelectorAll(".a2-kndy")];
   const kGlows = kGroups.map((g) => g.querySelector(".a2-kglow"));
 
+  // ---------------------------------------------------------------- the hanging parts' back halves (static: drawn once)
+  // The optic nerve and chiasm, the stalk, the pituitary lobes, the mammillary body and the bony cup
+  // are cut in half by the midline cut; behind it each keeps its round back half (shared/round-back.js).
+  {
+    const RB = roundBack(DATA.far);
+    const mixc = (c, to, t) => c.map((v, i) => Math.round(v + (to[i] - v) * t));
+    const tonesOf = (name) => {
+      const c = RB.rgbOf(fig, name, "#c0a0a8");
+      return [mixc(c, [0, 0, 0], 0.32), mixc(c, [255, 255, 255], 0.22)];
+    };
+    const objects = DATA.far.parts.map((part) => {
+      const closed = RB.sampleClosed(part.pts, part.k, 6);
+      const ring = RB.byLength([...closed, closed[0]], 49).slice(0, -1);
+      const cx = ring.reduce((a, p) => a + p[0], 0) / ring.length;
+      const cy = ring.reduce((a, p) => a + p[1], 0) / ring.length;
+      return RB.rim(ring, { rho: (p) => part.rho * Math.hypot(p[0] - cx, p[1] - cy), nphi: 8, tones: tonesOf(part.tone) });
+    });
+    const c = RB.byLength(DATA.far.nerve, 14);
+    const Ae = [];
+    const Be = [];
+    c.forEach((p, i) => {
+      const a = c[Math.max(0, i - 1)];
+      const b = c[Math.min(c.length - 1, i + 1)];
+      const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+      const n = [-(b[1] - a[1]) / l, (b[0] - a[0]) / l];
+      const w = (DATA.far.nerveW[0] + (DATA.far.nerveW[1] - DATA.far.nerveW[0]) * (i / (c.length - 1))) / 2;
+      Ae.push([p[0] + n[0] * w, p[1] + n[1] * w]);
+      Be.push([p[0] - n[0] * w, p[1] - n[1] * w]);
+    });
+    objects.push(RB.chords(Ae, Be, { round: 1, nphi: 12, tones: tonesOf("--a2-white") }));
+    q('[data-part="far"]').innerHTML = RB.paintObjects(objects);
+  }
+
   // ---------------------------------------------------------------- paths with lengths
   const measure = (pts) => {
     const acc = [0];

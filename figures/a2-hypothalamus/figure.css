@@ -74,3 +74,17 @@
 .a2-par small { font-size: 12.5px; color: var(--anatomy-muted); }
 .a2-blocked .a2-rec { fill: var(--a2-edge); opacity: 0.55; }
 .a2-blocked .a2-mn { filter: saturate(0.55); }
+
+/* round 3: a block of brain cut out around the hypothalamus; top and end are cuts, the hanging parts keep round backs */
+.iso.optimal { --a2-top-thal: rgba(255, 255, 255, 0.05); --a2-top-grey: rgba(255, 255, 255, 0.07); --a2-top-white: #463f55; --a2-top-light: rgba(255, 255, 255, 0.04); --a2-end-shade: rgba(0, 0, 0, 0.22); }
+.iso.optimal[data-theme="light"] { --a2-top-thal: rgba(150, 70, 100, 0.07); --a2-top-grey: rgba(150, 70, 100, 0.1); --a2-top-white: #fbf1ee; --a2-top-light: rgba(255, 255, 255, 0.2); --a2-end-shade: rgba(90, 30, 50, 0.1); }
+.a2-brain-top { stroke: none; }
+.a2-top-thal { fill: var(--a2-top-thal); }
+.a2-top-grey { fill: var(--a2-top-grey); stroke: var(--a2-edge); stroke-width: 0.6; stroke-opacity: 0.4; }
+.a2-top-white { fill: var(--a2-top-white); stroke: var(--a2-white-edge); stroke-width: 0.8; }
+.a2-top-vessel { fill: var(--a2-vessel); }
+.a2-top-light { fill: var(--a2-top-light); }
+.a2-end-shade { fill: var(--a2-end-shade); }
+.a2-block-edge { fill: none; stroke: var(--a2-edge); stroke-width: 1.2; stroke-linejoin: round; }
+.a2-brain-fill { stroke: none; }
+.a2-base-edge { fill: none; stroke: var(--a2-edge); stroke-width: 1.4; }

@@ -65,3 +65,35 @@ The caption adds: "Neither is for everyone… safety review… not treating is a
 1. **Inset or standalone?** It's built as its own card. It can sit under Fig 1 as "what's happening inside the thermostat".
 2. **Treatment buttons:** done (round 2). Drug names are deliberately left off.
 3. **The 194 %** comes from a secondary listing of Rance & Young 1991. Check it against the paper before quoting the number on a page; the readout could say "larger" instead.
+
+## Round 3 (2026-10-12): a block of brain, the hanging parts cut in half
+
+Peter's decision: every A-piece goes 3-D, done the A7 way (an organ cut open, with what's round kept round). The piece shown is tissue cut out around the hypothalamus. Its natural 3-D form is a **block of brain**: the top and end are flat cuts, as in a neuroanatomy specimen. The structures hanging under the brain stay round.
+- **Front face:** the midline slice, placed with `planeMatrix` in the series camera (azimuth 62°, elevation 24°).
+  - Squared off at the block's cuts: top y = 150, ends x = 74 and 520. The brain's base keeps its own outline.
+  - `live.js` is unchanged here: KNDy cells, neurokinin B, estrogen, the MnPO and the heat pulse all draw in section coordinates.
+  - One tissue gradient spans the whole face (`a2-tissue-front`, user space), so the old outline leaves no seam.
+- **Top: a horizontal cut at the thalamus, 160 deep (to the side of the brain).**
+  - The thalamus sits behind the genu.
+  - The internal capsule is drawn as its true V (anterior limb, genu, posterior limb).
+  - The caudate head is in front, and the lens-shaped lentiform nucleus is outside.
+  - The fornix shows in cross-section where it leaves the front face.
+  - Glial speckle and small vessels throughout.
+- **Right end:** a cut across behind the mammillary bodies: thalamus, a white-matter band (capsule into peduncle), the optic tract and speckle, shaded.
+- **Hanging parts, cut in half (drawn once at mount, `shared/round-back.js`):**
+  - the bony cup (sella), the pituitary's two lobes, the stalk, the chiasm and the mammillary body each keep a round back half;
+  - the optic nerve is a half-tube.
+- **Locator:** stays flat, now bottom right.
+- **Anatomy check:** these are textbook-level ([K]) and carry no numbers.
+  - horizontal section at thalamic level: caudate, anterior limb, genu, posterior limb, thalamus medial, lentiform lateral;
+  - the pituitary sits in the sella turcica on its stalk;
+  - the chiasm is in front of the stalk, the mammillary bodies behind it.
+- **Phone fix (all figures):** at 320 px the "Before" button label was clipped. This was already the case before round 3. The shared theme now keeps each button at least as wide as its longest word, with tighter padding at ≤ 350 px.
+
+## Verification (2026-10-12, round 3, local)
+
+- `node scripts/verify.mjs a2-hypothalamus`: passed.
+- No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
+- `lines.mjs`: 0.
+- Reduced motion draws a still.
+- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (Before), plus `shots/desktop-post-{dark,light}.png` (After).

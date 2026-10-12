@@ -60,3 +60,21 @@
 1. **Placement:** under Fig 3, as "why your ferritin is high but your haemoglobin is still climbing".
 2. **Add "Daily pills"?** Fig 3's model has it. Iron would come in from the gut onto transferrin instead of through the macrophage, and the arc would fill more slowly.
 3. **Liver macrophages** take up much of an IV dose too; only the spleen is drawn. The caption says "spleen and liver".
+
+## Round 3 (2026-10-12): everything cut in half, back halves round (the A7 approach)
+
+Peter's decision: every A-piece goes 3-D, done the A7 way. The whole loop lies in one cut plane, placed with `planeMatrix` in the series camera (azimuth 62°, elevation 24°). Behind the cut, everything keeps its round back half (drawn once at mount, `shared/round-back.js`):
+- **The bone** is cut lengthwise to show its marrow, with the islands, trabeculae and sinusoid on the cut face. Its back half is rounded cortical bone.
+- **The spleen** is cut open on the macrophage, with a rounded back half.
+- **The vessel arc** (the 120 days) and **the transferrin return** are half-pipes. Their insides on the cut face are now solid (`--a6-arc-in`, `--a6-ret-in`) rather than see-through, because you look into an open half-pipe, not through it.
+- **The IV line** is shorter (it only shows around the dose), so the frame isn't padded for it.
+- **The monitor** sits flat underneath, placed after the camera fit. The view is 600 × 650.
+- `live.js` is unchanged apart from the static back halves. Cells, ferritin granules, transferrin and the monitor all draw in section coordinates.
+
+## Verification (2026-10-12, round 3, local)
+
+- `node scripts/verify.mjs a6-red-cell-cycle`: passed.
+- No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
+- `lines.mjs`: 0.
+- Reduced motion draws a still.
+- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (Untreated), plus `shots/desktop-iv-{dark,light}.png` (IV iron, about day 5).

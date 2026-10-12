@@ -42,8 +42,8 @@ function mount(fig) {
     out2.push(points[n - 1]);
     return out2;
   }
-  function tube(points, w0, w1 = w0) {
-    // a closed vessel outline round a centreline, tapering w0 → w1
+  function tube(points, w0, w1 = w0, sides = false) {
+    // a closed vessel outline round a centreline, tapering w0 → w1 (sides: also its two edges as open lines)
     const c = curve(points);
     const L = [];
     const R = [];
@@ -59,8 +59,9 @@ function mount(fig) {
       L.push([p[0] + nx * w, p[1] + ny * w]);
       R.push([p[0] - nx * w, p[1] - ny * w]);
     });
-    const pts = [...L, ...R.reverse()];
-    return `M${pts.map((p) => `${f1(p[0])} ${f1(p[1])}`).join("L")}Z`;
+    const line = (ps) => `M${ps.map((p) => `${f1(p[0])} ${f1(p[1])}`).join("L")}`;
+    const closed = `${line([...L, ...[...R].reverse()])}Z`;
+    return sides ? { d: closed, edges: line(L) + line(R) } : closed;
   }
   /** A vessel, cut open lengthwise like the heart: a wall band each side, the lumen (blood) down the middle.
    *  Its back half and any cut ends (capA, capB) are drawn in 3-D behind the cut (drawBack). */
@@ -69,7 +70,9 @@ function mount(fig) {
     let h = "";
     for (const [pts, w0, w1, capA, capB] of list) {
       tubes.push({ pts, w0, w1, cls, caps: [capA, capB] });
-      h += `<path class="a4-${cls} a4-vessel" d="${tube(pts, w0, w1)}"/><path class="a4-lumen a4-lumen-${cls} a4-lumen-cut" d="${tube(pts, w0 * 0.7, w1 * 0.7)}"/>`;
+      // filled without an outline across the ends, so a vessel that continues in another (arch → descending aorta) has no seam
+      const t = tube(pts, w0, w1, true);
+      h += `<path class="a4-${cls} a4-vessel a4-vessel-fill" d="${t.d}"/><path class="a4-lumen a4-lumen-${cls} a4-lumen-cut" d="${tube(pts, w0 * 0.7, w1 * 0.7)}"/><path class="a4-vessel-edge" d="${t.edges}"/>`;
     }
     q(`[data-v="${name}"]`).innerHTML = h;
   }
@@ -88,9 +91,21 @@ function mount(fig) {
   // a cut end: the wall as a pale ring, the blood inside in the same colour as the chambers
   const LUMEN = { ven: `rgb(${RB.rgbOf(fig, "--a4-ven", "#8892cc").join(",")})`, art: `rgb(${RB.rgbOf(fig, "--a4-art", "#dc6656").join(",")})` };
   const WALL = `rgb(${RB.rgbOf(fig, "--a4-vwall", "#f3d9cf").join(",")})`;
+  // the back of the heart is smoother than the cut: its outline is the cut's, lightly averaged (small bumps ease out)
   function drawBack(outline) {
     const closed = RB.sampleClosed(outline, 1, 6);
-    const ring = RB.byLength([...closed, closed[0]], 73).slice(0, -1);
+    const raw = RB.byLength([...closed, closed[0]], 73).slice(0, -1);
+    const n = raw.length;
+    const ring = raw.map((_, i) => {
+      let x = 0;
+      let y = 0;
+      for (let k = -3; k <= 3; k++) {
+        const p = raw[(i + k + n) % n];
+        x += p[0] / 7;
+        y += p[1] / 7;
+      }
+      return [x, y];
+    });
     const cx = ring.reduce((a, p) => a + p[0], 0) / ring.length;
     const cy = ring.reduce((a, p) => a + p[1], 0) / ring.length;
     const objects = [RB.rim(ring, { rho: (p) => 0.9 * Math.hypot(p[0] - cx, p[1] - cy), nphi: 8, tones: TONES.heart })];

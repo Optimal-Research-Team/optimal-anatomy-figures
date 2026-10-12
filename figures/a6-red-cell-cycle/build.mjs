@@ -1,5 +1,8 @@
 // A6 · The red cell's 120 days (anatomical series, inset for Fig 3).
 //
+// In isometric 3-D, everything cut in half and seen from the cut: the bone cut lengthwise to show its
+// marrow, the spleen cut open, the vessel arc and the transferrin return as half-tubes; behind the
+// cut each keeps its round back half.
 // Bone marrow (left) makes red cells on erythroblastic islands; they leave through a sinusoid
 // and ride an arc that is their life: position = age, 0 to 120 days. At the end they reach the
 // spleen, where a macrophage eats them and stores the iron as ferritin or hands it to
@@ -12,6 +15,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
+import { figkit, k } from "../../shared/figkit.mjs";
 import * as M from "./model.mjs";
 import { simulate, PARAMS } from "../03-iv-iron/model.mjs";
 
@@ -209,7 +213,41 @@ const ticks = [30, 60, 90, 120]
   .join("");
 
 // ---------------------------------------------------------------- the monitor: ferritin and haemoglobin over 8 weeks
-const MON = { x0: 64, x1: 552, d0: -M.LOOP.before, d1: M.LOOP.after, fer: { y0: 548, y1: 504, max: 500 }, hb: { y0: 612, y1: 568, lo: 100, hi: 135 }, box: [24, 478, 552, 172] };
+// ---------------------------------------------------------------- the camera: the cut face in the A-series view
+// World: x = section x, y = toward the viewer (the cut is the plane y = DEP), z = up (−section y).
+const DEP = 160;
+const RAD = Math.PI / 180;
+const S3 = (sx, y, sy) => [sx, y, -sy];
+const reachOf = (P) => {
+  // an outline plus its round back half rolled 30° and 60°, so the camera fits what will show
+  const cx = P.reduce((a, p) => a + p[0] / P.length, 0);
+  const cy = P.reduce((a, p) => a + p[1] / P.length, 0);
+  const out = [];
+  P.forEach((p, i) => {
+    const a = P[(i - 1 + P.length) % P.length];
+    const b = P[(i + 1) % P.length];
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    const n = [(b[1] - a[1]) / l, -(b[0] - a[0]) / l];
+    const r = 0.9 * Math.hypot(p[0] - cx, p[1] - cy);
+    out.push(S3(p[0], DEP, p[1]));
+    for (const ph of [30, 60]) out.push(S3(p[0] - n[0] * (1 - Math.cos(ph * RAD)) * r, DEP - Math.sin(ph * RAD) * r * 0.95, p[1] - n[1] * (1 - Math.cos(ph * RAD)) * r));
+  });
+  return out;
+};
+const BOUNDS3 = [...reachOf(BONE), ...reachOf(SPLEEN), ...[...ARC, ...RET].flatMap(([x, y]) => [S3(x - 18, DEP, y - 18), S3(x + 18, DEP, y + 18)]), S3(216, DEP, 8)];
+const PB = k.fitProjection(BOUNDS3, 600, 470, { pad: 10, azimuth: 62, elevation: 24 });
+const DRAW_BOTTOM = Math.max(...BOUNDS3.map((p) => k.iso(p, PB)[1]));
+const FB = figkit(PB);
+const FRONT_M = FB.planeMatrix(S3(0, DEP, 0), [1, 0, 0], [0, 0, -1]);
+const o2 = k.iso(S3(0, DEP, 0), PB);
+const ex2 = k.iso(S3(1, DEP, 0), PB).map((v, i) => v - o2[i]);
+const ey2 = k.iso(S3(0, DEP, 1), PB).map((v, i) => v - o2[i]);
+const b1 = k.iso(S3(0, DEP - 1, 0), PB).map((v, i) => v - o2[i]);
+const det = ex2[0] * ey2[1] - ey2[0] * ex2[1];
+const WD1 = [(b1[0] * ey2[1] - ey2[0] * b1[1]) / det, (ex2[0] * b1[1] - b1[0] * ex2[1]) / det].map((v) => +v.toFixed(4));
+const MT = Math.ceil(DRAW_BOTTOM + 12); // the monitor's top
+const MON = { x0: 64, x1: 552, d0: -M.LOOP.before, d1: M.LOOP.after, fer: { y0: MT + 70, y1: MT + 26, max: 500 }, hb: { y0: MT + 134, y1: MT + 90, lo: 100, hi: 135 }, box: [24, MT, 552, 172] };
+const VH = MT + 172 + 6;
 const xOfDay = (d) => MON.x0 + ((d - MON.d0) / (MON.d1 - MON.d0)) * (MON.x1 - MON.x0);
 const weekTicks = [0, 14, 28, 42, 56].map((d, i) => `<path class="a6-axis" d="M${f1(xOfDay(d))} ${MON.hb.y0}v5"/><text class="a6-mtick" x="${f1(xOfDay(d))}" y="${MON.hb.y0 + 26}" text-anchor="middle">${i === 0 ? "dose" : `${i * 2} wk`}</text>`).join("");
 const monitor = `<g class="a6-mon">
@@ -225,7 +263,7 @@ ${weekTicks}
 </g>`;
 
 // ---------------------------------------------------------------- the picture
-const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 660" role="img" aria-label="The red cell's life as a loop. On the left, bone marrow makes red cells on small islands around a nurse cell. New cells leave and ride an arc across the top that stands for their 120-day life, older cells further along. On the right, in the spleen, a large macrophage eats the oldest cells and stores their iron as ferritin or hands it to transferrin, which carries it back under the arc to the marrow. A monitor underneath plots ferritin and haemoglobin over eight weeks.">
+const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 ${VH}" role="img" aria-label="The red cell's life as a loop, drawn in 3-D with the bone and the spleen cut open. On the left, bone marrow makes red cells on small islands around a nurse cell. New cells leave and ride an arc across the top that stands for their 120-day life, older cells further along. On the right, in the spleen, a large macrophage eats the oldest cells and stores their iron as ferritin or hands it to transferrin, which carries it back under the arc to the marrow. A monitor underneath plots ferritin and haemoglobin over eight weeks.">
 <defs>
   <radialGradient id="a6-marrow" cx="45%" cy="45%" r="70%"><stop offset="0" class="a6-mr0"/><stop offset="1" class="a6-mr1"/></radialGradient>
   <radialGradient id="a6-pulp" cx="55%" cy="45%" r="70%"><stop offset="0" class="a6-sp0"/><stop offset="1" class="a6-sp1"/></radialGradient>
@@ -233,6 +271,8 @@ const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 660" role="img" aria-l
   <clipPath id="a6-boneclip"><path d="${smooth(BONE, true, 1)}"/></clipPath>
   <clipPath id="a6-spleenclip"><path d="${smooth(SPLEEN, true, 1)}"/></clipPath>
 </defs>
+<g transform="${FRONT_M}"><g class="a6-far" data-part="far"></g></g>
+<g class="a6-front" transform="${FRONT_M}">
 <path class="a6-ret" d="${tube(RET, 14, 12)}"/>
 <path class="a6-bone" d="${smooth(BONE, true, 1)}" fill="url(#a6-marrow)"/>
 <g clip-path="url(#a6-boneclip)">
@@ -246,7 +286,7 @@ const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 660" role="img" aria-l
 <g clip-path="url(#a6-spleenclip)"><path class="a6-cords" d="${pulp}"/>${whiteSvg}</g>
 <path class="a6-capsule" d="${smooth(SPLEEN, true, 1)}"/>
 <path class="a6-arc-edge" d="${tube(ARC, 34, 30)}"/>
-<g class="a6-iv" data-part="iv"><path class="a6-iv-line" d="M214 -4L246 58"/><path class="a6-iv-hub" d="M206 -6l16 -6l10 20l-16 6Z"/></g>
+<g class="a6-iv" data-part="iv"><path class="a6-iv-line" d="M224 18L246 58"/><path class="a6-iv-hub" d="M216 16l16 -6l10 20l-16 6Z"/></g>
 ${ticks}
 <path class="a6-mac" d="${macBody}" fill="url(#a6-macg)"/>
 <circle class="a6-phago" cx="${MAC.c[0] - 14}" cy="${MAC.c[1] - 12}" r="13"/>
@@ -255,6 +295,7 @@ ${ticks}
 <path class="a6-tf" data-part="tf"/>
 <path class="a6-ivp" data-part="ivp"/>
 <g data-part="cells"><path class="a6-c a6-c-pale" data-part="cPale"/><path class="a6-c a6-c-full" data-part="cFull"/><path class="a6-c a6-c-young" data-part="cYoung"/><path class="a6-c a6-c-old" data-part="cOld"/><path class="a6-pallor a6-pallor-pale" data-part="pPale"/><path class="a6-pallor a6-pallor-full" data-part="pFull"/><path class="a6-pallor a6-pallor-old" data-part="pOld"/><path class="a6-retic" data-part="retic"/></g>
+</g>
 ${monitor}
 </svg>`;
 
@@ -262,9 +303,9 @@ const LINES = [
   "Untreated iron deficiency: the marrow is short of iron, so it makes too little haemoglobin and the cells come out small and pale. The spleen's stores are nearly empty.",
   "After IV iron: macrophages soak up the dose within days and their stores (ferritin) jump. New, fuller cells appear in about a week, but the arc of 120-day-old cells is replaced only as fast as the marrow works, so haemoglobin climbs over weeks.",
 ];
-const DATA = { S, arc: ARC, ret: RET, mac: MAC, gran: GRAN, sinus: sinus.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]), mon: MON, lines: LINES, islands: ISLANDS };
+const DATA = { far: { w: WD1, A: 62, E: 24, dep: DEP, bone: BONE, spleen: SPLEEN }, S, arc: ARC, ret: RET, mac: MAC, gran: GRAN, sinus: sinus.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]), mon: MON, lines: LINES, islands: ISLANDS };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const ferPeak = Math.max(...fer);
 const ferPeakDay = fer.indexOf(ferPeak) * STEP;

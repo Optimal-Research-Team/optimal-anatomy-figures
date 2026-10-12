@@ -16,6 +16,46 @@ function mount(fig) {
   const { S, mac: MAC, mon: MON } = DATA;
   const set = (part, d) => q(`[data-part="${part}"]`).setAttribute("d", d);
 
+  // ---------------------------------------------------------------- back halves (static: drawn once)
+  // Everything is cut in half by the plane of the drawing: the bone (lengthwise, showing its marrow),
+  // the spleen, the vessel arc and the transferrin return. Behind the cut each keeps its round back half.
+  {
+    const RB = roundBack(DATA.far);
+    const mixc = (c, to, t) => c.map((v, i) => Math.round(v + (to[i] - v) * t));
+    const tonesOf = (name, fb, dark = 0.34, light = 0.22) => {
+      const c = RB.rgbOf(fig, name, fb);
+      return [mixc(c, [0, 0, 0], dark), mixc(c, [255, 255, 255], light)];
+    };
+    const blob = (pts, tones) => {
+      const closed = RB.sampleClosed(pts, 1, 6);
+      const ring = RB.byLength([...closed, closed[0]], 65).slice(0, -1);
+      const cx = ring.reduce((a, p) => a + p[0], 0) / ring.length;
+      const cy = ring.reduce((a, p) => a + p[1], 0) / ring.length;
+      return RB.rim(ring, { rho: (p) => 0.9 * Math.hypot(p[0] - cx, p[1] - cy), nphi: 8, tones });
+    };
+    const halfTube = (centre, w0, w1, n, tones) => {
+      const c = RB.byLength(centre, n);
+      const Ae = [];
+      const Be = [];
+      c.forEach((p, i) => {
+        const a = c[Math.max(0, i - 1)];
+        const b = c[Math.min(c.length - 1, i + 1)];
+        const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        const nn = [-(b[1] - a[1]) / l, (b[0] - a[0]) / l];
+        const w = (w0 + (w1 - w0) * (i / (c.length - 1))) / 2;
+        Ae.push([p[0] + nn[0] * w, p[1] + nn[1] * w]);
+        Be.push([p[0] - nn[0] * w, p[1] - nn[1] * w]);
+      });
+      return RB.chords(Ae, Be, { round: 1, nphi: 12, tones });
+    };
+    q('[data-part="far"]').innerHTML = RB.paintObjects([
+      blob(DATA.far.bone, tonesOf("--a6-cortex", "#f4ead4", 0.3, 0.1)),
+      blob(DATA.far.spleen, tonesOf("--a6-sp0", "#b2464a")),
+      halfTube(DATA.ret, 14, 12, 26, tonesOf("--a6-ret-edge", "#a8925a")),
+      halfTube(DATA.arc, 34, 30, 36, tonesOf("--a6-arc-edge", "#a8574c")),
+    ]);
+  }
+
   // ---------------------------------------------------------------- paths
   const measure = (pts) => {
     const acc = [0];

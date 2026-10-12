@@ -68,6 +68,13 @@ Peter's decision: every A-piece goes 3-D. Peter approved the A7 approach ("this 
 - **Frame:** fitted to the heart and its vessels plus the back half's reach. The ECG sits flat underneath, and the view is 600 × 666.
 - **Cost:** facets are merged per object and per tone (21 tones), so a frame is about 100 paths.
 
+**Peter: "the heart animation looks not great."** Frame-by-frame review found three faults, all fixed:
+1. **The ascending aorta was drawn across the left atrium.** Once everything is cut open in one plane, that read as a tube lying on top of the chamber. The left atrium now sits clear (x ≥ 372), and the aorta rises from the left ventricle in front of it, between the atria.
+2. **The aortic arch had a hard seam where it meets the descending aorta.** Vessels are now filled without a line across their ends, and only their two side edges are stroked, so the arch runs into the descending aorta as one tube.
+3. **The back half followed every notch of the cut outline,** which put a lump beside the left atrium. It now follows the outline averaged over ±3 samples. (A convex hull was tried first, but it filled the notch between the great vessels with a flat flap.)
+
+Checked for flicker: the back half is stable frame to frame (slowed contact sheet).
+
 ## Verification (2026-10-12, round 3, local)
 
 - `node scripts/verify.mjs a4-heart`: passed.

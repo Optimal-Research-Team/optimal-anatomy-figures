@@ -81,3 +81,9 @@
 .a6-par { display: block; margin-top: 6px; }
 .a6-par:first-child { margin-top: 0; }
 .a6-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+
+/* round 3: cut in half and seen in 3-D; the vessels are open half-pipes, so their insides are solid */
+.iso.optimal { --a6-arc-in: #4a2226; --a6-ret-in: #3a3220; }
+.iso.optimal[data-theme="light"] { --a6-arc-in: #f7e1da; --a6-ret-in: #f6ecd2; }
+.a6-front .a6-arc-edge { fill: var(--a6-arc-in); }
+.a6-front .a6-ret { fill: var(--a6-ret-in); }

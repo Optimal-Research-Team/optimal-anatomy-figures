@@ -32,11 +32,11 @@ claude                                # Claude Code reads CLAUDE.md on start
 | 5 | VO₂max on a bike | **Round 3**: smart bike at KICKR BIKE SHIFT proportions (no logo or copied design), power arc on the flywheel cover, wireless mask, assessor with tablet | `05-vo2max` |
 | 6 | VO₂max on the Creator 600 | **Round 2**: dashboard mockup on the treadmill screen (speed, cadence, step, grade, live runner trace) | `06-vo2max-treadmill` |
 | A1 | Gut cell's gate | **Round 2 · 3-D block** (2026-10-12): brush border of 272 microvilli on top, cells cut on the right end, capillary half-tube | `a1-gut-cell` |
-| A2 | Hot-flash switch (hypothalamus) | Built; **treatment states added**: Hormone therapy / Non-hormonal (class names only) | `a2-hypothalamus` |
+| A2 | Hot-flash switch (hypothalamus) | **Round 3 · 3-D brain block** (2026-10-12): top cut at the thalamus, end cut, pituitary/stalk/chiasm/nerve/sella halved with round backs; treatment states as before | `a2-hypothalamus` |
 | A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
 | A4 | Beating heart | **Round 3 · 3-D, cut in half** (2026-10-12): back half round and beating (shared/round-back.js), vessels cut open with half-ring ends | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
-| A6 | Red cell's 120 days | Built (flat, a loop diagram) | `a6-red-cell-cycle` |
+| A6 | Red cell's 120 days | **Round 3 · 3-D, cut in half** (2026-10-12): bone cut lengthwise, spleen cut open, arc and return as half-pipes, all with round backs | `a6-red-cell-cycle` |
 | A7 | Kneecap's load | **Round 2 · 3-D, leg cut in half** (2026-10-12): far half stays round (live), thigh cross-section on top. The organ-piece approach, **waiting on Peter's OK** before A2/A4/A6 | `a7-knee` |
 | A8 | Water in and around the fibres | **Round 2 · 3-D bundle**: slice on the face of a muscle cylinder; body redrawn live | `a8-muscle-water` |
 | A9 | Digging and filling (bone) | **Round 2 · 3-D block**; caption uses the Menopause Protocol's Greendale numbers | `a9-bone-remodelling` |
