@@ -1,76 +1,139 @@
-# Continuing locally (or in a new session)
+# Handoff: continuing locally
 
-Kept current by the cloud session at every milestone, so the work can move to a laptop or a fresh session at any point. **Last updated:** 2026-10-11, after Fig 6 (Peter's VO₂ rework). Shared: `shared/assessor.mjs` (standing assessor with a tablet), `shared/vo2-plot.js` (the tablet's live plot).
+The cloud session ends here; its credits are nearly spent. This file is the full state of the project for a local Claude Code session on the Mac, which runs on the Max plan's limits, not cloud credits. **Last updated:** 2026-10-12, end of cloud work. `main` and the cloud branch `claude/wonderful-mayer-ga12kl` are identical. Work on `main`, or on a new branch merged to `main`.
 
-## Set up on a Mac (about 5 minutes)
+**First prompt for the local session:**
+> Read CLAUDE.md, HANDOFF.md, HANDOFF-LOCAL.md and BACKLOG.md. Then continue from "Next steps" in HANDOFF-LOCAL.md.
+
+## 1. Set up on a Mac (about 5 minutes)
 
 ```bash
 git clone https://github.com/Optimal-Research-Team/optimal-anatomy-figures.git
 cd optimal-anatomy-figures
 node -v                               # needs Node 20+ (brew install node)
 bash scripts/setup-cloud.sh           # finds Chrome, writes .env.chrome, smoke-tests a capture
-source .env.chrome
-node scripts/build-all.mjs            # builds every figure into dist/ with the gallery
+source .env.chrome                    # every capture/drive/lines command needs CHROME_PATH
+node scripts/build-all.mjs            # builds all 16 figures + gallery into dist/
 open dist/index.html
+claude                                # Claude Code reads CLAUDE.md on start
 ```
-No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then start Claude Code in the folder (`claude`). It reads `CLAUDE.md`, and the brief is `HANDOFF.md`.
+- There's no npm install. The Anatomy kit is vendored in `.claude/skills/anatomy/`; never edit it, and patch in `shared/` instead.
+- `scripts/chrome-root.sh` (Chrome with `--no-sandbox`) is only for cloud containers that run as root. On the Mac, `setup-cloud.sh` should find `/Applications/Google Chrome.app`. If it doesn't, set `CHROME_PATH` in `.env.chrome` by hand.
+- Live gallery: https://optimal-research-team.github.io/optimal-anatomy-figures/. Pushing `main` deploys it via `.github/workflows/pages.yml` in about a minute.
 
-## Status
+## 2. Status (16 figures, all in the gallery)
 
-| # | Figure | State | Where |
+| # | Figure | State | Folder |
 |---|---|---|---|
-| 1 | Menopause thermostat | **Round 1 done**: audit passed, line ends 0 both themes, phone 390/360/320 checked, NOTES written | `figures/01-menopause-thermostat/` |
-| 2 | InBody 580 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/02-inbody-580/` |
-| 3 | IV iron | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written | `figures/03-iv-iron/` |
-| 4 | Creator 600 | **Round 1 done**: audit passed, line ends 0, phone checked, NOTES written; built `shared/mannequin.mjs` + `mannequin-view.js` for Fig 5 | `figures/04-creator-600/` |
-| 5 | VO2max on a bike | **Round 3 done**: smart bike rebuilt to KICKR BIKE SHIFT proportions (no logo, no copy), power arc on the flywheel cover. **Round 2** (Peter: wireless VO2 Master mask, assessor with a tablet; no hose, cart or WebGL; no RER since the mask doesn't measure CO₂) | `figures/05-vo2max/` |
-| 6 | VO2max on the Creator 600 | **Round 2 done**: dashboard mockup on the screen (speed, cadence, step, grade, live runner trace). **Round 1**: same mask and assessor; speed ramp at 1 %; audit passed, line ends 0, phone checked | `figures/06-vo2max-treadmill/` |
-| A1 | Gut cell's gate (style test) | **Built**: hand-drawn organic SVG, both themes, phones checked; waiting on Peter's call on the look | `figures/a1-gut-cell/` |
-| A4 | The beating heart | **Built, round 2**: four chambers, valves, chordae, great vessels with cut ends and sheen, muscle fibres, disc cells, ECG; rate buttons and Slow | `figures/a4-heart/` |
-| A5 | The air sac and the red cell | **Built**: alveolus in its capillary net, cells loading by the model, O₂/CO₂ dots, breathing, transit monitor | `figures/a5-alveolus/` |
-| A2 | The hot-flash switch | **Built**: hypothalamus slice, KNDy cells swell and signal, MnPO tips into a flash; pre/post buttons | `figures/a2-hypothalamus/` |
-| A6 | The red cell's 120 days | **Built**: marrow → 120-day arc → spleen macrophage → transferrin; untreated vs IV iron from Fig 3's model | `figures/a6-red-cell-cycle/` |
-| A8 | Water in and around the fibres | **Built**: Voronoi muscle cross-section, ⊙ current by frequency (Fig 2's model), four scenes with ECW/TBW and InBody band | `figures/a8-muscle-water/` |
-| A3 | The finger's heat valves | **Built**: fingertip skin section, glomus shunts open with Fig 1's flashAt(t), plexus floods, heat rises; monitor | `figures/a3-finger-skin/` |
-| A3b | Heat valves · 3-D prototype | **Prototype for review**: A3's section on the front face of an isometric cut-away block (Peter's Q10, "make these isometric 3-D"); shares A3's model and live code | `figures/a3b-skin-block/` |
-| A9 | Digging and filling | **Built**: trabecula in marrow, osteoclasts dig and osteoblasts refill; pre vs post estrogen calibrated to SWAN | `figures/a9-bone-remodelling/` |
-| A7 | The kneecap's load | **Built**: knee side section through a stride, kneecap glide on a fixed tendon, contact glow from Fig 4's kneeOf; step-rate buttons and monitor | `figures/a7-knee/` |
+| 1 | Menopause thermostat | Round 1 done. No treatment switch, on purpose (see NOTES "Decisions") | `01-menopause-thermostat` |
+| 2 | InBody 580 | Round 1 done. Checked against InBody's result-sheet guide: no segmental reactance printed, which is correct | `02-inbody-580` |
+| 3 | IV iron | Round 1 done | `03-iv-iron` |
+| 4 | Creator 600 | Round 1 done; built `shared/mannequin.*` | `04-creator-600` |
+| 5 | VO₂max on a bike | **Round 3**: smart bike at KICKR BIKE SHIFT proportions (no logo or copied design), power arc on the flywheel cover, wireless mask, assessor with tablet | `05-vo2max` |
+| 6 | VO₂max on the Creator 600 | **Round 2**: dashboard mockup on the treadmill screen (speed, cadence, step, grade, live runner trace) | `06-vo2max-treadmill` |
+| A1 | Gut cell's gate | Built flat (style test). **Next for 3-D** | `a1-gut-cell` |
+| A2 | Hot-flash switch (hypothalamus) | Built; **treatment states added**: Hormone therapy / Non-hormonal (class names only) | `a2-hypothalamus` |
+| A3 | Finger's heat valves (flat) | Built. Superseded in look by A3b; keep or retire (open question) | `a3-finger-skin` |
+| A3b | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). Reads A3's model, live and CSS | `a3b-skin-block` |
+| A4 | Beating heart | Built, round 2 (flat, organ) | `a4-heart` |
+| A5 | Air sac and red cell | Built flat. **Next for 3-D** | `a5-alveolus` |
+| A6 | Red cell's 120 days | Built (flat, a loop diagram) | `a6-red-cell-cycle` |
+| A7 | Kneecap's load | Built (flat, side section) | `a7-knee` |
+| A8 | Water in and around the fibres | **Round 2 · 3-D bundle**: slice on the face of a muscle cylinder; body redrawn live | `a8-muscle-water` |
+| A9 | Digging and filling (bone) | **Round 2 · 3-D block**; caption uses the Menopause Protocol's Greendale numbers | `a9-bone-remodelling` |
 
-## Time remaining (estimate, 2026-10-11 evening)
+Every figure folder holds:
+- `model.mjs`, `build.mjs`, `live.js`, `figure.css`, `figure.json`;
+- `NOTES.md`: mapping, numbers with sources, decisions, verification, embed snippet;
+- `shots/`;
+- `embed/optimal-fig-<slug>.js`: a one-file custom element for the website.
 
-| Work | Estimate |
-|---|---|
-| Design rounds on Figs 1–6 and A1 (+30–50 %), as Peter's feedback comes in | 4–6 h |
-| Anatomical series A1–A9 | **all built**; design rounds remain |
-| **Total** | **~14–20 h** |
+## 3. Peter's decisions so far (2026-10-12 round)
 
-**Where to run it.** The cloud credits are nearly used. Run the rest locally (Claude Code on the Mac uses the Max plan's limits, not cloud credits): set up as above, then pick up from `BACKLOG.md`. A1 (`figures/a1-gut-cell/`) is the pattern for the anatomical pieces: hand-drawn organic SVG through `smooth()` (Catmull-Rom to Bézier), the shared card, CSS tokens per theme, a tiny `model.mjs`, and a particle `live.js`.
+1. **Treatments may appear on screen.** Use class names only ("hormone therapy", "neurokinin-receptor blocker"), with "not for everyone", "not treating is always an option", and "fewer, typically" wording. Done in A2. Fig 1 deliberately has none: its threshold model would show flashes stopping entirely.
+2. **Medical sign-off comes later.** Peter owns the regulatory call; keep making the figures *correct*.
+3. **Wording must match the Menopause Protocol** (beoptimal.ca/optimal-menopause-protocol, supplied as a PDF). A9 quotes its Greendale 2012 bone numbers. A9 shows no hormone-therapy state, because the protocol doesn't present HT as bone protection.
+4. **The bike** is the Wahoo KICKR BIKE SHIFT (sold by bici.cc). Take proportion and finish only: no logo, no copied design.
+5. **Treadmill screen:** a simple mockup is fine. Done.
+6. **Each figure is a standalone page**, and each goes somewhere different on the site (landing pages, protocol guide…). Gallery grouping doesn't matter.
+7. **Prioritise VO₂ polish:** Figs 5–6 got rounds 3 and 2.
+8. **The anatomy should be "more beautiful" and isometric 3-D.** A3b approved, and A8 and A9 are converted.
 
-## How a figure is built (the pattern Fig 1 set)
+## 4. Open questions for Peter
 
-- `model.mjs`: a pure model, the only source of numbers. Imported by the build, inlined in the page.
-- `build.mjs`: geometry with the kit, every solid and cable recorded into `A.recorder`, `A.settle` for painter's order, and the card via `shared/page.mjs`. `--light` for Cream, `--audit` to prove the geometry.
-- `live.js`: defines `mount(figure)`; motion, tour, input and readout.
-- `figure.json` feeds the gallery; `NOTES.md` records mapping, parts, numbers, decisions and embed snippet.
-- `shared/figkit.mjs` has the drawing helpers (box, cyl, turned, prism, ball, stud, cable, bench) that draw and record in one call.
-- The mannequin (Fig 4, reuse in Fig 5): `shared/mannequin.mjs` places joints (`skeletonOf`) and lists parts (`partsOf`); `shared/mannequin-view.js` draws them in the page each frame (limbs are cheap cone frusta, the trunk is drawn once and translated, ≈4 ms a frame); `shared/mannequin.css` has the wood palettes. Fig 4's `build.mjs` shows how to inline all three and the lathe.
-- `shared/page.mjs` writes the standalone page and the `<optimal-fig-…>` custom element; `shared/optimal-theme.css` has the brand tokens and the phone-first card.
+- **"It's unit 1 actually":** his answer to "Creator 600 screen: 32″ or 50″?" (Fig 4 NOTES open issue 1). Unclear; ask what it means. Figs 4 and 6 draw the screen at about 50″ proportions (from product photos) and print no size. The site copy says 32″.
+- **A3 vs A3b:** retire the flat A3, or keep both for different pages?
+- **A1 look:** it was a style test for the flat look. Probably convert to 3-D now; confirm.
+- **Network:** with `beoptimal.ca`, `bici.cc` and `inbodycanada.ca` allowed (or locally), re-read the site pages directly instead of PDFs.
 
-## Verify (definition of done, HANDOFF §2)
+## 5. Next steps (priority order)
+
+1. **Convert A1 (gut cell) and A5 (alveolus) to 3-D**, using the recipe in §6. A1 suits a block (a strip of gut lining: villi on top, cells on the front face). A5 suits a cut sphere or a block of lung tissue with the air sac opened.
+2. **Organ pieces (A2, A4, A6, A7):** these don't fit a block. Options, cheapest first:
+   - a short, deep slab under the flat drawing, giving a "specimen on a plate" look;
+   - shading the existing outlines with gradients and rim light to make them read as volumes;
+   - a true isometric rebuild (most work).
+
+   Ask Peter which he wants before doing more than one.
+3. **Re-run the full verification on A8 and A9** at 390 and 360 px; only 320 was captured after the 3-D change. Then refresh `review/contact-sheet.png`.
+4. **Truth pass with the network open:** re-check the MEDIUM/LOW rows in `reference/truth-pack.md`.
+5. **Round-2 options still open** (BACKLOG.md):
+   - Fig 2: an ECW/TBW scenario switch, partly covered by A8 now;
+   - Fig 3: readout wording;
+   - Fig 1: optional WebGL heat shimmer (at most one WebGL layer, and the SVG must read without it).
+6. **Embedding:** each figure ships `embed/optimal-fig-<slug>.js`; NOTES.md has the snippet. Give Peter the snippets for the pages he names.
+
+## 6. The 3-D recipe (A3b, A8, A9)
+
+- **Projection:** `k.fitProjection(BOUNDS3, 600, H, { pad, azimuth: 62, elevation: 24 })`, then `FB = figkit(PB)`. At azimuth 62° the front section stays almost face-on and still legible on a phone, and the top and right end show depth. At 30° the face is too foreshortened.
+- **World coordinates = section pixels:** x along the section, y back into the tissue, z up. A helper `W3(sx, y, sy) = [sx - X0, y, H - sy]` puts any section point on the plane at depth y.
+- **Front face:** wrap the existing flat SVG in `<g transform="${FB.planeMatrix(W3(0, D, 0), [1,0,0], [0,0,-1])}">`. Nothing in `live.js` changes, because it keeps drawing in section coordinates. Clip to the block with a `clipPath` in section coordinates.
+- **Top and end faces:** draw them as plain 2-D textures (u, v) and place each with `planeMatrix(origin, uDir, vDir)`. Circles become correct ellipses for free. Shade with a black or white overlay rect at low opacity: end face darker, top lighter.
+- **Faces that change with the model:** pass the projection basis in DATA (`o`, `ex`, `ey`, `ez`) and redraw in `live.js` (see A8 `drawBody()`). A few `data-part` hooks also work (A3b warms its top and side via optional selectors in A3's `live.js`).
+- **Curved bodies (A8):** draw only the half facing the viewer. Get the view vector from the cross product of the projection rows (sign chosen so +y, the front face, is visible). Shade with a `userSpaceOnUse` linear gradient set square to the projected axis.
+- **Painter's order:** shadow → top → end → edges → front group. Monitors, legends and locator icons stay flat in 2-D, outside the block.
+- **Checks:**
+  - `lines.mjs` = 0;
+  - 320 px shows no horizontal scroll;
+  - reduced motion draws a still;
+  - both themes.
+
+  The `--audit` check applies to kit solids only, not to these hand-drawn faces.
+
+## 7. How a figure is built (unchanged)
+
+- `model.mjs` is a pure model and the only source of numbers. It's imported by the build and inlined in the page (with `export` stripped). Reuse across figures:
+  - Fig 1 `flashAt`/`rateOf`, used by A2 and A3;
+  - Fig 2 `throughShare`, used by A8;
+  - Fig 3 `simulate`, used by A6;
+  - Fig 4 `kneeOf`/`cadenceOf`/`stepOf`, used by A7.
+- `build.mjs` builds the geometry: kit solids recorded through `shared/figkit.mjs` (box, cyl, turned, prism, pin, cable, …) for the machines, and hand-drawn `smooth()` paths for the anatomy. `--light` builds Cream; `--audit` checks the geometry.
+- `live.js` defines `mount(fig)`: motion, the idle tour, controls, readouts and an aria-live status.
+- `shared/page.mjs` writes the standalone page and the custom element. `shared/optimal-theme.css` holds the brand tokens (`class="iso optimal"`, `data-theme="light"` for Cream).
+
+## 8. Verify (definition of done)
 
 ```bash
-cd figures/<nn-slug>
+cd figures/<folder> && source ../../.env.chrome
 node build.mjs && node build.mjs --light
-node build.mjs --light --audit                      # must end "audit passed"
+node build.mjs --light --audit                  # machines: must end "audit passed"
 S=../../.claude/skills/anatomy/scripts
-node $S/lines.mjs <slug>.html; node $S/lines.mjs <slug>-light.html            # "line ends: 0"
-node $S/lines.mjs <slug>-light.html --reduced
-for w in 390 360 320; do node $S/capture.mjs <slug>-light.html --width $w --select .opt-figure --out shots/phone-$w.png; done
+node $S/lines.mjs <slug>.html                   # "line ends: 0"
+node $S/drive.mjs <slug>-light.html '[["wait",4000],["shot","shots/phone-320-light.png",".iso-plate",2],["eval","document.documentElement.scrollWidth > innerWidth"]]' --width 320 --height 900
+#   repeat at 390 / 360; eval must print false; console must be clean
+node $S/drive.mjs <slug>-light.html '[["wait",1200],["shot","shots/reduced-390-light.png",".iso-plate",2]]' --width 390 --height 900 --reduced
+node ../../scripts/build-all.mjs                # gallery
 ```
+Use `drive.mjs` for interaction (`click`, `wait`, `eval`, `shot`). Put anything with quotes in an `--actions file.json`.
 
-## Things the next session needs to know
+## 9. Gotchas learned the hard way
 
-- **Chrome as root:** in cloud containers Chrome needs `--no-sandbox`; `setup-cloud.sh` points `CHROME_PATH` at `scripts/chrome-root.sh`, which adds it. On a Mac this isn't used.
-- **Network policy:** the cloud environment blocked PubMed/PMC, Crossref, Health Canada and manufacturer sites, so the research was done from search extracts. Locally, or with those hosts allowed, re-check the MEDIUM/LOW rows in `reference/truth-pack.md`.
-- **Deploy:** pushing `main` runs `.github/workflows/pages.yml`. Work happens on a branch and is merged to `main` when a figure meets §2.
-- **Open questions for Peter:** HANDOFF §7 (VO2 equipment, Fig 1 treatments, Fig 3 home, medical sign-off), plus the ones in each figure's NOTES.
+- **Audit "support":** grounded parts must be named `stand.*` or carry `meta.ground`.
+- **Depth cycles:** split parts that interleave, as in Fig 5's drive case, BB house and seat post.
+- **`cable()` routes:** both ends must land square on a mount face, or the terminal check fails. Widen the mount, or add a plug part.
+- **Floating line ends:** clip hatching and slats to an exact outline (Fig 5 vent slats).
+- **Nested template literals** inside `build.mjs` SVG strings break silently. Build sub-strings in their own `const`.
+- **Theme tokens:** small dots and tracer colours need their own token per theme (A5's tracer vanished in Cream).
+- **320 px:** monitor labels and legend text clip first. Check every new label at 320.
+- **Network (cloud):** PubMed, Crossref, Health Canada, beoptimal.ca, bici.cc and inbodycanada.ca returned 403 under the cloud policy; WebSearch worked. Locally this doesn't apply.
+- **The repo is public:** no patient data, no secrets, no real clinic financials. The VO₂ images in `reference/equipment/*-STOCK.*` are stock photos, not Optimal's equipment.

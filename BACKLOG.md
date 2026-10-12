@@ -31,8 +31,21 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 - NOTES.md;
 - in the gallery.
 
+## 3-D conversion (Peter, 2026-10-12: "make the design more beautiful … isometric 3-D"; A3b approved)
+
+| Piece | 3-D state |
+|---|---|
+| A3 → A3b | done: skin block |
+| A8 | done: muscle bundle cylinder, body redrawn live |
+| A9 | done: bone-and-marrow block |
+| A1 | next: gut-lining block |
+| A5 | next: lung-tissue block or cut sphere |
+| A2, A4, A6, A7 | organ or diagram pieces: ask Peter which treatment (HANDOFF-LOCAL §5.2) |
+
+Recipe: HANDOFF-LOCAL §6.
+
 ## Round-2 options already raised
 
-- Fig 1: treatment switch (hormone therapy / neurokinin-receptor blocker, class names only), if Peter answers HANDOFF §7 Q2 yes. Optional WebGL heat shimmer over the radiator.
+- Fig 1: treatment switch: decided against (threshold model overstates; A2 carries treatments). Optional WebGL heat shimmer over the radiator.
 - Fig 2: an ECW/TBW scenario switch ("more fluid outside cells" / "fewer cells") showing that a high ratio doesn't say why. Option to turn the body so all five cylinders show.
 - Fig 3: decide whether the readout shows "gut gate % open" (current) or a relative hepcidin number.

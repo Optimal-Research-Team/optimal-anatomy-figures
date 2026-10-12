@@ -1,4 +1,4 @@
-# A3b · The finger's heat valves · 3-D prototype
+# A3b · The finger's heat valves · 3-D
 
 **Why it exists:** Peter's round-2 note (Q10): "The anatomy stuff is okay but not great, can you make the design more beautiful? Is there an issue with making these isometric 3-D?" This is the answer in one figure. It is A3's exact section mapped onto the front face of an isometric cut-away tissue block, the textbook skin-block view, so the A-series can match the isometric machines (Figs 1–6).
 
@@ -15,5 +15,5 @@
 - Dark and Cream at desktop; Cream at 390 and 320 (no horizontal scroll); reduced motion still. Console clean; line ends 0.
 - Shots: `shots/desktop-flash-light.png`, `desktop-flash-dark.png`, `phone-390-light.png`, `phone-320-light.png`, `reduced-390-light.png`.
 
-## Status and next step
-Prototype for review. If Peter likes the look, the same treatment suits the other "slab" pieces: muscle (A8), bone (A9), gut lining (A1), alveolus wall (A5). Organ pieces (heart A4, hypothalamus A2) don't fit a block. They'd need hand-drawn shading in 3-D instead, which is more work per piece.
+## Status
+**Approved by Peter 2026-10-12** ("a3b is great"). A8 and A9 have since been converted the same way. Next: gut lining (A1) and alveolus wall (A5). Organ pieces (heart A4, hypothalamus A2) don't fit a block. They'd need hand-drawn shading in 3-D instead, which is more work per piece.
