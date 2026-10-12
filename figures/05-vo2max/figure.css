@@ -37,3 +37,5 @@
 .vo-range::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--opt-btn-on); border: 3px solid var(--anatomy-card); }
 .vo-range:focus-visible { outline: 2px solid var(--opt-fig); outline-offset: 2px; }
 .vo-led { fill: var(--anatomy-lit); stroke: var(--anatomy-card); stroke-width: 0.4; }
+.vo-power-track { fill: none; stroke: var(--anatomy-shade-1); stroke-linecap: round; opacity: 0.9; }
+.vo-power { fill: none; stroke: var(--opt-heat-ink); stroke-linecap: round; }

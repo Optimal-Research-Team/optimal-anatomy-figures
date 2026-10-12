@@ -37,3 +37,8 @@
 .vo-range::-moz-range-thumb { width: 24px; height: 24px; border-radius: 50%; background: var(--opt-btn-on); border: 3px solid var(--anatomy-card); }
 .vo-range:focus-visible { outline: 2px solid var(--opt-fig); outline-offset: 2px; }
 .vo-led { fill: var(--anatomy-lit); stroke: var(--anatomy-card); stroke-width: 0.4; }
+.cr-ui-label { fill: var(--cr-screen-dim); font-family: var(--opt-ui); font-weight: 500; letter-spacing: 0.02em; }
+.cr-ui-hero { fill: var(--cr-screen-ink); font-family: var(--opt-ui); font-weight: 600; font-feature-settings: "tnum" 1; }
+.cr-ui-val { fill: var(--cr-screen-ink); font-family: var(--opt-ui); font-weight: 600; font-feature-settings: "tnum" 1; }
+.cr-floor { fill: none; stroke: var(--cr-screen-dim); stroke-width: 0.4; }
+.cr-live { fill: var(--opt-heat-ink); }

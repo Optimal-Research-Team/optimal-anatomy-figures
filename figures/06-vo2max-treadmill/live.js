@@ -84,13 +84,38 @@ function mount(fig) {
     for (let x = DATA.belt.x1 - off; x > DATA.belt.x + 0.5; x -= gap) d += lineOnTop([x, -DATA.belt.half + 0.6], [x, DATA.belt.half - 0.6], Z + 0.02, P);
     nodes.slats.setAttribute("d", d);
   }
+  // the Creator's screen as a clean live dashboard: clock, belt speed, the tracked skeleton on its
+  // floor line, and tiles for cadence, step length and grade (all from the model)
   const SC = DATA.screen;
   const SW = SC.y1 - SC.y0;
-  const toScreen = (p) => [SW / 2 + p[1] * 0.5, 8 + (Z + B.H + 6 - p[2]) * 0.5];
-  const bones = el("path", { class: "cr-bones" }, nodes.screen);
-  const joints = el("g", { class: "cr-joints" }, nodes.screen);
+  const scr = nodes.screen;
+  const txt = (x, y, size, cls, anchor = "start", text = "") => {
+    const n = el("text", { x, y, "font-size": size, class: cls, "text-anchor": anchor }, scr);
+    n.textContent = text;
+    return n;
+  };
+  const liveDot = el("circle", { cx: 5, cy: 6.2, r: 1.3, class: "cr-live" }, scr);
+  txt(8, 7.5, 3.2, "cr-ui-label", "start", "Live");
+  const uiClock = txt(SW - 4, 7.5, 3.2, "cr-ui-label", "end", "0:00");
+  el("path", { d: `M3 10.6H${SW - 3}`, class: "cr-floor" }, scr);
+  const uiSpeed = txt(SW / 2, 26.5, 15, "cr-ui-hero", "middle", "0.0");
+  txt(SW / 2, 32.4, 3.4, "cr-ui-label", "middle", "km/h");
+  const FLOOR = 85;
+  el("path", { d: `M9 ${FLOOR}H${SW - 9}`, class: "cr-floor" }, scr);
+  const toScreen = (p) => [SW / 2 + p[1] * 0.26, FLOOR - (p[2] - Z) * 0.26];
+  const bones = el("path", { class: "cr-bones" }, scr);
+  const joints = el("g", { class: "cr-joints" }, scr);
   const jointDots = [];
-  function screenDraw(J) {
+  const tileW = (SW - 4 - 2 * 2) / 3;
+  const tiles = ["Cadence", "Step", "Grade"].map((label, i) => {
+    const x = 2 + i * (tileW + 2);
+    el("rect", { x, y: 89, width: tileW, height: 19, rx: 1.6, class: "cr-well" }, scr);
+    txt(x + tileW / 2, 94, 2.6, "cr-ui-label", "middle", label);
+    const v = txt(x + tileW / 2, 102.2, 5.6, "cr-ui-val", "middle", "");
+    const u = txt(x + tileW / 2, 106, 2.4, "cr-ui-label", "middle", ["steps/min", "metres", "incline"][i]);
+    return { v, u };
+  });
+  function screenDraw(J, s) {
     const seg = (a, b) => {
       const p = toScreen(a);
       const r = toScreen(b);
@@ -101,11 +126,19 @@ function mount(fig) {
     for (const k of ["R", "L"]) d += seg(J[`hip${k}`], J[`knee${k}`]) + seg(J[`knee${k}`], J[`ankle${k}`]) + seg(J[`shoulder${k}`], J[`elbow${k}`]) + seg(J[`elbow${k}`], J[`wrist${k}`]);
     bones.setAttribute("d", d);
     const pts = ["head", "shoulderR", "shoulderL", "elbowR", "elbowL", "wristR", "wristL", "hipR", "hipL", "kneeR", "kneeL", "ankleR", "ankleL"].map((n) => toScreen(J[n]));
-    while (jointDots.length < pts.length) jointDots.push(el("circle", { r: 1.2 }, joints));
+    while (jointDots.length < pts.length) jointDots.push(el("circle", { r: jointDots.length === 0 ? 1.4 : 0.9 }, joints));
     pts.forEach((p, i) => {
       jointDots[i].setAttribute("cx", p[0].toFixed(1));
       jointDots[i].setAttribute("cy", p[1].toFixed(1));
     });
+    // the numbers: belt speed, the model's cadence at that speed, the step it implies, the fixed grade
+    const cad = TRUTH.cadence0;
+    uiSpeed.textContent = s.v.toFixed(1);
+    uiClock.textContent = fmt(t);
+    tiles[0].v.textContent = String(Math.round(cad));
+    tiles[1].v.textContent = (s.v / 3.6 / (cad / 60)).toFixed(2);
+    tiles[2].v.textContent = `${Math.round(RUN.grade * 100)}%`;
+    liveDot.setAttribute("fill-opacity", (0.35 + 0.65 * Math.abs(Math.cos(phi * 2 * Math.PI))).toFixed(2));
   }
 
   // ---------------------------------------------------------------- the tablet: VO₂ against speed
@@ -138,7 +171,7 @@ function mount(fig) {
     view.draw([...parts, ...maskParts(J)], J, decorate);
     if (led) led.setAttribute("fill-opacity", (0.3 + 0.7 * pulse).toFixed(2));
     beltSvg();
-    screenDraw(J);
+    screenDraw(J, s);
     if (nodes.speed) nodes.speed.textContent = s.v.toFixed(1);
     plotDraw(t, pulse);
     readout(s);

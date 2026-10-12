@@ -2,13 +2,22 @@
 
 **Round 2 (Peter, 2026-10-11):** "just a rider with a wireless mask with no tube and an assessor using an iPad"; Optimal's equipment is the VO2 Master (a mask plus an assessor with a tablet). The hose, the cart and the WebGL breath layer are gone, and so is RER: the mask unit doesn't measure CO₂ (truth pack §5, sources 27–30).
 
+**Round 3 (Peter, 2026-10-12): "our bike is a Wahoo trainer bike"** (photos of the KICKR BIKE SHIFT). The generic lab ergometer is replaced by a smart bike in that bike's proportions (no logos or styling copied):
+- a ≈ 48 cm vented flywheel disc low at the back (Zwift Insider: 48 cm, covered);
+- a tapered drive case to a round crank cover whose bolts turn with the cranks;
+- a post up to a heavy horizontal top beam, with the seat post through its back end;
+- a riser to drop bars with hoods and curled drops ending in bar-end plugs;
+- a long base bar with crossbar feet (≈ 140 × 78 cm footprint per Wahoo support).
+
+Power is now an orange arc sweeping round the disc's rim, full at 420 W; the magnet brake is gone. The rider's fit (bottom bracket, saddle, grips) is unchanged. Audit passed and `lines.mjs` reports 0 in both themes; all captures are retaken.
+
 **Size:** Figure (upper end). 20 recorded solids for the bike, the page-drawn rider (about 40 parts plus mask, analyser and chest strap), and the assessor (about 34 parts and the tablet, drawn once at build time by `shared/assessor.mjs`). SVG only.
 
 **Mapping in one sentence:** the mannequin pedals a generic lab bike whose magnet brake closes in on the flywheel as the ramp adds watts. A small wireless analyser on its mask blinks with every breath, and the assessor's tablet plots oxygen uptake against watts: a straight line at about 10 ml/min per watt that flattens at the ceiling. The ceiling control moves the ceiling, never the slope.
 
 ## Parts
 
-- **Bike** (generic lab-grade, imitating no brand): T-feet and beam, seat column, clamp and saddle, bottom bracket, chainring, crank arms and pedals, the belt to a pulley, a flywheel with spinning holes, a magnet brake that lowers over the rim with power, front column, stem, handlebar, grips and power head.
+- **Bike** (round 3): smart-bike proportions as above. Base bar and feet, flywheel post, vented disc, drive case, bottom-bracket block, crank cover, frame post, top beam with two adjuster knobs, seat slider, post, clamp and saddle, riser, bar, hoods, drops and plugs.
 - **Rider:** pedalling at 60 rpm with a bike fit (knee 30° at the bottom of the stroke, trunk 35°). A face mask with a capsule analyser on the front, whose status light blinks each breath out, a chest strap, and tracking dots on the joints.
 - **Assessor:** a standing mannequin turned to read a 13-inch tablet held at both edges. The screen shows the big live VO₂ number, a breath marker, and VO₂ against watts with grid, ticks, the 10.3 ml/min/W guide, the trace, the current point, and a ceiling line once the plateau holds (`shared/vo2-plot.js`).
 
@@ -61,6 +70,6 @@ The slope measured off the model's ramp is 10.29 ml/min per W (Hansen 1987: 10.2
 ## Open issues for Peter
 
 1. **FRIEND cycle percentiles.** Someone with journal access needs Kaminsky 2017 Table 2 or Kaminsky 2022 Table 3 (cycle rows) before a percentile readout can ship.
-2. **The bike.** Resolved: Peter confirmed the app pairs with the bike's power meter, so plotting VO₂ against watts stands. Which bike, to match its look, is still open.
+2. **The bike.** Resolved: the app pairs with the bike's power meter, and the bike is a Wahoo trainer bike, drawn in its proportions.
 3. **To verify with full web access:** the VO2 Master spec sheet (CO₂, battery, weight); resting heart rate and the shape of the heart-rate rise; the VO₂ time constant (Wasserman).
 4. **Site copy.** The Performance one-pager says "breath-by-breath gas analysis". That matches the mask unit. "One of the strongest known predictors of longevity" fits Mandsager and Kokkinos as an association; the caption keeps "association, not a promise".

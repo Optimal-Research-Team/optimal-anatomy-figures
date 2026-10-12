@@ -14,7 +14,7 @@ function mount(fig) {
   const range = fig.querySelector(".vo-range");
   const play = fig.querySelector("[data-play]");
   const clockEl = fig.querySelector("[data-clock]");
-  const nodes = { runner: q('[data-part="runner"]'), brake: q('[data-part="brake"]'), fly: q('[data-part="flyspin"]'), tablet: q('[data-part="tablet"]') };
+  const nodes = { runner: q('[data-part="runner"]'), power: q('[data-part="power"]'), fly: q('[data-part="flyspin"]'), tablet: q('[data-part="tablet"]') };
   const NS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs, parent) => {
     const n = document.createElementNS(NS, tag);
@@ -88,25 +88,36 @@ function mount(fig) {
     }
   }
 
-  // ---------------------------------------------------------------- the brake magnets and flywheel marks
+  // ---------------------------------------------------------------- power on the flywheel cover; the spinning hub
   const FLY = DATA.bike.fly;
-  function brakeSvg(W) {
-    const x = FLY.x - 13;
-    const rimZ = FLY.z + Math.sqrt(FLY.r ** 2 - 13 ** 2);
-    const over = 5.5 * Math.min(1, W / 420);
-    const z0 = rimZ + 2.4 - over;
-    const yN = FLY.y + FLY.t / 2 + 0.3;
-    const rod = solidSvg(cylinder(x, FLY.y, 0.9, z0 + 5, FLY.z + FLY.r + 9 - 1.2 - (z0 + 5), P, 12), { tone: "lo" });
-    const bridge = solidSvg(slabOf({ x: x - 4, y: FLY.y - FLY.t / 2 - 2.2, w: 8, d: FLY.t + 4.4, r: 0.6 }, z0 + 4, 1.8, P, 2, 0.2), { tone: "mid" });
-    const magnet = solidSvg(slabOf({ x: x - 4, y: yN, w: 8, d: 1.9, r: 0.5 }, z0, 5.8, P, 2, 0.2), { tone: "hi", className: "vo-magnet" });
-    return rod + bridge + magnet;
+  const yFace = FLY.y + FLY.t / 2 + 0.02;
+  const ring = (r, a0, a1) => {
+    let d = "";
+    const n = Math.max(2, Math.ceil(Math.abs(a1 - a0) / 0.06));
+    for (let i = 0; i <= n; i++) {
+      const a = a0 + ((a1 - a0) * i) / n;
+      const p = iso([FLY.x + r * Math.cos(a), yFace, FLY.z + r * Math.sin(a)], P);
+      d += `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`;
+    }
+    return d;
+  };
+  const A0 = (62 * Math.PI) / 180;
+  const SPAN = (250 * Math.PI) / 180;
+  const TRACK = ring(FLY.r - 2.8, A0, A0 + SPAN);
+  function powerSvg(W) {
+    // a track round the disc's rim, and an arc that sweeps up, over and round the back: full at 420 W
+    const f = Math.max(0, Math.min(1, W / 420));
+    const arc = f > 0.002 ? ring(FLY.r - 2.8, A0, A0 + f * SPAN) : "";
+    return `<path class="vo-power-track" d="${TRACK}" style="stroke-width:${(2.6 * KS).toFixed(2)}"/><path class="vo-power" d="${arc}" style="stroke-width:${(2.6 * KS).toFixed(2)}"/>`;
   }
   function flySvg() {
+    // five bolts on the crank cover turning with the cranks
+    const C = DATA.bike.cover;
     return [0, 1, 2, 3, 4]
       .map((i) => {
         const a = flyAngle + (i * 2 * Math.PI) / 5;
-        const p = iso([FLY.x + 11 * Math.cos(a), FLY.y + FLY.t / 2 + 0.02, FLY.z + 11 * Math.sin(a)], P);
-        return `<circle class="vo-hole" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${(1.6 * KS).toFixed(2)}"/>`;
+        const p = iso([C.x + C.r * Math.cos(a), C.y, C.z + C.r * Math.sin(a)], P);
+        return `<circle class="vo-hole" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${(0.9 * KS).toFixed(2)}"/>`;
       })
       .join("");
   }
@@ -129,7 +140,7 @@ function mount(fig) {
     const s = sampleAt(T, t);
     if (s.pedal) {
       theta -= dtReal * ((TRUTH.cadence / 60) * 2 * Math.PI);
-      flyAngle -= dtReal * ((TRUTH.cadence / 60) * 2 * Math.PI) * 2.6;
+      flyAngle -= dtReal * ((TRUTH.cadence / 60) * 2 * Math.PI);
     }
     const period = 60 / s.f;
     breath = (breath + dtReal / period) % 1;
@@ -144,7 +155,7 @@ function mount(fig) {
     const { parts } = MANNEQUIN.partsOf(J);
     view.draw([...parts, ...riderParts(pose)], J, decorate);
     if (led) led.setAttribute("fill-opacity", (0.3 + 0.7 * pulse).toFixed(2));
-    nodes.brake.innerHTML = brakeSvg(s.W);
+    nodes.power.innerHTML = powerSvg(s.W);
     nodes.fly.innerHTML = flySvg();
     plotDraw(t, pulse);
     readout(s);

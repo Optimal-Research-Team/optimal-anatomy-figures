@@ -1,8 +1,8 @@
 // Fig 5 · The ramp and the mask.
 //
-// A generic lab-grade bike ergometer (imitating no brand): a T-foot base, seat
-// and front columns, a flywheel with a magnet brake that closes on its rim as
-// the ramp adds watts, a belt from the chainring. The mannequin pedals at
+// A smart training bike in the proportions of the clinic's (a large covered
+// flywheel at the rear under the saddle, a slim raked frame, drop bars; no
+// brand's styling). Power shows as an arc growing on the flywheel cover. The mannequin pedals at
 // 60 rpm wearing a wireless breath analyser on its mask (it measures each
 // breath's flow and oxygen and sends it by Bluetooth); no hose, no cart. The
 // assessor stands beside the bike with a tablet that plots oxygen uptake
@@ -28,7 +28,8 @@ const ELEVATION = 22;
 
 // ---------------------------------------------------------------- layout (cm, z up; the rider faces +x, +y is the rider's left)
 const BB = [0, 0, M.BIKE.bb[1]]; // bottom bracket
-const FLY = { x: 40, y: 12, z: 40, r: 20, t: 3.4 }; // flywheel, near side, outboard of its belt pulley
+const FLY = { x: -45, y: 0, z: 33, r: 24, t: 10 }; // flywheel disc low at the back (≈ 48 cm across)
+const RAD = Math.PI / 180;
 const ASSESSOR = { at: [92, -52], heading: 186 }; // standing beside the bike, turned to read the tablet
 
 const B = { ...MANNEQUIN.BODY };
@@ -47,7 +48,7 @@ const MASK = { base: G.add3(G.add3(J0.head, G.mul3(face, 6.4)), G.mul3(headAxis,
 MASK.valve = G.add3(MASK.base, G.mul3(face, 8.4));
 
 const BOUNDS = [
-  ...k.boxCorners({ x: -54, y: -30, w: 116, d: 60 }, 0, 0),
+  ...k.boxCorners({ x: -70, y: -32, w: 134, d: 64 }, 0, 0),
   [J0.head[0], 0, J0.head[2] + 13],
   [ASSESSOR.at[0] - 22, ASSESSOR.at[1] - 22, 0],
   [ASSESSOR.at[0] + 22, ASSESSOR.at[1] + 22, 0],
@@ -64,7 +65,7 @@ const flat = BOUNDS.map((p) => k.iso(p, probe));
 const H = Math.ceil(Math.max(...flat.map((p) => p[1])) - Math.min(...flat.map((p) => p[1])) + 16);
 const P = k.fitProjection(BOUNDS, W, H, { pad: 8, azimuth: AZIMUTH, elevation: ELEVATION });
 const F = figkit(P);
-const { R, at, S, Ln, Dots, path3, vframe, planeMatrix, put, box, cyl, turned, pin, prism } = F;
+const { R, at, S, Ln, Dots, path3, vframe, planeMatrix, put, box, cyl, turned, pin, prism, cable } = F;
 const KS = G.scaleOf(P);
 const back = [];
 const yF = (x, y, z) => G.frameOf([x, y, z], [0, 1, 0], [1, 0, 0], [0, 0, 1]); // axis along +y
@@ -76,74 +77,109 @@ const along = (a, b) => {
   return { F: G.frameOf(a, ax, u, G.cross3(ax, u)), length: G.len3(d) };
 };
 
-// ---------------------------------------------------------------- floor shadow and the bike's base
-back.push(`<path class="iso-halo" d="${k.haloOf({ x: -56, y: -32, w: 120, d: 64, r: 10 }, 0, 0.1, P)}"/>`);
-const footR = box("stand.footR", { x: -54, y: -28, w: 10, d: 56, r: 3 }, 0, 5, { tone: "mid" }, { bevel: 0.4 });
-const footF = box("stand.footF", { x: 50, y: -26, w: 10, d: 52, r: 3 }, 0, 5, { tone: "mid" }, { bevel: 0.4 });
-const beam = box("beam", { x: -50, y: -4, w: 106, d: 8, r: 2 }, 5, 6, { tone: "mid" }, { bevel: 0.4, inner: Ln(k.sideSeam({ x: -50, y: -4, w: 106, d: 8, r: 2 }, 8, P, 2), { tone: "faint" }) });
+// ---------------------------------------------------------------- a smart training bike in the clinic bike's proportions (no brand's
+// styling): a large vented flywheel disc low at the back, a tapered drive case running forward to a
+// round crank cover, a post up to a heavy horizontal top beam, the seat post at its back end and
+// drop bars off its front, all on a long base bar with crossbar feet. Power shows as an arc on the
+// flywheel's face.
+back.push(`<path class="iso-halo" d="${k.haloOf({ x: -70, y: -34, w: 136, d: 68, r: 12 }, 0, 0.1, P)}"/>`);
+const footR = box("stand.rear", { x: FLY.x - 7, y: -30, w: 14, d: 60, r: 4 }, 0, 5.4, { tone: "lo" }, { bevel: 0.4, inner: Ln(k.sideSeam({ x: FLY.x - 7, y: -30, w: 14, d: 60, r: 4 }, 2.7, P, 1.6), { tone: "faint" }) });
+const footF = box("stand.front", { x: 50, y: -28, w: 12, d: 56, r: 4 }, 0, 5.4, { tone: "lo" }, { bevel: 0.4, inner: Ln(k.sideSeam({ x: 50, y: -28, w: 12, d: 56, r: 4 }, 2.7, P, 1.6), { tone: "faint" }) });
+box("stand.bar", { x: FLY.x + 7, y: -3.6, w: 50 - (FLY.x + 7), d: 7.2, r: 1.2 }, 0, 4.6, { tone: "lo" }, { bevel: 0.4, inner: Ln(k.sideSeam({ x: FLY.x + 7, y: -3.6, w: 50 - (FLY.x + 7), d: 7.2, r: 1.2 }, 2.3, P, 1.2), { tone: "faint" }) });
+const post = cyl("fly.post", FLY.x, 0, 4, 5, FLY.z - FLY.r - 4.4, { tone: "lo" }, { steps: 18, meta: { seated: true, cut: [footR] } });
 
-// ---------------------------------------------------------------- seat column, saddle
-const SADDLE_Z = B.hipZ - 9.5; // saddle base; its top sits just under the pelvis
-const SEAT = { foot: [-12, 0, 11], top: [-22, 0, SADDLE_Z - 4] };
-{
-  const { F: Fs, length } = along(SEAT.foot, SEAT.top);
-  prism("seat.column", Fs, [[-3, -2.6], [3, -2.6], [3, 2.6], [-3, 2.6]], 0, length, { tone: "mid" }, { meta: { seated: true, cut: [beam] } });
-  const z0 = SADDLE_Z;
-  cyl("seat.clamp", SEAT.top[0], 0, 3.4, z0 - 4, 4, { tone: "lo" }, { steps: 20, meta: { seated: true, cut: [R.solids.find((s) => s.name === "seat.column")] } });
-  // the saddle: a wedge, wide at the back, a narrow nose forward
-  const ring = [[-33, -7], [-27, -8], [-18, -5.5], [-4, -2.2], [0, 0], [-4, 2.2], [-18, 5.5], [-27, 8], [-33, 7], [-35, 0]];
-  prism("saddle", vframe(0, 0, z0), ring, 0, 3.6, { tone: "hi", crease: "lo" }, { meta: { seated: true, cut: [R.solids.find((s) => s.name === "seat.clamp")] } });
-}
-
-// ---------------------------------------------------------------- bottom bracket, chainring, belt; flywheel and its fork
-const bbHouse = box("bb.house", { x: -6, y: -6, w: 12, d: 12, r: 2 }, 11, BB[2] - 4 - 11 + 0.6, { tone: "mid" }, { steps: 2, meta: { seated: true, cut: [beam] } });
-pin("bb.shell", yF(BB[0], -7, BB[2]), 0, 14, 4.2, { tone: "lo" }, { meta: { seated: true, cut: [bbHouse] } });
-turned("chainring", yF(BB[0], 7, BB[2]), [[0, 10.5], [1.2, 10.5]], { tone: "hi", crease: "lo" }, { inner: Ln(G.circleOf(yF(BB[0], 7, BB[2]), 1.2, 7.5, P), { tone: "lo" }), meta: { seated: true } });
-const FRONT = { foot: [44, 0, 11], top: [46, 0, 100] };
-{
-  const { F: Ff, length } = along(FRONT.foot, FRONT.top);
-  prism("front.column", Ff, [[-3.2, -2.8], [3.2, -2.8], [3.2, 2.8], [-3.2, 2.8]], 0, length, { tone: "mid" }, { meta: { seated: true, cut: [beam] } });
-}
-const column = R.solids.find((s) => s.name === "front.column");
-const xCol = (z) => FRONT.foot[0] + ((FRONT.top[0] - FRONT.foot[0]) * (z - FRONT.foot[2])) / (FRONT.top[2] - FRONT.foot[2]);
-pin("fly.axle", yF(xCol(FLY.z), 2.8, FLY.z), 0, FLY.y - FLY.t / 2 - 2.8, 1.6, { tone: "lo" }, { meta: { seated: true, cut: [column] } });
-{
-  const Fw = yF(FLY.x, FLY.y - FLY.t / 2, FLY.z);
-  const rim = G.circleOf(yF(FLY.x, FLY.y + FLY.t / 2 + 0.01, FLY.z), 0, FLY.r - 3, P);
-  turned("flywheel", Fw, [[0, FLY.r], [FLY.t, FLY.r]], { tone: "hi", crease: "lo" }, { inner: Ln(rim, { tone: "lo" }), extra: `<g data-part="flyspin"></g>`, meta: { seated: true, cut: [R.solids.find((s) => s.name === "fly.axle")] } });
-  pin("fly.hub", yF(FLY.x, FLY.y + FLY.t / 2, FLY.z), 0, 1.6, 4, { tone: "mid" }, { meta: { seated: true } });
-  pin("fly.pulley", yF(FLY.x, 7, FLY.z), 0, 1.2, 4, { tone: "lo" }, { meta: { seated: true, cut: [R.solids.find((s) => s.name === "fly.axle")] } });
-}
-// the belt: two straight runs from the chainring to the hub pulley, near side
-{
-  const y = 7.6;
-  const r1 = 10.5;
-  const r2 = 4;
-  const d = Math.hypot(FLY.x - BB[0], FLY.z - BB[2]);
-  const base = Math.atan2(FLY.z - BB[2], FLY.x - BB[0]);
-  const off = Math.acos((r1 - r2) / d);
-  const runs = [1, -1].map((s) => {
-    const a = base + s * off;
-    return path3([[BB[0] + r1 * Math.cos(a), y, BB[2] + r1 * Math.sin(a)], [FLY.x + r2 * Math.cos(a), y, FLY.z + r2 * Math.sin(a)]]);
+// the flywheel disc: deep, rounded, vented slats on its upper rear quarter
+const ff = FLY.t / 2 + 0.02;
+// a vent panel (the disc face minus the drive case's corner) filled with slats that end on its edge
+const RV = FLY.r - 5.5;
+const inPanel = (x, z) => x < -4 && z > -6;
+let panel = Array.from({ length: 144 }, (_, i) => [RV * Math.cos((i / 144) * 2 * Math.PI), RV * Math.sin((i / 144) * 2 * Math.PI)]);
+for (const [nx, nz, c] of [[1, 0, -4], [0, -1, 6]]) {
+  // keep nx·x + nz·z ≤ c
+  const out = [];
+  panel.forEach((p0, i) => {
+    const p1 = panel[(i + 1) % panel.length];
+    const f0 = nx * p0[0] + nz * p0[1] - c;
+    const f1 = nx * p1[0] + nz * p1[1] - c;
+    if (f0 <= 0) out.push(p0);
+    if (f0 * f1 < 0) out.push([p0[0] + ((p1[0] - p0[0]) * f0) / (f0 - f1), p0[1] + ((p1[1] - p0[1]) * f0) / (f0 - f1)]);
   });
-  back.push(`<g data-part="belt">${Ln(runs.join(""), { tone: "mid", free: true })}</g>`);
+  panel = out;
+}
+const toFace = ([x, z]) => [FLY.x + x, ff, FLY.z + z];
+let slats = path3([...panel, panel[0]].map(toFace));
+{
+  const d = [Math.cos(55 * RAD), Math.sin(55 * RAD)];
+  const n = [-d[1], d[0]];
+  for (let o = -15.6; o <= 15.6; o += 2.6) {
+    // the slat's span: inside the circle and both half-planes, solved exactly so its ends sit on the panel's edge
+    const half = Math.sqrt(Math.max(0, RV * RV - o * o));
+    let t0 = -half;
+    let t1 = half;
+    t1 = Math.min(t1, (-4 - n[0] * o) / d[0]);
+    t0 = Math.max(t0, (-6 - n[1] * o) / d[1]);
+    if (t1 - t0 < 2) continue;
+    slats += path3([toFace([n[0] * o + d[0] * t0, n[1] * o + d[1] * t0]), toFace([n[0] * o + d[0] * t1, n[1] * o + d[1] * t1])]);
+  }
+}
+const HOUSING = turned("fly.housing", yF(FLY.x, -FLY.t / 2, FLY.z), [[0, FLY.r - 1.8], [1, FLY.r - 0.2, 1], [2, FLY.r, 1], [FLY.t - 2, FLY.r, 1], [FLY.t - 1, FLY.r - 0.2, 1], [FLY.t, FLY.r - 1.8]], { tone: "lo", crease: "mid" }, {
+  steps: 72,
+  inner: Ln(slats, { tone: "faint" }),
+  meta: { seated: true, cut: [post] },
+});
+
+// the drive case: a tapered body from the flywheel's centre to a round end around the bottom bracket
+// outline in (forward, up) relative to the bottom bracket: from the flywheel's centre to a round end
+const CASE = [[FLY.x - 4, 6], [FLY.x + 6, 11], [-9, 10.5], ...Array.from({ length: 9 }, (_, i) => {
+  const a = (110 - i * 27.5) * RAD;
+  return [12.5 * Math.cos(a), 12.5 * Math.sin(a)];
+}), [-9, -11.5], [FLY.x + 6, -9], [FLY.x - 4, -5]];
+const bbHouse = box("bb.house", { x: -11, y: -6, w: 22, d: 11, r: 4 }, BB[2] - 12, 22, { tone: "mid" }, { bevel: 0.4, meta: { seated: true } });
+const drive = prism("drive.case", G.frameOf([0, FLY.t / 2, BB[2]], [0, 1, 0], [1, 0, 0], [0, 0, 1]), CASE, 0, 10 - FLY.t / 2, { tone: "mid", crease: "lo" }, { meta: { seated: true } });
+pin("bb.stub", yF(BB[0], -12.6, BB[2]), 0, 6.6, 2.6, { tone: "lo" }, { meta: { seated: true, cut: [bbHouse] } });
+turned("crank.cover", yF(BB[0], 10, BB[2]), [[0, 11.2], [0.6, 11.6, 1], [1.4, 11.2]], { tone: "hi", crease: "lo" }, { inner: Ln(G.circleOf(yF(BB[0], 11.42, BB[2]), 0, 8, P), { tone: "faint" }), extra: `<g data-part="flyspin"></g>`, meta: { seated: true, cut: [drive] } });
+
+// the post and the top beam, seat post through its back end, two adjuster knobs on top
+const BEAM_Z = SADDLE_Z_OF(B) - 17;
+function SADDLE_Z_OF(b) {
+  return b.hipZ - 9.5;
+}
+const column = box("frame.post", { x: -9, y: -3.6, w: 9, d: 7.2, r: 1.6 }, BB[2] + 10, BEAM_Z - BB[2] - 10, { tone: "mid" }, { bevel: 0.3, meta: { seated: true } });
+const beam = box("frame.beam", { x: -26, y: -3.8, w: 62, d: 7.6, r: 1.8 }, BEAM_Z, 8, { tone: "mid" }, { bevel: 0.4, meta: { seated: true }, inner: Ln(k.sideSeam({ x: -26, y: -3.8, w: 62, d: 7.6, r: 1.8 }, BEAM_Z + 4, P, 2.2), { tone: "faint" }) });
+for (const [x, nm] of [[-12, "knobS"], [24, "knobB"]]) cyl(`frame.${nm}`, x, 0, 1.6, BEAM_Z + 7.6, 3.2, { tone: "lo" }, { steps: 14, meta: { seated: true, cut: [beam] } });
+
+// seat post and saddle
+const SADDLE_Z = SADDLE_Z_OF(B); // saddle base; its top sits just under the pelvis
+const SEAT = { foot: [-21, 0, BEAM_Z - 11], top: [-21, 0, SADDLE_Z - 4] };
+{
+  cyl("seat.slider", SEAT.foot[0], 0, 2, SEAT.foot[2], BEAM_Z - SEAT.foot[2], { tone: "lo" }, { steps: 16, meta: { seated: true } });
+  const sp = cyl("seat.post", SEAT.foot[0], 0, 2, BEAM_Z + 8, SEAT.top[2] - BEAM_Z - 8, { tone: "lo" }, { steps: 16, meta: { seated: true } });
+  const z0 = SADDLE_Z;
+  cyl("seat.clamp", SEAT.top[0], 0, 2.8, z0 - 4, 4, { tone: "lo" }, { steps: 20, meta: { seated: true, cut: [sp] } });
+  const ring = [[-33, -7], [-27, -8], [-18, -5.5], [-4, -2.2], [0, 0], [-4, 2.2], [-18, 5.5], [-27, 8], [-33, 7], [-35, 0]];
+  prism("saddle", vframe(0, 0, z0), ring, 0, 3.6, { tone: "lo", crease: "mid" }, { meta: { seated: true, cut: [R.solids.find((s2) => s2.name === "seat.clamp")] } });
 }
 
-// ---------------------------------------------------------------- handlebar, stem, power head; the brake arm (the magnets are drawn by the page)
-const stem = cyl("stem", FRONT.top[0], 0, 2.2, FRONT.top[2], M.BIKE.grip[1] - FRONT.top[2] - 1.6, { tone: "lo" }, { steps: 16, meta: { seated: true, cut: [column] } });
+// the riser from the beam's front end up to the bars; drop bars with hoods
+const gx = M.BIKE.grip[0];
+const gz = M.BIKE.grip[1];
+const gy = M.BIKE.grip[2];
+const RISER = { foot: [33, 0, BEAM_Z + 4], top: [gx - 1, 0, gz - 1.2] };
+const riser = (() => {
+  const { F: Fr, length } = along(RISER.foot, RISER.top);
+  return prism("riser", Fr, [[-2.4, -2.2], [2.4, -2.2], [2.4, 2.2], [-2.4, 2.2]], 0, length, { tone: "mid" }, { meta: { seated: true, cut: [beam] } });
+})();
 {
-  const gy = M.BIKE.grip[2];
-  const bar = pin("handlebar", yF(M.BIKE.grip[0], -gy + 5, M.BIKE.grip[1]), 0, 2 * gy - 10, 1.6, { tone: "lo" }, { meta: { seated: true, cut: [stem] } });
-  for (const s of [-1, 1]) pin(`grip${s > 0 ? "L" : "R"}`, yF(M.BIKE.grip[0], s > 0 ? gy - 5 : -gy - 5, M.BIKE.grip[1]), 0, 10, 2.4, { tone: "hi", crease: "lo" }, { meta: { seated: true, cut: [bar] } });
-  // the power head on the stem: its screen faces the rider (the cart shows the same watts)
-  box("power.head", { x: FRONT.top[0] - 7, y: -9, w: 10, d: 18, r: 2 }, M.BIKE.grip[1] + 1.4, 7, { tone: "mid" }, { bevel: 0.4, meta: { seated: true, cut: [bar, stem] }, extra: Dots([at([FRONT.top[0] + 3.02, -5, M.BIKE.grip[1] + 6]), at([FRONT.top[0] + 3.02, 5, M.BIKE.grip[1] + 6])], { size: 0.6, tone: "lit" }) });
-}
-{
-  // brake arm from the column to the magnet carriage above the flywheel's rear rim
-  const z = FLY.z + FLY.r + 9;
-  const x0 = xCol(z);
-  const { F: Fa, length } = along([x0, 0, z], [FLY.x - 13, FLY.y, z]);
-  prism("brake.arm", Fa, [[-1.4, -1.2], [1.4, -1.2], [1.4, 1.2], [-1.4, 1.2]], 0, length, { tone: "lo" }, { meta: { seated: true, cut: [column] } });
+  const bar = pin("handlebar", yF(gx, -gy - 1, gz), 0, 2 * gy + 2, 1.4, { tone: "lo" }, { meta: { seated: true, cut: [riser] } });
+  for (const s2 of [-1, 1]) {
+    const y = s2 * (gy + 1);
+    box(`hood${s2 > 0 ? "L" : "R"}`, { x: gx + 0.4, y: y - 2.2, w: 5.2, d: 4.4, r: 0.6 }, gz - 1, 4.4, { tone: "lo" }, { bevel: 0.3, meta: { seated: true, cut: [bar] } });
+    // the drop: forward off the hood, curling down and back, as one smooth bent tube
+    // a bar-end plug closes the drop
+    const { F: Fp } = along([gx + 1.4, y, gz - 11.8], [gx - 2, y, gz - 11.8]);
+    pin(`plug${s2 > 0 ? "L" : "R"}`, Fp, 0, 1.4, 1.5, { tone: "mid" }, { steps: 14, meta: { seated: true, ground: true } });
+    cable(`drop${s2 > 0 ? "L" : "R"}`, [[gx + 5.6, y, gz + 1.2], [gx + 7.4, y, gz + 1.2], [gx + 9.8, y, gz - 2.4], [gx + 9.4, y, gz - 10], [gx + 4.2, y, gz - 11.8], [gx + 1.4, y, gz - 11.8]], 1.3, { tone: "lo", bend: 2.6 });
+  }
 }
 
 // ---------------------------------------------------------------- assemble: the bike, then the rider, then the assessor (nearest, off to the side)
@@ -153,11 +189,11 @@ const svg = k.figureSvg({
   width: W,
   height: H,
   label:
-    "A generic lab exercise bike with a wooden artist's mannequin pedalling it, wearing a face mask with a small wireless breath analyser on the front. A magnet brake closes on the bike's flywheel as the ramp adds watts. Beside the bike an assessor stands holding a tablet, which plots the oxygen the rider uses against the watts: a straight line that flattens at the person's ceiling, the VO2max.",
-  body: [...back, ...groups, `<g data-part="brake"></g>`, `<g data-part="runner"></g>`, AS.svg],
+    "A smart training bike with a large covered flywheel at the rear, and a wooden artist's mannequin pedalling it, wearing a face mask with a small wireless breath analyser on the front. A glowing arc on the flywheel cover grows as the ramp adds watts. Beside the bike an assessor stands holding a tablet, which plots the oxygen the rider uses against the watts: a straight line that flattens at the person's ceiling, the VO2max.",
+  body: [...back, ...groups, `<g data-part="power"></g>`, `<g data-part="runner"></g>`, AS.svg],
 });
 
-const DATA = { P, B, W, H, mask: { base: MASK.base, face: MASK.face, axis: MASK.axis }, bike: { bb: BB, fly: FLY, crank: M.BIKE.crank, hipX: M.BIKE.hip[0] }, screen: AS.screen };
+const DATA = { P, B, W, H, mask: { base: MASK.base, face: MASK.face, axis: MASK.axis }, bike: { bb: BB, fly: FLY, cover: { x: BB[0], y: 11.43, z: BB[2], r: 6.2 }, crank: M.BIKE.crank, hipX: M.BIKE.hip[0] }, screen: AS.screen };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const MODEL_SRC = strip(readFileSync(join(HERE, "model.mjs"), "utf8"));
 const MANNEQUIN_SRC = strip(readFileSync(join(ROOT, "shared/mannequin.mjs"), "utf8"));
@@ -170,7 +206,7 @@ const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileS
 
 const T35 = M.testOf(35);
 const CAPTION = [
-  `On a ramp test the bike's brake adds a few watts every couple of seconds while you keep pedalling. Each extra watt costs about 10 ml of oxygen a minute, so oxygen use climbs in a straight line, a little behind the power, until the heart and muscles can't deliver or use any more. That ceiling is VO₂max. A fitter body reaches a higher ceiling and more watts, but climbs the same slope.`,
+  `On a ramp test the smart bike's brake adds a few watts every couple of seconds while you keep pedalling. Each extra watt costs about 10 ml of oxygen a minute, so oxygen use climbs in a straight line, a little behind the power, until the heart and muscles can't deliver or use any more. That ceiling is VO₂max. A fitter body reaches a higher ceiling and more watts, but climbs the same slope.`,
   `The analyser on the mask measures every breath, how much air goes out and how much oxygen it has lost, and sends it wirelessly to the assessor's tablet. Nothing tethers you to a cart.`,
   `In 122,007 adults who had treadmill exercise tests, the least fit group had about five times the death rate of the fittest 2–3 % over a median of 8.4 years. That's an association between fitness and survival, not a promise that training will change anyone's risk by that much.`,
   `<small>A typical pattern for one modelled person (45 years, 75 kg), not a prediction. Many people stop before a clear plateau; their top value is called VO₂peak. Bike values run about 13–22 % below treadmill values, so compare a bike result with bike norms (in a large registry, the median on a bike was 41.9 ml/kg/min for men in their 20s and 19.5 in their 70s; for women, 31.0 and 14.8). Heart rates are typical for age and vary by 10 bpm or more.</small>`,
@@ -190,7 +226,7 @@ const body = plate({
   controls: [{ name: "ceiling", label: "VO₂max ceiling, ml/kg/min", options: M.TRUTH.ceilings.map((c) => ({ value: String(c), label: `${c}`, pressed: c === 35 })) }],
   keys: [
     { mark: "lit", label: "The mask's analyser, blinking each breath" },
-    { mark: "raised", label: "The bike's magnet brake" },
+    { mark: "raised", label: "Power, as an arc on the flywheel cover" },
     { mark: "heat", label: "Oxygen uptake against power, on the tablet" },
   ],
   caption: CAPTION,
