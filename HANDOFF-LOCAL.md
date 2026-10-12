@@ -37,7 +37,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | A4 | Beating heart | Built, round 2 (flat, organ) | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
 | A6 | Red cell's 120 days | Built (flat, a loop diagram) | `a6-red-cell-cycle` |
-| A7 | Kneecap's load | Built (flat, side section) | `a7-knee` |
+| A7 | Kneecap's load | **Round 2 · 3-D specimen slab** (2026-10-12): the organ-piece approach, **waiting on Peter's OK** before A2/A4/A6 | `a7-knee` |
 | A8 | Water in and around the fibres | **Round 2 · 3-D bundle**: slice on the face of a muscle cylinder; body redrawn live | `a8-muscle-water` |
 | A9 | Digging and filling (bone) | **Round 2 · 3-D block**; caption uses the Menopause Protocol's Greendale numbers | `a9-bone-remodelling` |
 

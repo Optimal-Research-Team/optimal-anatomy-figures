@@ -1,6 +1,6 @@
 // A7 live code: one running stride, slowed. The tibia swings about the condyle by bendAt(φ);
 // the kneecap is placed on its groove where the patellar tendon (fixed length) reaches the
-// tibial tuberosity; tendons, fat pad, ligaments, calf and skin follow. While the foot is down,
+// tibial tuberosity; tendons, fat pad, ligaments, calf and skin (and the slab's outer surface) follow. While the foot is down,
 // the kneecap's contact glows with pfAt(φ) from Fig 4's kneeOf.
 const DATA = __DATA__;
 
@@ -123,7 +123,10 @@ function mount(fig) {
     const ho = [CF[0] + RC * Math.cos(195 * RAD), CF[1] + RC * Math.sin(195 * RAD)];
     set("gastro", "d", smoothP([[ho[0] - 2, ho[1] - 12], [ho[0] + 14, ho[1] + 6], W([-44, 112]), W([-62, 170]), W([-86, 168]), W([-72, 112])]));
     set("hamt", "d", `M214 214Q${f1((214 + W([-58, 112])[0]) / 2 - 10)} ${f1((214 + W([-58, 112])[1]) / 2 + 10)} ${f1(W([-58, 112])[0])} ${f1(W([-58, 112])[1])}`);
-    set("skin", "d", smoothP([[170, -14], [414, -14], [418, 110], [404, 200], patLocal(alpha, [32, -14]), patLocal(alpha, [30, 22]), W([84, 128]), W([70, 200]), W([62, 256]), W([-108, 256]), W([-112, 190]), W([-92, 118]), [214, CF[1] + 26], [182, 180], [172, 70]], true, 0.9));
+    const skin = smoothP([[170, -14], [414, -14], [418, 110], [404, 200], patLocal(alpha, [32, -14]), patLocal(alpha, [30, 22]), W([84, 128]), W([70, 200]), W([62, 256]), W([-108, 256]), W([-112, 190]), W([-92, 118]), [214, CF[1] + 26], [182, 180], [172, 70]], true, 0.9);
+    set("skin", "d", skin);
+    // the slab's outer surface is the same outline swept back (stacked <use> clones of this path)
+    q('[data-part="sil"]')?.setAttribute("d", skin);
     // monitor
     const xOf = (p) => MON.x0 + p * (MON.x1 - MON.x0);
     const yOf = (v) => MON.y0 - (v / MON.max) * (MON.y0 - MON.y1);
