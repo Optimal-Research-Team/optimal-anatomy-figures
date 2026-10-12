@@ -1,0 +1,53 @@
+/* A7 · the knee in side section: ivory bone with a warm cut face, blue-white cartilage, pale
+   tendons, rose muscle, a soft skin silhouette; force under the kneecap glows amber. */
+.iso.optimal {
+  --a7-skin: rgba(232, 190, 170, 0.12); --a7-skin-edge: rgba(232, 190, 170, 0.45);
+  --a7-muscle: #7c3a3a; --a7-muscle-edge: #b8706a;
+  --a7-bg0: #efe3c6; --a7-bg1: #d6c091; --a7-bone-edge: #fff1d0; --a7-hatch: rgba(150, 120, 70, 0.4); --a7-cutcap: #c06a5a;
+  --a7-cart: #cfe6ff; --a7-men: #b8d8f0; --a7-lig: #efe0a6; --a7-fat: #e8cf6e; --a7-tendon: #f1e7d2; --a7-tendon-edge: #b9a77f; --a7-fibre: rgba(160, 130, 80, 0.7);
+  --a7-glow: #ffb347; --a7-gl0: rgba(255, 179, 71, 0.65); --a7-gl1: rgba(255, 179, 71, 0);
+  --a7-mon-bg: #0f1b0c; --a7-mon-ink: #c9e3c1; --a7-mon-dim: #33452e; --a7-curve: #ffb347; --a7-stance: rgba(201, 227, 193, 0.08);
+}
+.iso.optimal[data-theme="light"] {
+  --a7-skin: rgba(214, 150, 120, 0.12); --a7-skin-edge: rgba(150, 90, 70, 0.4);
+  --a7-muscle: #d58a84; --a7-muscle-edge: #9a4a44;
+  --a7-bg0: #fbf3e2; --a7-bg1: #ead6aa; --a7-bone-edge: #8f7a4c; --a7-hatch: rgba(140, 110, 60, 0.35); --a7-cutcap: #b04a3c;
+  --a7-cart: #9ecbf0; --a7-men: #7fb2dc; --a7-lig: #d8bc58; --a7-fat: #f0d36a; --a7-tendon: #fffaf0; --a7-tendon-edge: #9a8456; --a7-fibre: rgba(140, 110, 60, 0.6);
+  --a7-glow: #e8820c; --a7-gl0: rgba(232, 130, 12, 0.55); --a7-gl1: rgba(232, 130, 12, 0);
+  --a7-mon-bg: #1d2a1a; --a7-mon-ink: #d9efd2; --a7-mon-dim: #3d5436; --a7-curve: #ffb347; --a7-stance: rgba(217, 239, 210, 0.1);
+}
+.a7-bg0 { stop-color: var(--a7-bg0); } .a7-bg1 { stop-color: var(--a7-bg1); }
+.a7-gl0 { stop-color: var(--a7-gl0); } .a7-gl1 { stop-color: var(--a7-gl1); }
+.a7-svg .a7-mon path, .a7-svg .a7-mon rect, .a7-svg .a7-mon circle { vector-effect: non-scaling-stroke; }
+.a7-skin { fill: var(--a7-skin); stroke: var(--a7-skin-edge); stroke-width: 1.4; }
+.a7-quad, .a7-ham, .a7-gastro, .a7-calf { fill: var(--a7-muscle); stroke: var(--a7-muscle-edge); stroke-width: 1; opacity: 0.85; }
+.a7-hamt { fill: none; stroke: var(--a7-tendon); stroke-width: 7; stroke-linecap: round; opacity: 0.9; }
+.a7-bone, .a7-pat { stroke: var(--a7-bone-edge); stroke-width: 1.3; }
+.a7-hatch { fill: none; stroke: var(--a7-hatch); stroke-width: 1.8; stroke-linecap: round; }
+.a7-cart { fill: none; stroke: var(--a7-cart); stroke-width: 6; stroke-linecap: round; }
+.a7-pat-cart { fill: var(--a7-cart); }
+.a7-men { fill: var(--a7-men); stroke: var(--a7-bone-edge); stroke-width: 0.6; }
+.a7-lig { fill: none; stroke: var(--a7-lig); stroke-width: 7; stroke-linecap: round; opacity: 0.9; }
+.a7-fat { fill: var(--a7-fat); opacity: 0.85; }
+.a7-tendon { fill: var(--a7-tendon); stroke: var(--a7-tendon-edge); stroke-width: 1; }
+.a7-fibres { fill: none; stroke: var(--a7-fibre); stroke-width: 0.9; }
+.a7-pfglow { fill: none; stroke: var(--a7-glow); stroke-width: 9; stroke-linecap: round; }
+.a7-glow { pointer-events: none; }
+.a7-cutcap { fill: none; stroke: var(--a7-cutcap); stroke-width: 3; }
+.a7-mon-bg { fill: var(--a7-mon-bg); }
+.a7-mon-title { fill: var(--a7-mon-ink); font: 600 19px/1 var(--opt-ui); }
+.a7-stance { fill: var(--a7-stance); }
+.a7-grid { fill: none; stroke: var(--a7-mon-dim); stroke-width: 1; stroke-dasharray: 3 4; }
+.a7-axis { fill: none; stroke: var(--a7-mon-ink); stroke-width: 1; opacity: 0.45; }
+.a7-tick { fill: var(--a7-mon-ink); font: 500 16px/1 var(--opt-ui); opacity: 0.8; }
+.a7-curve { fill: none; stroke: var(--a7-curve); stroke-width: 2.6; stroke-linejoin: round; }
+.a7-ghost { fill: none; stroke: var(--a7-mon-ink); stroke-width: 1.3; stroke-dasharray: 3 4; opacity: 0.5; }
+.a7-cursor { fill: none; stroke: var(--a7-mon-ink); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
+.a7-mdot { fill: var(--a7-curve); stroke: var(--a7-mon-bg); stroke-width: 2; }
+.iso.optimal .iso-swatch[data-mark="cart"] path { stroke: var(--a7-cart); stroke-width: 5; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="tendon"] path { stroke: var(--a7-tendon-edge); stroke-width: 5; stroke-linecap: round; }
+.a7-scene { margin: 10px 4px 0; font: 500 14px/1.45 var(--opt-ui); color: var(--anatomy-text); min-height: 4.4em; }
+.a7-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a7-par { display: block; margin-top: 6px; }
+.a7-par:first-child { margin-top: 0; }
+.a7-par small { font-size: 12.5px; color: var(--anatomy-muted); }

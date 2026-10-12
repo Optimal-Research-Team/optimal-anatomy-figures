@@ -1235,6 +1235,17 @@ Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Ranc
 
 ---
 
+## A7. The kneecap's load (anatomical series)
+
+Uses §4: Lenhart 2014 peak patellofemoral force −14 % at 110 % step rate (and 90 % tested), via Fig 4's `kneeOf`; step length and cadence from Fig 4's model; peak stance knee flexion 46.3 → 42.8° (LOW); knee flexion at contact ≈ 17°, +1.8° at +10 % (LOW); duty 39 ± 4 %.
+
+### How A7 uses these numbers
+
+- **Knee bend keyframes** (drawn only, never printed): contact 17° (+1.8° per +10 %), peak stance 46.3° (−3.5° per +10 %) at 44 % of stance, toe-off 20°, swing peak 105° (drawn, not sourced).
+- **Kneecap force** = `kneeOf(cadence)` × sin²(π τ^0.85) over stance; zero in swing (Fig 4's `kneeLoadAt` shape).
+
+---
+
 ## A9. Bone remodelling and estrogen (anatomical series)
 
 | Quantity | Value | Source | Confidence |

@@ -23,6 +23,7 @@ const PLAN = [
   { dir: "a3-finger-skin", n: "A3", title: "The finger's heat valves", line: "Inside the +2.7 °C: tiny shunts in the skin open and warm blood floods the surface." },
   { dir: "a4-heart", n: "A4", title: "The beating heart", line: "Four chambers, four valves: how output climbs from rest to all-out." },
   { dir: "a9-bone-remodelling", n: "A9", title: "Digging and filling", line: "Bone is always being renewed; with less estrogen the digging outpaces the filling." },
+  { dir: "a7-knee", n: "A7", title: "The kneecap's load", line: "Inside the knee on each landing, and why a quicker step rate eases the kneecap." },
   { dir: "a8-muscle-water", n: "A8", title: "Water in and around the fibres", line: "Where InBody's ICW and ECW actually sit, and why a high ratio doesn't say why." },
   { dir: "a6-red-cell-cycle", n: "A6", title: "The red cell's 120 days", line: "Why ferritin jumps in days after IV iron but haemoglobin takes weeks." },
   { dir: "a5-alveolus", n: "A5", title: "The air sac and the red cell", line: "A red cell fills with oxygen in a quarter-second; how much time it has to spare." },
