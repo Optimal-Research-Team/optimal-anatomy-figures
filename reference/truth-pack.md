@@ -1235,6 +1235,27 @@ Uses §1 rows 60–64 and sources 23–30 (Rance & Young 1991; Rometo 2007; Ranc
 
 ---
 
+## A9. Bone remodelling and estrogen (anatomical series)
+
+| Quantity | Value | Source | Confidence |
+|---|---|---|---|
+| Remodelling phases, human | resorption ≈ 2 weeks, reversal ≈ 2 weeks, formation ≈ 13 weeks (≈ 17 weeks total) | [BRP-W] | MEDIUM (secondary) |
+| Same, simulation study | resorption ≈ 22 d, reversal ≈ 8 d, formation ≈ 65 d, then quiescence 560–600 d | [BRP-F] | MEDIUM |
+| Low estrogen raises the number of remodelling sites (activation frequency), mainly via more osteoclast formation; formation rises but lags resorption | qualitative | [Est-R] | MEDIUM-HIGH (review) |
+| Estrogen promotes osteoclast apoptosis and inhibits their differentiation | qualitative | [Est-R] | MEDIUM |
+| SWAN: fastest BMD loss from 1 year before to 2 years after the final menstrual period | ≈ 2.5 %/yr lumbar spine, ≈ 1.8 %/yr femoral neck | [SWAN-R] | MEDIUM-HIGH |
+| SWAN: average loss over the 3 years around the final period | ≈ 6 % femoral neck, ≈ 7 % lumbar spine | [SWAN-3] | MEDIUM-HIGH |
+| Lower body weight → faster loss (lowest vs highest tertile 35–55 % faster) | — | [SWAN-3] | MEDIUM (not shown) |
+
+### How A9 uses these numbers
+
+- **Phases:** 21 / 10 / 90 days (between the two timing sources).
+- **Sites per year:** 3.6 → 9, and refill 100 % → 90 %. Both are ILLUSTRATIVE, chosen so the drawn strut loses ≈ 1.7 %/yr plus the open remodelling space, landing near SWAN's ≈ 6–7 % over 3 years. The directions are [Est-R].
+
+Sources: [BRP-W] Wikipedia, *Bone remodeling period*, https://en.wikipedia.org/wiki/Bone_remodeling_period · [BRP-F] *Spatio-temporal simulations of bone remodelling using a bone cell population model based on cell availability*, Front Bioeng Biotechnol 2023, https://www.frontiersin.org/journals/bioengineering-and-biotechnology/articles/10.3389/fbioe.2023.1060158/pdf · [Est-R] review of estrogen deficiency and bone turnover, https://pmc.ncbi.nlm.nih.gov/articles/PMC1451218 · [SWAN-R] review citing SWAN rates, https://pmc.ncbi.nlm.nih.gov/articles/PMC8208668 · [SWAN-3] SWAN BMD across the menopause transition, https://pmc.ncbi.nlm.nih.gov/articles/PMC2266953/ (all seen via search extracts, 2026-10-12).
+
+---
+
 ## A3. The finger's heat valves (anatomical series)
 
 Uses §1 and Fig 1's `flashAt(t)`: finger skin rise +2.7 ± 0.2 °C (range 1–7) [Meldrum 1979; Kronenberg 1994], raised about 31 min [Meldrum 1979], heart rate +9 to +10 bpm [Low 2008], flash about 3.4 min [Low 2008].

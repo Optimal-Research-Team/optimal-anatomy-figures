@@ -1,0 +1,46 @@
+/* A9 · a trabecula in marrow: ivory lamellar bone, rose marrow with pale fat, a violet
+   osteoclast, teal osteoblasts on pale-pink osteoid, amber estrogen. */
+.iso.optimal {
+  --a9-marrow: #4a2528; --a9-hemo: rgba(255, 150, 140, 0.35); --a9-hemo2: rgba(180, 150, 220, 0.35); --a9-fat: #e9d9b4; --a9-fat-edge: #b49f6e; --a9-sinus: rgba(208, 70, 58, 0.5);
+  --a9-b0: #efe3c6; --a9-b1: #d9c69c; --a9-bone-edge: #fff3d6; --a9-lam: rgba(140, 110, 60, 0.28); --a9-cement: rgba(120, 80, 40, 0.55); --a9-lacuna: #8c7046; --a9-canal: rgba(140, 110, 60, 0.4);
+  --a9-oc: #a073c8; --a9-oc-edge: #e0c8f4; --a9-oc-nuc: #4c2d78; --a9-rev: #c8a0b8;
+  --a9-ob: #4fb8a8; --a9-ob-edge: #b8f0e6; --a9-ob-nuc: #1d5a52; --a9-osteoid: #f4b8c0; --a9-lining: #c8a88c;
+  --a9-estro: #ffd166;
+}
+.iso.optimal[data-theme="light"] {
+  --a9-marrow: #f4d8d6; --a9-hemo: rgba(190, 60, 60, 0.3); --a9-hemo2: rgba(100, 70, 160, 0.28); --a9-fat: #fffaf0; --a9-fat-edge: #c9b48a; --a9-sinus: rgba(190, 60, 50, 0.4);
+  --a9-b0: #fbf3e2; --a9-b1: #ecdcb8; --a9-bone-edge: #9a8456; --a9-lam: rgba(140, 110, 60, 0.3); --a9-cement: rgba(110, 70, 30, 0.6); --a9-lacuna: #7a5e34; --a9-canal: rgba(120, 90, 50, 0.4);
+  --a9-oc: #8a56b8; --a9-oc-edge: #4c2d78; --a9-oc-nuc: #2e1650; --a9-rev: #b07a9a;
+  --a9-ob: #2a9a8a; --a9-ob-edge: #155a50; --a9-ob-nuc: #0c3a34; --a9-osteoid: #e88a98; --a9-lining: #a08060;
+  --a9-estro: #c98a00;
+}
+.a9-b0 { stop-color: var(--a9-b0); } .a9-b1 { stop-color: var(--a9-b1); }
+.a9-marrow { fill: var(--a9-marrow); }
+.a9-hemo { fill: var(--a9-hemo); } .a9-hemo2 { fill: var(--a9-hemo2); }
+.a9-fat { fill: var(--a9-fat); stroke: var(--a9-fat-edge); stroke-width: 1; opacity: 0.9; }
+.a9-sinus { fill: none; stroke: var(--a9-sinus); stroke-width: 9; stroke-linecap: round; }
+.a9-bone { stroke: var(--a9-bone-edge); stroke-width: 1.2; }
+.a9-lamellae { fill: none; stroke: var(--a9-lam); stroke-width: 1; }
+.a9-cement { fill: none; stroke: var(--a9-cement); stroke-width: 1.3; }
+.a9-cement-new { stroke-dasharray: none; }
+.a9-lacuna { fill: var(--a9-lacuna); }
+.a9-canal { fill: none; stroke: var(--a9-canal); stroke-width: 0.6; }
+.a9-surface { fill: none; stroke: var(--a9-bone-edge); stroke-width: 1.4; }
+.a9-osteoid { fill: none; stroke: var(--a9-osteoid); stroke-width: 4.5; stroke-linecap: round; }
+.a9-lining { fill: var(--a9-lining); }
+.a9-ob { fill: var(--a9-ob); stroke: var(--a9-ob-edge); stroke-width: 0.6; }
+.a9-ob-nuc { fill: var(--a9-ob-nuc); }
+.a9-oc { fill: var(--a9-oc); stroke: var(--a9-oc-edge); stroke-width: 0.9; }
+.a9-oc-ruffle { fill: none; stroke: var(--a9-oc-edge); stroke-width: 1; }
+.a9-oc-nuc { fill: var(--a9-oc-nuc); }
+.a9-rev { fill: var(--a9-rev); }
+.a9-estro { fill: var(--a9-estro); }
+.a9-cut { fill: none; stroke: var(--a9-bone-edge); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.6; }
+.iso.optimal .iso-swatch[data-mark="oc"] path { stroke: var(--a9-oc); stroke-width: 6; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="ob"] path { stroke: var(--a9-ob); stroke-width: 6; stroke-linecap: round; }
+.iso.optimal .iso-swatch[data-mark="estro"] path { stroke: var(--a9-estro); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.1 5; }
+.a9-scene { margin: 10px 4px 0; font: 500 14px/1.45 var(--opt-ui); color: var(--anatomy-text); min-height: 4.4em; }
+.a9-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.a9-par { display: block; margin-top: 6px; }
+.a9-par:first-child { margin-top: 0; }
+.a9-par small { font-size: 12.5px; color: var(--anatomy-muted); }

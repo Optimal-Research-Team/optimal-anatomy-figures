@@ -32,14 +32,15 @@ No npm install: the Anatomy kit is vendored in `.claude/skills/anatomy/`. Then s
 | A6 | The red cell's 120 days | **Built**: marrow → 120-day arc → spleen macrophage → transferrin; untreated vs IV iron from Fig 3's model | `figures/a6-red-cell-cycle/` |
 | A8 | Water in and around the fibres | **Built**: Voronoi muscle cross-section, ⊙ current by frequency (Fig 2's model), four scenes with ECW/TBW and InBody band | `figures/a8-muscle-water/` |
 | A3 | The finger's heat valves | **Built**: fingertip skin section, glomus shunts open with Fig 1's flashAt(t), plexus floods, heat rises; monitor | `figures/a3-finger-skin/` |
-| A7, A9 | Rest of the anatomical series | Planned; follow the A-series style | **`BACKLOG.md`** |
+| A9 | Digging and filling | **Built**: trabecula in marrow, osteoclasts dig and osteoblasts refill; pre vs post estrogen calibrated to SWAN | `figures/a9-bone-remodelling/` |
+| A7 | Knee in side section | Planned; follow the A-series style, drive from Fig 4's kneeLoadAt | **`BACKLOG.md`** |
 
 ## Time remaining (estimate, 2026-10-11 evening)
 
 | Work | Estimate |
 |---|---|
 | Design rounds on Figs 1–6 and A1 (+30–50 %), as Peter's feedback comes in | 4–6 h |
-| Anatomical series A7, A9 (`BACKLOG.md`) | 3–4 h, + rounds |
+| Anatomical series A7 (`BACKLOG.md`) | 1.5–2 h, + rounds |
 | **Total** | **~14–20 h** |
 
 **Where to run it.** The cloud credits are nearly used. Run the rest locally (Claude Code on the Mac uses the Max plan's limits, not cloud credits): set up as above, then pick up from `BACKLOG.md`. A1 (`figures/a1-gut-cell/`) is the pattern for the anatomical pieces: hand-drawn organic SVG through `smooth()` (Catmull-Rom to Bézier), the shared card, CSS tokens per theme, a tiny `model.mjs`, and a particle `live.js`.

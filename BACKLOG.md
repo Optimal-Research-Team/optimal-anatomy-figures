@@ -18,7 +18,7 @@ These are organic drawings, not machines. The Anatomy skill's machine tooling (a
 | A6 | **Red-cell life cycle** (built 2026-10-11, `figures/a6-red-cell-cycle/`) | IV iron | Marrow → 120 days in circulation → spleen macrophage recycles the iron (~20–25 mg/day), showing why ferritin and Hb move on different clocks | Franco 2012; Hentze 2010 (truth pack §3) | medium | 1.5–2 h |
 | A7 | **Knee in side section** | Creator 600 | Patella glides in its groove as the knee bends; cartilage loads more at a straight-knee landing; patellofemoral force from the Fig 4 model | Lenhart 2014; Heiderscheit 2011 (truth pack §4 draft) | medium | 2 h |
 | A8 | **Muscle fibre to sarcomere** (built 2026-10-12 as "water in and around the fibres", `figures/a8-muscle-water/`; sarcomere sliding left for a later piece) | InBody 580, strength | Actin and myosin slide; water inside and outside the cells ties InBody's ECW/ICW to real tissue | Sarcomere lengths, ICW/ECW shares (to source) | medium | 1.5–2 h |
-| A9 | **Bone remodelling with estrogen** | Menopause | Osteoclasts dig and osteoblasts fill; lower estrogen and digging outpaces filling (typical pattern, no fracture-risk promises) | Remodelling cycle durations, estrogen effect (to source); must match the Menopause Protocol | medium | 1.5–2 h |
+| A9 | **Bone remodelling with estrogen** (built 2026-10-12, `figures/a9-bone-remodelling/`) | Menopause | Osteoclasts dig and osteoblasts fill; lower estrogen and digging outpaces filling (typical pattern, no fracture-risk promises) | Remodelling cycle durations, estrogen effect (to source); must match the Menopause Protocol | medium | 1.5–2 h |
 
 **Total for the series:** ~15–19 h including the style test, before design rounds (expect +30–50 %).
 
