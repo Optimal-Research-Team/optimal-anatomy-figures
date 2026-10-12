@@ -6,3 +6,6 @@ figures/*/shots/tmp/
 *.log
 figures/*/*.html
 figures/*/embed/*.js
+
+# QA screenshots of the site (from handoff/qa/check-embeds.mjs)
+handoff/qa/shots/

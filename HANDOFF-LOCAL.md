@@ -79,7 +79,7 @@ Every figure folder holds:
 ## 5. Next steps (priority order)
 
 1. **Peter's call on the heart (A4), round 6.** Then any changes, and a real-phone frame-rate check (`gl-heart.js` governor).
-2. **Embeds on the site:** use the placement map (`review/site-placement.md`). Each figure ships `embed/optimal-fig-<slug>.js`, and NOTES.md has the snippet. The site repo (`BeOptimal/beoptimal-landing`) is a separate handoff.
+2. **Embeds on the site: handed to engineering 2026-10-12.** `ENGINEERING_HANDOFF.md` (where every figure goes, how to embed, QA), `DEV_TODO.md`, `handoff/` (placements.json, Preact components, QA script) and `scripts/export-embeds.mjs`. The tested reference patch for `beoptimal-landing` is in the zip only (`~/Downloads/optimal-figures-handoff-2026-10-12.zip`), because the site repo is private. The older placement map is `review/site-placement.md`. Each figure ships `embed/optimal-fig-<slug>.js`, and NOTES.md has the snippet. The site repo (`BeOptimal/beoptimal-landing`) is a separate handoff.
 3. **Site copy fix:** the Creator 600 page says "32″ upright display"; it's about 50″ (§3 item 9).
 4. **Truth pass with the network open:** re-check the MEDIUM/LOW rows in `reference/truth-pack.md`.
 5. **Round-2 options still open** (BACKLOG.md):

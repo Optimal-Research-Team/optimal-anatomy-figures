@@ -34,6 +34,8 @@ node figures/01-menopause-thermostat/build.mjs  # dark; add --light, --audit
 node scripts/build-all.mjs                      # all figures -> dist/ + gallery index
 node scripts/verify.mjs <figure-dir>            # every check (phones 390/360/320 x 2 themes, reduced, desktop, lines) + shots
 python3 scripts/contact-sheet.py                # review/contact-sheet.png
+node scripts/export-embeds.mjs --out <dir>      # copy the 15 embed scripts + manifest (for the website's public/figures)
+node handoff/qa/check-embeds.mjs <site URL>     # QA the figures on a running site (see ENGINEERING_HANDOFF.md)
 node .claude/skills/anatomy/scripts/capture.mjs <page.html> --out shots/x.png   # see references/verify.md
 ```
 

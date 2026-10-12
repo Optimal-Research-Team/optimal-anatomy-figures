@@ -1,0 +1,594 @@
+{
+  "version": "2026-10-12",
+  "siteRepo": "BeOptimal/beoptimal-landing @ 0f36c00",
+  "gallery": "https://optimal-research-team.github.io/optimal-anatomy-figures/",
+  "figures": [
+    {
+      "fig": "1",
+      "title": "The narrowing thermostat",
+      "folder": "01-menopause-thermostat",
+      "slug": "menopause-thermostat",
+      "tag": "optimal-fig-menopause-thermostat",
+      "script": "optimal-fig-menopause-thermostat.js",
+      "bytes": 424233,
+      "gzipBytes": 93639,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/01-menopause-thermostat/menopause-thermostat-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/01-menopause-thermostat/menopause-thermostat.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/01-menopause-thermostat/embed/optimal-fig-menopause-thermostat.js",
+      "reserve": {
+        "phone": 1061,
+        "desktop": 1166,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Menopause Protocol (free protocol)",
+          "route": "/optimal-menopause-protocol",
+          "file": "src/content/menopause/page.html",
+          "renderer": "src/pages/MenopauseProtocolPage.tsx",
+          "method": "placeholder",
+          "anchor": "h3#s5 (§5 Hot flashes and night sweats, day to day)",
+          "position": "Top of §5, first of two figures, before figure#fig-7 (Evidence at a glance)",
+          "why": "Why a flash happens, before what helps",
+          "priority": "primary"
+        },
+        {
+          "page": "Menopause care (service page)",
+          "route": "/services/menopause-and-perimenopause-care",
+          "file": "src/pages/HormoneOptimizationPage.tsx",
+          "method": "component",
+          "anchor": "symptoms list, under 'Hot flashes'",
+          "position": "After the symptoms list; add a link 'How a hot flash works →' to /optimal-menopause-protocol#s5",
+          "why": "Optional teaser; keep the mechanism on the Protocol",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "2",
+      "title": "Five cylinders on a bridge",
+      "folder": "02-inbody-580",
+      "slug": "inbody-580",
+      "tag": "optimal-fig-inbody-580",
+      "script": "optimal-fig-inbody-580.js",
+      "bytes": 337124,
+      "gzipBytes": 75365,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/02-inbody-580/inbody-580-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/02-inbody-580/inbody-580.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/02-inbody-580/embed/optimal-fig-inbody-580.js",
+      "reserve": {
+        "phone": 1172,
+        "desktop": 1190,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "InBody 580",
+          "route": "/services/inbody-580",
+          "file": "src/pages/InBody580Page.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Why\"> (eyebrow BEYOND THE SCALE)",
+          "position": "New block between the 'Why' section and the 'Result sheet' section",
+          "why": "How the scan reads you: four frequencies, five segments",
+          "priority": "primary"
+        },
+        {
+          "page": "Longevity Protocol (free protocol)",
+          "route": "/optimal-longevity-protocol",
+          "file": "src/content/longevity-protocol/page.html",
+          "renderer": "src/pages/OptimalLongevityProtocolPage.tsx",
+          "method": "olp-widget slot",
+          "anchor": "#s-10, the 'InBody 580 bioimpedance scan, in clinic' photo",
+          "position": "Replace the photo",
+          "why": "",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "3",
+      "title": "The depot with a gate",
+      "folder": "03-iv-iron",
+      "slug": "iv-iron",
+      "tag": "optimal-fig-iv-iron",
+      "script": "optimal-fig-iv-iron.js",
+      "bytes": 289297,
+      "gzipBytes": 68813,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/03-iv-iron/iv-iron-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/03-iv-iron/iv-iron.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/03-iv-iron/embed/optimal-fig-iv-iron.js",
+      "reserve": {
+        "phone": 1039,
+        "desktop": 1047,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "IV iron (page not built yet)",
+          "route": "(new, e.g. /services/iv-iron)",
+          "file": "(new page)",
+          "method": "component",
+          "anchor": "hero explainer",
+          "position": "First section",
+          "why": "Why pills stall at the gut gate and IV goes around it",
+          "priority": "primary",
+          "status": "Blocked until the IV iron page exists"
+        }
+      ]
+    },
+    {
+      "fig": "4",
+      "title": "The runner rig",
+      "folder": "04-creator-600",
+      "slug": "creator-600",
+      "tag": "optimal-fig-creator-600",
+      "script": "optimal-fig-creator-600.js",
+      "bytes": 215742,
+      "gzipBytes": 55602,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/04-creator-600/creator-600-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/04-creator-600/creator-600.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/04-creator-600/embed/optimal-fig-creator-600.js",
+      "reserve": {
+        "phone": 1175,
+        "desktop": 1351,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Creator 600",
+          "route": "/services/creator-600",
+          "file": "src/pages/GaitAnalysisPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Six measures\"> ('Six measures, one run')",
+          "position": "Directly after the 'Six measures' section, before 'How a visit works'",
+          "why": "Cadence and foot strike change the hip and knee load the report rates",
+          "priority": "primary",
+          "copy_fix": "Same page: '32″ upright display' should read 50″; and the '180 spm benchmark' line contradicts the figure (evidence supports a 5–10 % change from your own rate)"
+        }
+      ]
+    },
+    {
+      "fig": "5",
+      "title": "The ramp and the mask (bike)",
+      "folder": "05-vo2max",
+      "slug": "vo2max",
+      "tag": "optimal-fig-vo2max",
+      "script": "optimal-fig-vo2max.js",
+      "bytes": 390267,
+      "gzipBytes": 90777,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/05-vo2max/vo2max-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/05-vo2max/vo2max.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/05-vo2max/embed/optimal-fig-vo2max.js",
+      "reserve": {
+        "phone": 1195,
+        "desktop": 1300,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "VO2 max testing",
+          "route": "/services/vo2-max-testing",
+          "file": "src/pages/Vo2MaxTestingPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Equipment\"> (eyebrow '02 — Equipment')",
+          "position": "After the equipment cards (under Wahoo KICKR Bike Shift). Option: one slot with a Treadmill / Bike toggle shared with Fig 6",
+          "why": "The bike version of the same test",
+          "priority": "primary"
+        },
+        {
+          "page": "Longevity Protocol (free protocol)",
+          "route": "/optimal-longevity-protocol",
+          "file": "src/content/longevity-protocol/page.html",
+          "renderer": "src/pages/OptimalLongevityProtocolPage.tsx",
+          "method": "olp-widget slot",
+          "anchor": "#s-1-2 (§1.2 VO2 max), the 'metabolic mask on a stationary bike' stock photo",
+          "position": "Replace the stock photo",
+          "why": "",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "6",
+      "title": "The treadmill ramp",
+      "folder": "06-vo2max-treadmill",
+      "slug": "vo2max-treadmill",
+      "tag": "optimal-fig-vo2max-treadmill",
+      "script": "optimal-fig-vo2max-treadmill.js",
+      "bytes": 360637,
+      "gzipBytes": 84215,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/06-vo2max-treadmill/vo2max-treadmill-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/06-vo2max-treadmill/vo2max-treadmill.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/06-vo2max-treadmill/embed/optimal-fig-vo2max-treadmill.js",
+      "reserve": {
+        "phone": 1223,
+        "desktop": 1405,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "VO2 max testing",
+          "route": "/services/vo2-max-testing",
+          "file": "src/pages/Vo2MaxTestingPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"What to expect\"> (eyebrow '01 — The test')",
+          "position": "After the steps list (.vo2-steps)",
+          "why": "'Effort increases at regular increments until your maximal effort', shown on the Creator 600",
+          "priority": "primary"
+        }
+      ]
+    },
+    {
+      "fig": "A1",
+      "title": "The gut cell's gate",
+      "folder": "a1-gut-cell",
+      "slug": "gut-cell",
+      "tag": "optimal-fig-gut-cell",
+      "script": "optimal-fig-gut-cell.js",
+      "bytes": 166818,
+      "gzipBytes": 37803,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a1-gut-cell/gut-cell-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a1-gut-cell/gut-cell.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a1-gut-cell/embed/optimal-fig-gut-cell.js",
+      "reserve": {
+        "phone": 1066,
+        "desktop": 1287,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "IV iron (page not built yet)",
+          "route": "(new, e.g. /services/iv-iron)",
+          "file": "(new page)",
+          "method": "component",
+          "anchor": "under Fig 3",
+          "position": "Close-up of the gate (hepcidin pulling ferroportin in)",
+          "why": "",
+          "priority": "primary",
+          "status": "Blocked until the IV iron page exists"
+        }
+      ]
+    },
+    {
+      "fig": "A2",
+      "title": "The hot-flash switch",
+      "folder": "a2-hypothalamus",
+      "slug": "hypothalamus",
+      "tag": "optimal-fig-hypothalamus",
+      "script": "optimal-fig-hypothalamus.js",
+      "bytes": 244066,
+      "gzipBytes": 70884,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/hypothalamus-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/hypothalamus.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/embed/optimal-fig-hypothalamus.js",
+      "reserve": {
+        "phone": 1290,
+        "desktop": 1306,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Menopause Protocol (free protocol)",
+          "route": "/optimal-menopause-protocol",
+          "file": "src/content/menopause/page.html",
+          "renderer": "src/pages/MenopauseProtocolPage.tsx",
+          "method": "placeholder",
+          "anchor": "h3#s14 (§14 Options we discuss, side by side)",
+          "position": "Directly after figure#fig-11 (the options table)",
+          "why": "Its four states (Before / After / Hormone therapy / Non-hormonal) mirror the options table, including 'not treating is always an option'",
+          "priority": "primary",
+          "compliance": "Treatment content: keep off sales pages; reviewer of the Protocol should see it in place"
+        }
+      ]
+    },
+    {
+      "fig": "A3",
+      "title": "The finger's heat valves",
+      "folder": "a3-finger-skin",
+      "slug": "finger-skin",
+      "tag": "optimal-fig-finger-skin",
+      "script": "optimal-fig-finger-skin.js",
+      "bytes": 210860,
+      "gzipBytes": 57449,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a3-finger-skin/finger-skin-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a3-finger-skin/finger-skin.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a3-finger-skin/embed/optimal-fig-finger-skin.js",
+      "reserve": {
+        "phone": 1036,
+        "desktop": 1228,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Menopause Protocol (free protocol)",
+          "route": "/optimal-menopause-protocol",
+          "file": "src/content/menopause/page.html",
+          "renderer": "src/pages/MenopauseProtocolPage.tsx",
+          "method": "placeholder",
+          "anchor": "h3#s5",
+          "position": "Right after Fig 1, before figure#fig-7",
+          "why": "The inside view of the same flash",
+          "priority": "primary"
+        },
+        {
+          "page": "Menopause Protocol (free protocol)",
+          "route": "/optimal-menopause-protocol",
+          "file": "src/content/menopause/page.html",
+          "renderer": "src/pages/MenopauseProtocolPage.tsx",
+          "method": "placeholder",
+          "anchor": "h3#s2 (§2 Eight symptom domains), 'Temperature' bullet",
+          "position": "Alternative spot if §5 gets crowded",
+          "why": "",
+          "priority": "alternative"
+        }
+      ]
+    },
+    {
+      "fig": "A4",
+      "title": "The beating heart",
+      "folder": "a4-heart",
+      "slug": "heart",
+      "tag": "optimal-fig-heart",
+      "script": "optimal-fig-heart.js",
+      "bytes": 172301,
+      "gzipBytes": 53559,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a4-heart/heart-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a4-heart/heart.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a4-heart/embed/optimal-fig-heart.js",
+      "reserve": {
+        "phone": 1379,
+        "desktop": 1605,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": true,
+      "approval": "Pending (round 6 sent 2026-10-12)",
+      "placements": [
+        {
+          "page": "VO2 max testing",
+          "route": "/services/vo2-max-testing",
+          "file": "src/pages/Vo2MaxTestingPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Why\"> (eyebrow 'Why measure it')",
+          "position": "After the paragraph defining VO2 max ('the maximum rate your body can take in and use oxygen')",
+          "why": "The delivery side: output = beats × millilitres per beat",
+          "priority": "primary"
+        },
+        {
+          "page": "Journal: What is VO2max and why does it matter for longevity?",
+          "route": "/journal/vo2max-and-longevity",
+          "file": "src/content/journal/vo2max-and-longevity.ts",
+          "renderer": "src/components/journal/JournalBody.tsx (new block kind in src/models/JournalPost.ts)",
+          "method": "journal block",
+          "anchor": "block: heading 'What is VO2max and why does it matter for human longevity?'",
+          "position": "After that heading's first paragraph, followed by A5",
+          "why": "",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "A5",
+      "title": "The air sac and the red cell",
+      "folder": "a5-alveolus",
+      "slug": "alveolus",
+      "tag": "optimal-fig-alveolus",
+      "script": "optimal-fig-alveolus.js",
+      "bytes": 212729,
+      "gzipBytes": 61268,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a5-alveolus/alveolus-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a5-alveolus/alveolus.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a5-alveolus/embed/optimal-fig-alveolus.js",
+      "reserve": {
+        "phone": 1181,
+        "desktop": 1374,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Journal: What is VO2max and why does it matter for longevity?",
+          "route": "/journal/vo2max-and-longevity",
+          "file": "src/content/journal/vo2max-and-longevity.ts",
+          "renderer": "src/components/journal/JournalBody.tsx (new block kind in src/models/JournalPost.ts)",
+          "method": "journal block",
+          "anchor": "block: heading 'What is VO2max and why does it matter for human longevity?'",
+          "position": "Right after A4",
+          "why": "Oxygen loading takes a quarter-second, and the lungs are rarely the limit",
+          "priority": "primary"
+        },
+        {
+          "page": "VO2 max testing",
+          "route": "/services/vo2-max-testing",
+          "file": "src/pages/Vo2MaxTestingPage.tsx",
+          "method": "component",
+          "anchor": "FAQ: 'How is this different from my watch's estimate?'",
+          "position": "Optional, inside the answer",
+          "why": "",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "A6",
+      "title": "The red cell's 120 days",
+      "folder": "a6-red-cell-cycle",
+      "slug": "red-cell-cycle",
+      "tag": "optimal-fig-red-cell-cycle",
+      "script": "optimal-fig-red-cell-cycle.js",
+      "bytes": 129732,
+      "gzipBytes": 40702,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a6-red-cell-cycle/red-cell-cycle-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a6-red-cell-cycle/red-cell-cycle.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a6-red-cell-cycle/embed/optimal-fig-red-cell-cycle.js",
+      "reserve": {
+        "phone": 1171,
+        "desktop": 1293,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "IV iron (page not built yet)",
+          "route": "(new, e.g. /services/iv-iron)",
+          "file": "(new page)",
+          "method": "component",
+          "anchor": "'After your infusion'",
+          "position": "Ferritin jumps in days, haemoglobin climbs over weeks; matches the 6–8 week recheck",
+          "why": "",
+          "priority": "primary",
+          "status": "Blocked until the IV iron page exists"
+        },
+        {
+          "page": "Longevity Protocol (free protocol)",
+          "route": "/optimal-longevity-protocol",
+          "file": "src/content/longevity-protocol/page.html",
+          "renderer": "src/pages/OptimalLongevityProtocolPage.tsx",
+          "method": "olp-widget slot",
+          "anchor": "#s-20 (§20 Women's nutrition), next to 'check ferritin, not just hemoglobin'",
+          "position": "Can ship now",
+          "why": "",
+          "priority": "primary-now"
+        }
+      ]
+    },
+    {
+      "fig": "A7",
+      "title": "The kneecap's load",
+      "folder": "a7-knee",
+      "slug": "knee",
+      "tag": "optimal-fig-knee",
+      "script": "optimal-fig-knee.js",
+      "bytes": 115098,
+      "gzipBytes": 34799,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a7-knee/knee-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a7-knee/knee.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a7-knee/embed/optimal-fig-knee.js",
+      "reserve": {
+        "phone": 1117,
+        "desktop": 1424,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Creator 600",
+          "route": "/services/creator-600",
+          "file": "src/pages/GaitAnalysisPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Your report\"> (eyebrow AFTER THE RUN)",
+          "position": "Beside or after the report cards '01 Dynamic joint load' and '02 Knee motion angle'",
+          "why": "Inside the knee on each landing",
+          "priority": "primary"
+        }
+      ]
+    },
+    {
+      "fig": "A8",
+      "title": "Water in and around the fibres",
+      "folder": "a8-muscle-water",
+      "slug": "muscle-water",
+      "tag": "optimal-fig-muscle-water",
+      "script": "optimal-fig-muscle-water.js",
+      "bytes": 112459,
+      "gzipBytes": 35000,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a8-muscle-water/muscle-water-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a8-muscle-water/muscle-water.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a8-muscle-water/embed/optimal-fig-muscle-water.js",
+      "reserve": {
+        "phone": 1136,
+        "desktop": 1119,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "InBody 580",
+          "route": "/services/inbody-580",
+          "file": "src/pages/InBody580Page.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Result sheet\">",
+          "position": "Directly after the 'Result sheet' section, before 'How'",
+          "why": "What the ECW ratio (0.360–0.390) measures, and why a high ratio doesn't say why",
+          "priority": "primary"
+        },
+        {
+          "page": "Longevity Protocol (free protocol)",
+          "route": "/optimal-longevity-protocol",
+          "file": "src/content/longevity-protocol/page.html",
+          "renderer": "src/pages/OptimalLongevityProtocolPage.tsx",
+          "method": "olp-widget slot",
+          "anchor": "#s-10",
+          "position": "Next to the InBody sheet",
+          "why": "",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "A9",
+      "title": "Digging and filling",
+      "folder": "a9-bone-remodelling",
+      "slug": "bone-remodelling",
+      "tag": "optimal-fig-bone-remodelling",
+      "script": "optimal-fig-bone-remodelling.js",
+      "bytes": 215167,
+      "gzipBytes": 60860,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a9-bone-remodelling/bone-remodelling-light.html",
+      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a9-bone-remodelling/bone-remodelling.html",
+      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a9-bone-remodelling/embed/optimal-fig-bone-remodelling.js",
+      "reserve": {
+        "phone": 981,
+        "desktop": 1039,
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
+      },
+      "webgl": false,
+      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "placements": [
+        {
+          "page": "Menopause Protocol (free protocol)",
+          "route": "/optimal-menopause-protocol",
+          "file": "src/content/menopause/page.html",
+          "renderer": "src/pages/MenopauseProtocolPage.tsx",
+          "method": "placeholder",
+          "anchor": "h3#s3 (§3 Why bone and heart are part of the conversation)",
+          "position": "Directly after figure#fig-6 (the Greendale bone-density chart)",
+          "why": "The mechanism behind the chart; quotes the same Greendale 2012 numbers",
+          "priority": "primary"
+        },
+        {
+          "page": "Longevity Protocol (free protocol)",
+          "route": "/optimal-longevity-protocol",
+          "file": "src/content/longevity-protocol/page.html",
+          "renderer": "src/pages/OptimalLongevityProtocolPage.tsx",
+          "method": "olp-widget slot",
+          "anchor": "#s-10 (§10 Body composition and bone)",
+          "position": "Women's bone paragraph",
+          "why": "",
+          "priority": "secondary"
+        }
+      ]
+    }
+  ]
+}

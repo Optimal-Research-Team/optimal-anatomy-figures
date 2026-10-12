@@ -1,0 +1,29 @@
+/* Slots for the Optimal anatomy figures (see optimalFigures.ts). The figure is
+   designed for a column up to 760 px wide; on phones it fills the width. The
+   slot keeps the figure's measured height until it mounts, so nothing jumps. */
+.optimal-figure {
+  display: block;
+  width: 100%;
+  max-width: 760px;
+  margin: 40px auto;
+  min-height: var(--fig-reserve-phone, 1100px);
+}
+@media (min-width: 792px) {
+  .optimal-figure {
+    min-height: var(--fig-reserve-desktop, 1200px);
+  }
+}
+/* On its own between sections: side gutters, as the site's sections have. */
+.optimal-figure--gutter {
+  box-sizing: border-box;
+  max-width: 792px;
+  padding-inline: 16px;
+}
+.optimal-figure[data-ready] {
+  min-height: 0;
+}
+/* If a script fails to load, collapse the slot rather than leave a hole. */
+.optimal-figure[data-failed] {
+  min-height: 0;
+  margin: 0;
+}
