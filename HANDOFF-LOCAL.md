@@ -34,7 +34,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | A1 | Gut cell's gate | **Round 2 · 3-D block** (2026-10-12): brush border of 272 microvilli on top, cells cut on the right end, capillary half-tube | `a1-gut-cell` |
 | A2 | Hot-flash switch (hypothalamus) | **Round 3 · 3-D brain block** (2026-10-12): top cut at the thalamus, end cut, pituitary/stalk/chiasm/nerve/sella halved with round backs; treatment states as before | `a2-hypothalamus` |
 | A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
-| A4 | Beating heart | **Round 5 · more 3-D** (2026-10-12, Peter: "MORE three dimensional"): camera turned to 40°/26° (deliberately off the series 62°/24°), whole 3-D great vessels with caps (aortic arch + branches, PA split, cavae, pulmonary veins), a shining round back half with coronaries, a floor shadow; round 4's cavities, papillary muscles, chordae, 3-D leaflets, cells at depth and the ECG + LV volume + valve-timing monitor stay | `a4-heart` |
+| A4 | Beating heart | **Round 6 · a solid heart in WebGL** (2026-10-12, Peter: "THINK IN THREE DIMENSIONS"): ray-marched in the figure's camera (one kit WebGL layer, `gl-heart.js`). It is the outline puffed into a lit solid, cut in front of its widest section, with ridged chambers, curved leaflets, chordae, papillary muscles, hollow great vessels, coronaries and a floor shadow. It sways and turns under a drag. The round-5 SVG heart is the fallback | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
 | A6 | Red cell's 120 days | **Round 3 · 3-D, cut in half** (2026-10-12): bone cut lengthwise, spleen cut open, arc and return as half-pipes, all with round backs | `a6-red-cell-cycle` |
 | A7 | Kneecap's load | **Round 2 · 3-D, leg cut in half** (2026-10-12): far half stays round (live), thigh cross-section on top. Peter: "way better, just do it like this", so it became the organ-piece approach | `a7-knee` |
@@ -67,18 +67,18 @@ Every figure folder holds:
 11. **A1: yes, convert to 3-D.**
 12. **A2, A4, A6 and A7 go 3-D too.** Pick the best approach from §5.2, build it on A7 (knee) first, and send screenshots. Wait for Peter's OK before converting A2, A4 and A6 the same way.
 13. **The organ approach is "cut in half, far half round."** A first try on A7, a constant-thickness slab, read as "an unnatural slice of some kind". The leg cut in half lengthwise, with the far half keeping its round skin and the thigh's cross-section on top, got "this is way better man just do it like this". A2 (as a brain block, since it's a piece of tissue cut out), A4 and A6 followed (§6b).
-14. **The heart animation "looks not great", then "make that much more three dimensional … the animation needs more complexity".** Round 4 rebuilt everything behind the cut in true 3-D, with more motion and a richer monitor (A4 NOTES, round 4). Peter: "the heart needs to be MORE three dimensional". Round 5 turned the camera to azimuth 40°, elevation 26° (A4 only; it deliberately breaks from the series camera) and made the great vessels whole 3-D tubes, with a shining back half, coronaries and a floor shadow (A4 NOTES, round 5). Peter's verdict on round 5 is pending.
+14. **The heart animation "looks not great", then "make that much more three dimensional … the animation needs more complexity".** Round 4 rebuilt everything behind the cut in true 3-D, with more motion and a richer monitor (A4 NOTES, round 4). Peter: "the heart needs to be MORE three dimensional". Round 5 turned the camera to azimuth 40°, elevation 26° (A4 only; it deliberately breaks from the series camera) and made the great vessels whole 3-D tubes, with a shining back half, coronaries and a floor shadow (A4 NOTES, round 5). Peter on round 5: "directionally better … THINK IN THREE DIMENSIONS". Round 6 moved the heart into one WebGL layer as a lit, ray-marched solid that turns, keeping the SVG as the fallback (A4 NOTES, round 6; it deliberately breaks the skill's "no solids in shaders" rule, within the repo's one-WebGL-layer rule). Peter's verdict on round 6 is pending.
 
 ## 4. Open questions for Peter
 
-- **The heart (A4), round 5:** is this 3-D enough? A4's camera is now off the series (40°/26° vs 62°/24°): keep it, or turn the rest to match? Anything further: a slow turntable, twist of the ventricles, a pressure–volume loop with sourced pressures?
+- **The heart (A4), round 6:** is the WebGL heart the 3-D you wanted? Check on a real phone (frame rate unmeasured on devices; a governor lowers resolution if frames run long). Next options: the outflow valves cut open, ventricular twist, a pressure–volume loop with sourced pressures.
 - **Placement:** see `review/site-placement.md` (the beoptimal.ca scan), which proposes a home for every figure.
 - **Network:** with `beoptimal.ca`, `bici.cc` and `inbodycanada.ca` allowed (or locally), re-read the site pages directly instead of PDFs.
 - ~~Creator 600 screen size~~, ~~A3 vs A3b~~, ~~A1 look~~, ~~organ-piece approach~~: answered 2026-10-12, see §3.
 
 ## 5. Next steps (priority order)
 
-1. **Peter's call on the heart (A4), round 5.** Then any changes.
+1. **Peter's call on the heart (A4), round 6.** Then any changes, and a real-phone frame-rate check (`gl-heart.js` governor).
 2. **Embeds on the site:** use the placement map (`review/site-placement.md`). Each figure ships `embed/optimal-fig-<slug>.js`, and NOTES.md has the snippet. The site repo (`BeOptimal/beoptimal-landing`) is a separate handoff.
 3. **Site copy fix:** the Creator 600 page says "32″ upright display"; it's about 50″ (§3 item 9).
 4. **Truth pass with the network open:** re-check the MEDIUM/LOW rows in `reference/truth-pack.md`.

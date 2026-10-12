@@ -20,6 +20,14 @@ function mount(fig) {
   const buttons = [...fig.querySelectorAll('[data-control="rate"] .opt-seg-btn')];
   const slowBtn = fig.querySelector("[data-slow]");
   const G = DATA.geo;
+  // the heart in WebGL when it can run; the SVG heart below is the fallback
+  const stage = fig.querySelector(".a4-stage");
+  const H = DATA.gl && typeof heartGL === "function" ? heartGL({ fig, canvas: fig.querySelector(".a4-gl"), data: DATA.gl }) : null;
+  if (H) {
+    stage.setAttribute("data-gl", "");
+    const hint = fig.querySelector(".opt-hint");
+    if (hint) hint.textContent += " · Drag to turn";
+  }
   const set = (sel, d) => q(sel).setAttribute("d", d);
   const f1 = (v) => v.toFixed(1);
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -551,6 +559,12 @@ function mount(fig) {
     const contr = Math.min(1, Math.max(0, (b.edv - b.V) / (b.edv - b.esv)));
     def = { d: 15 * contr, sV, sA: b.A, sO: 1 - 0.22 * (1 - sV) };
     const sAt = 0.78 + 0.22 * b.A;
+    if (H) {
+      // cavities shrink mostly across and a little along (≈ the model's volume ratio), the walls thicken
+      const vr = b.V / 120;
+      H.draw({ def: def.d, sV: Math.pow(vr, 0.4), sLong: Math.pow(vr, 0.15), sAt, sO: 1 - 0.16 * (1 - Math.pow(vr, 0.4)), sAo: 0.95 + 0.05 * b.A, av: b.av, semi: b.semi, yaw: turn.yaw, cells, monTop: MON.top, time: clock });
+      return;
+    }
     const outline = outer();
     const outerD = smooth(outline);
     set('[data-part="outer"]', outerD);
@@ -747,6 +761,27 @@ function mount(fig) {
 
   // ---------------------------------------------------------------- state, input, tour
   let rateAt = 0;
+  // turning the heart: a slow sway, and a horizontal drag takes over (vertical drags still scroll the page)
+  const turn = { yaw: 0.12, drag: null, held: -1e9, offset: 0 };
+  const swayAt = (s) => 0.12 + 0.4 * Math.sin((s * 2 * Math.PI) / 15);
+  if (H) {
+    stage.addEventListener("pointerdown", (e) => {
+      if (e.button !== 0) return;
+      turn.drag = { x: e.clientX, yaw: turn.yaw, id: e.pointerId };
+      stage.setPointerCapture(e.pointerId);
+    });
+    stage.addEventListener("pointermove", (e) => {
+      if (!turn.drag || e.pointerId !== turn.drag.id) return;
+      turn.yaw = turn.drag.yaw + ((e.clientX - turn.drag.x) / Math.max(200, stage.clientWidth)) * 3.2;
+      turn.held = performance.now();
+      if (still.matches && stillBeat) draw(stillBeat, hr);
+    });
+    const end = (e) => {
+      if (turn.drag && e.pointerId === turn.drag.id) turn.drag = null;
+    };
+    stage.addEventListener("pointerup", end);
+    stage.addEventListener("pointercancel", end);
+  }
   let hr = HEART.rates[0];
   let hrShown = hr;
   let t = 0.6;
@@ -792,6 +827,7 @@ function mount(fig) {
     slowBtn.setAttribute("aria-pressed", speed < 1 ? "true" : "false");
     slowBtn.textContent = speed < 1 ? "Real time" : "Slow";
   });
+  let stillBeat = null;
   function renderStill() {
     // mid-ejection: aortic and pulmonary valves open, the base pulled down, the traces filled in
     hrShown = hr;
@@ -808,9 +844,11 @@ function mount(fig) {
       trace.push([tt, ecgAt(hr, bb.u), bb.V, bb.av > 0.5 ? 1 : 0, bb.semi > 0.5 ? 1 : 0]);
     }
     trace.pop();
-    draw(beatAt(hr, u), hr);
-    monitorDraw(0, beatAt(hr, u), hr);
+    stillBeat = beatAt(hr, u);
+    draw(stillBeat, hr);
+    monitorDraw(0, stillBeat, hr);
   }
+  if (H) new ResizeObserver(() => still.matches && stillBeat && draw(stillBeat, hr)).observe(stage);
   let touring = true;
   let idle = -1e9;
   let tourClock = 0;
@@ -835,6 +873,9 @@ function mount(fig) {
     t = phase * T1 + dt;
     clock += dt;
     const b = beatAt(hrShown, t);
+    // the sway resumes a few seconds after a drag, easing back from wherever the hand left it
+    turn.offset += dt;
+    if (!turn.drag && now - turn.held > 3500) turn.yaw += (swayAt(turn.offset) - turn.yaw) * (1 - Math.exp(-dt / speed / 1.2));
     stepCells(b, dt, hrShown);
     draw(b, hrShown);
     monitorDraw(clock, b, hrShown);

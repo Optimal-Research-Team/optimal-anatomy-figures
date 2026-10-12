@@ -1,5 +1,8 @@
 // A4 · The beating heart (anatomical series).
 //
+// Round 6: where WebGL runs, the heart is a lit 3-D solid ray-marched in this camera (gl-heart.js) that sways
+// and turns under a drag; everything below (the SVG heart) is its fallback and still reads on its own.
+//
 // The heart cut open front to back, in isometric 3-D: the front half is taken away, the cut face
 // shows the chambers, and the back half keeps its round outer wall (and each great vessel its
 // half-tube), redrawn live so it beats with the rest. On the cut face: right atrium and ventricle (oxygen-poor blood, blue),
@@ -16,6 +19,8 @@ import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
 import * as M from "./model.mjs";
+import { glCamera } from "../../.claude/skills/anatomy/kit/gl.mjs";
+import { glScript } from "../../.claude/skills/anatomy/scripts/inline-kit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
@@ -121,6 +126,7 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
   <radialGradient id="a4-muscle" cx="38%" cy="34%" r="72%"><stop offset="0" class="a4-m0"/><stop offset="0.65" class="a4-m1"/><stop offset="1" class="a4-m2"/></radialGradient>
   <radialGradient id="a4-glow-g" cx="50%" cy="50%" r="50%"><stop offset="0" class="a4-g0"/><stop offset="1" class="a4-g1"/></radialGradient>
 </defs>
+<g class="a4-heart-svg">
 <g transform="${FRONT_M}"><path class="a4-floor" data-part="floor"/><g data-part="behind"></g></g>
 <g transform="${FRONT_M}"><g class="a4-far" data-part="far"></g></g>
 <g transform="${FRONT_M}"><g data-part="vessels"></g></g>
@@ -142,6 +148,7 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
 <path class="a4-annulus" data-part="annuli"/>
 <g clip-path="url(#a4-clipAll)"><path class="a4-valve" data-part="valves"/></g>
 </g>
+</g>
 <g class="a4-mon">
 <rect class="a4-ecg-bg" x="24" y="${MON.top}" width="552" height="170" rx="10"/>
 <text class="a4-mon-label" x="40" y="${MON.ecg.y - 6}">ECG</text>
@@ -157,16 +164,18 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
 </g>
 </svg>`;
 
-const DATA = { geo, v3: V3, floorY: FLOOR_Y, mon: MON, lines: LINES, far: { w: WD1, A: AZ, E: EL, dep: DEP } };
+const DATA = { geo, v3: V3, floorY: FLOOR_Y, mon: MON, lines: LINES, far: { w: WD1, A: AZ, E: EL, dep: DEP }, gl: { camera: glCamera(PB), view: [W, VH], dep: DEP, floorY: FLOOR_Y, out: geo.OUT } };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+// the WebGL layer is wrapped so its helpers (smooth, settle, …) stay out of the page's own names
+const GL = `const { glLayer } = (() => {\n${glScript()}\nreturn { glLayer };\n})();\n${readFileSync(join(HERE, "gl-heart.js"), "utf8")}\n`;
+const SCRIPT = `${GL}${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const v60 = M.volumesOf(60);
 const v176 = M.volumesOf(176);
 const CAPTION = [
   `Each beat starts with a small squeeze of the two upper chambers, the atria. Then the two lower chambers, the ventricles, contract together: the valves between upper and lower chambers snap shut, pressure builds, and the outflow valves open. The right side sends oxygen-poor blood (blue) to the lungs; the thick-walled left side sends oxygen-rich blood (red) to the whole body. Cords inside the ventricles (chordae) tie the valve leaflets to small muscles in the walls, so the valves hold shut instead of blowing back into the atria. The monitor below tracks the ECG, the left ventricle's volume and when each set of valves is open.`,
   `At rest, about ${Math.round(v60.sv)} ml leaves each ventricle per beat, ${v60.co.toFixed(1)} litres a minute. Flat out, the heart beats about three times as often and empties more fully with each beat, so its output rises to roughly ${Math.round(v176.co)} litres a minute. That is the delivery side of VO₂max.`,
-  `<small>Typical adult values (end of filling ≈ 120 ml, end of ejection ≈ 50 ml at rest); individual hearts differ. Blue and red follow the textbook convention: venous blood is dark red, not blue. As the ventricles squeeze, the valve plane is pulled toward the tip of the heart, which draws blood into the atria at the same time. The ECG is a drawing timed to the beat. The chambers' depth, the muscle ridges and the swirl of blood as the left ventricle fills are drawn, not measured.</small>`,
+  `<small>Typical adult values (end of filling ≈ 120 ml, end of ejection ≈ 50 ml at rest); individual hearts differ. Blue and red follow the textbook convention: venous blood is dark red, not blue. As the ventricles squeeze, the valve plane is pulled toward the tip of the heart, which draws blood into the atria at the same time. The ECG is a drawing timed to the beat. The heart's 3-D shape, the chambers' depth, the muscle ridges and the swirl of blood as the left ventricle fills are drawn from textbook anatomy, not measured.</small>`,
 ]
   .map((p) => `<span class="a4-par">${p}</span>`)
   .join("");
@@ -186,7 +195,7 @@ const body = plate({
     { mark: "raised", label: "Heart muscle" },
   ],
   caption: CAPTION,
-  body: `<div class="iso-stage a4-stage">${svg}</div><div class="a4-row"><p class="a4-scene" data-scene>${LINES[0]}</p><button type="button" class="a4-slow" data-slow aria-pressed="false">Slow</button></div><span class="a4-sr" role="status" aria-live="polite" data-status></span>`,
+  body: `<div class="iso-stage a4-stage">${svg}<canvas class="a4-gl" aria-hidden="true"></canvas></div><div class="a4-row"><p class="a4-scene" data-scene>${LINES[0]}</p><button type="button" class="a4-slow" data-slow aria-pressed="false">Slow</button></div><span class="a4-sr" role="status" aria-live="polite" data-status></span>`,
 });
 const out = THEME === "light" ? `${SLUG}-light.html` : `${SLUG}.html`;
 writeFileSync(join(HERE, out), page({ title: "The beating heart", theme: THEME, body, css: CSS, script: SCRIPT }));

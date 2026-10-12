@@ -153,3 +153,74 @@ Peter on round 4: "the heart needs to be MORE three dimensional please". The bea
 - Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/desktop-max-{dark,light}.png` (All out).
 - One beat, slowed: `review/a4-heart-beat.gif`.
 
+## Round 6 (2026-10-12): a solid heart in WebGL that turns
+
+Peter on round 5: "directionally better but it could be better … THINK IN THREE DIMENSIONS". The SVG had reached its limit: a flat cut face with 3-D parts stuck behind it. So, where WebGL runs, the heart is now a lit 3-D solid, ray-marched in the figure's own camera through the kit's WebGL layer (`kit/gl.mjs`, one canvas over the drawing). The round-5 SVG heart stays underneath as the fallback.
+
+**The model** (`gl-heart.js`) is a signed-distance model in the section frame the SVG uses (x right, y down, d back from the cut):
+- **Outer body:** the figure's own outline (`geo.OUT`), puffed into a rounded solid. In each direction its radius is the outline's (a 12-term Fourier series about C2), and its depth is 0.74 of that. The atrioventricular groove is pressed in at the back. The widest section lies 30 behind the cut, so the cut face sits inside a rim of round outer wall, the way a sliced fruit reads as solid.
+- **Cut:** everything in front of the cut plane and inside the outline is taken away. Vessels outside the outline stay whole.
+- **Chambers:**
+  - four ellipsoid cavities, ridged inside: trabeculae in the ventricles, pectinate muscles in the right atrium;
+  - the tricuspid and mitral channels;
+  - the vessels' lumens, joined to the cavities they drain.
+- **Valves:** the tricuspid (3 leaflets) and mitral (2) are curved sheets hung from the annulus, with scalloped free edges and commissures that open toward the free edge. The cut halves them, as in the textbook view. Open, they hang into the ventricle; shut, they dome toward the atrium.
+- **Papillary muscles and chordae:** three papillary muscles, with chordae running from their tips to the leaflets' free edges, computed each frame.
+- **Great vessels:** hollow tubes with open ends that show their lumen:
+  - the aorta, with its arch and three branches, running into the descending aorta behind the heart;
+  - the pulmonary trunk crossing to its split, with the left and right pulmonary arteries;
+  - the superior and inferior venae cavae;
+  - two pulmonary veins.
+- **Surface:** coronary arteries and veins (the circumflex in the left atrioventricular groove, and marginal branches) on the side that faces the viewer, with fat along the groove and the vessels.
+
+**Proportions** (Peter asked whether the walls were too thick; partly they were). The scale is about 34 units per cm, from the ventricles' ~9 cm width at the cut. Fixed against typical adult values:
+- The left ventricle was ~3.6 cm across and is now ~4 cm (normal at end-diastole is ~4.2–5.8 cm), with a ~0.75 cm free wall (normal ≤ 1.1 cm).
+- The septum is ~0.9 cm, the right-ventricle wall ~0.4 cm (normal < 0.5 cm), and the atrial walls ~0.2 cm.
+- The atria were ~3.3 cm apart. They now meet at a thin (~0.6 cm) interatrial septum.
+- The AV valve rings were ~1.4–1.6 cm and are now ~2.5–2.7 cm (normal ~2.7–3.5 cm). The leaflets are ~1.5–1.8 cm.
+- The tricuspid sits slightly nearer the apex than the mitral (~0.6 cm), as normal.
+- The apical wall is ~0.7 cm.
+- The great arteries now cross as they do in the body. The pulmonary trunk rises in front of the aortic root and to the person's left of it, then splits under the arch. The ascending aorta rises behind it toward the person's right, then arches back and left.
+- **The SVG fallback still has the older schematic layout** (pulmonary trunk to the viewer's left of the aorta, smaller chambers). See Open.
+- Closed AV leaflets meet just below the annulus plane, level with it. They don't billow into the atrium, which would look like prolapse.
+
+**Motion:** the same beat model drives it.
+- The valve plane is pulled toward the apex.
+- The cavities shrink across (volume ratio^0.4) and a little along (^0.15), so their volume tracks the model's 120 → 50 ml at rest, while the walls thicken (outer scale 1 − 0.16 × the across shrink).
+- The atria squeeze.
+- The leaflets swing, and the papillary muscles shorten with their ventricle.
+- Blood cells come from the SVG's simulation, kept inside their chamber (atrium until they pass the valve plane, then ventricle), and are drawn as small spheres at their depth.
+
+**Light:** Lambert wrap, Blinn highlight, ambient occlusion, a cheap occlusion term toward the light, and a contact and cast shadow on the floor, in linear light. Colours come from theme tokens (`--a4-gl-*` plus the existing `--a4-*`), so both themes work.
+
+**Turning:**
+- The heart sways slowly (±23° over 15 s). The sway slows with Slow, so the valves are easy to watch.
+- A horizontal drag turns it. `touch-action: pan-y`, so vertical swipes still scroll the page on phones.
+- The hint gains "· Drag to turn" only when WebGL is running.
+
+**Fallback:** without WebGL, or if the shader fails, `glLayer` returns null and the round-5 SVG heart draws exactly as before. When WebGL runs, the SVG heart group (`.a4-heart-svg`) is hidden, and its per-frame drawing is skipped.
+
+**Reduced motion:** one still mid-ejection. A drag or a resize redraws it.
+
+**Deviation from the skill:** `references/webgl.md` keeps solids in SVG and uses shaders only for light, fluids and glow. This figure breaks that on purpose, at Peter's request for more 3-D. It stays inside the repo rule: one WebGL layer, and an SVG that reads on its own.
+
+**Performance:**
+- In headless Chrome on an Apple M4 (ANGLE Metal): 60 fps at 390 px and 60 fps at 1280 px.
+- Tubes are evaluated in bounded chunks. Points deep in the cut-away space or outside the outer wall skip the chambers, cords and valves. Cords are boxed.
+- A governor drops the light-occlusion term, then the pixel ratio (1.5 → 0.75), if the median frame runs past 26 ms.
+- Phones start at ratio 1.25 without it.
+- **Real-phone frame rates are not measured yet.**
+
+**Caption:** "The heart's 3-D shape … drawn from textbook anatomy, not measured."
+
+### Open (round 6)
+
+- The SVG fallback (no WebGL) keeps the round-5 schematic: its great arteries don't cross, and its chambers are smaller. Bring it to the GL proportions if the fallback matters. The SVG is drawn from `geo` in `build.mjs`.
+- Real-phone frame rates are unmeasured. Check on a mid-range Android and an older iPhone. The governor in `gl-heart.js` lowers the pixel ratio if frames run long.
+
+### Verification (round 6)
+
+- `node scripts/verify.mjs a4-heart`: passed. Phones 390/360/320 fit in both themes, reduced motion is still, `lines.mjs` reports 0, and the console is clean.
+- `drive.mjs --no-webgl`: `data-gl` is absent and the SVG heart draws.
+- A beat with the sway: `review/a4-heart-beat.gif`.
+
