@@ -55,3 +55,15 @@
 1. **Placement:** under Fig 2, as "what ECW/TBW is measuring".
 2. **The model's two LOW numbers** (muscle ≈ half of body water; muscle water 16 % extracellular) are textbook-level. Worth a source check before the scene values (0.369–0.413) appear on a page; the direction of each shift is solid.
 3. **Wording** of the "Extra fluid" scene: deliberately not called oedema or inflammation (no diagnosis).
+
+## Round 2 (2026-10-12): 3-D bundle
+Peter approved the isometric look (A3b), so the slice is now the front face of a 3-D fascicle. The bundle is an elliptic cylinder running back into the arm, at the same projection as A3b (azimuth 62°, elevation 24°).
+- **Front face:** the original slice, unchanged, placed with `planeMatrix`. All the live drawing (fibres, fluid, capillaries, ⊙ current) still happens in section coordinates.
+- **Body:** drawn in the browser by `drawBody()` in live.js, from the projection basis in `DATA.body`, so it swells and shrinks with the scenes (`g.spread`). It shows:
+  - the sheath (perimysium);
+  - the fluid;
+  - the outer fibres running back as bands at the same angles as the face's edge fibres, with fine cross-striations;
+  - capillaries in the grooves;
+  - a cylinder shade square to the axis.
+- **Visibility:** only the half of the cylinder facing the viewer is drawn (`DATA.body.ta`–`tb`, from the view vector). That half doesn't depend on the spread, because RX and RY scale together.
+- **Verified:** both themes; 320 px; Extra fluid scene; console clean; line ends 0.

@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import * as M from "./model.mjs";
 import { throughShare } from "../02-inbody-580/model.mjs";
+import { figkit, k } from "../../shared/figkit.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
@@ -100,13 +101,60 @@ const fibres = cells.map(({ c, poly }) => {
   return { dots, nuclei, type: rng() < 0.42 ? 1 : 2 };
 });
 
+// ---------------------------------------------------------------- the 3-D bundle: the slice is the front face of a cylinder
+// World units = section px: x along the section, y back into the arm, z up. The browser redraws the
+// body as the bundle swells or shrinks (live.js drawBody), so only the projection travels in DATA.
+const H = 520;
+const D = 240;
+const W3 = (sx, y, sy) => [sx, y, H - sy];
+const RXM = RX * 1.07 + 9;
+const RYM = RY * 1.07 + 9;
+const BOUNDS3 = [];
+for (const x of [C[0] - RXM, C[0] + RXM]) for (const y of [0, D]) for (const sy of [C[1] - RYM, C[1] + RYM]) BOUNDS3.push(W3(x, y, sy));
+const PB = k.fitProjection(BOUNDS3, 600, 436, { pad: 8, azimuth: 62, elevation: 24 });
+const FB = figkit(PB);
+const o2 = FB.at([0, 0, 0]);
+const axis = (w) => FB.at(w).map((v, i) => +(v - o2[i]).toFixed(5));
+const [ex, ey, ez] = [axis([1, 0, 0]), axis([0, 1, 0]), axis([0, 0, 1])];
+let V = [ey[0] * ez[1] - ez[0] * ey[1], ez[0] * ex[1] - ex[0] * ez[1], ex[0] * ey[1] - ey[0] * ex[1]];
+if (V[1] < 0) V = V.map((v) => -v); // toward the viewer: the front face (+y) is the one we see
+const seen = (t) => (Math.cos(t) / RX) * V[0] - (Math.sin(t) / RY) * V[2] > 0;
+let ta = 0;
+for (let i = 0; i < 720; i++) {
+  const t = (i / 720) * 2 * Math.PI;
+  if (seen(t) && !seen(t - 0.01)) ta = t;
+}
+let tb = ta;
+while (seen(tb + 0.005) && tb < ta + 2 * Math.PI) tb += 0.005;
+// fibres that touch the sheath, as angle spans, so they can run back along the body
+const norm = (t) => (t < ta ? t + 2 * Math.PI : t);
+const spans = [];
+cells.forEach(({ poly }, i) => {
+  const ts = poly.filter(([x, y]) => ((x - C[0]) / RX) ** 2 + ((y - C[1]) / RY) ** 2 > 0.97).map(([x, y]) => Math.atan2((y - C[1]) / RY, (x - C[0]) / RX));
+  if (ts.length < 2) return;
+  let a = ts.map((t) => (t + 2 * Math.PI) % (2 * Math.PI));
+  if (Math.max(...a) - Math.min(...a) > Math.PI) a = a.map((t) => (t > Math.PI ? t - 2 * Math.PI : t));
+  spans.push({ a0: +Math.min(...a).toFixed(4), a1: +Math.max(...a).toFixed(4), type: fibres[i].type });
+});
+const BODY = { o: o2.map((v) => +v.toFixed(2)), ex, ey, ez, H, D, ta: +ta.toFixed(4), tb: +tb.toFixed(4), spans };
+const FRONT = FB.planeMatrix(W3(0, D, 0), [1, 0, 0], [0, 0, -1]);
+
 // ---------------------------------------------------------------- the picture
 const svg = `<svg class="iso-svg a8-svg" viewBox="0 0 600 520" role="img" aria-label="A slice across a bundle of muscle fibres from the upper arm. Packed fibres, each with nuclei at its edge and myofibrils inside, are separated by narrow gaps of fluid, with small capillaries in the corners. Symbols show InBody's current flowing along the arm, toward the viewer: at low frequency it flows only in the fluid between the fibres, at higher frequencies some of it passes through the fibres too. Changing the scene makes the fibres bigger or smaller, or adds fluid between them.">
 <defs>
   <radialGradient id="a8-fib1" cx="40%" cy="36%" r="75%"><stop offset="0" class="a8-f1a"/><stop offset="1" class="a8-f1b"/></radialGradient>
   <radialGradient id="a8-fib2" cx="40%" cy="36%" r="75%"><stop offset="0" class="a8-f2a"/><stop offset="1" class="a8-f2b"/></radialGradient>
   <radialGradient id="a8-ecw" cx="50%" cy="50%" r="60%"><stop offset="0" class="a8-e0"/><stop offset="1" class="a8-e1"/></radialGradient>
+<linearGradient id="a8-cyl" gradientUnits="userSpaceOnUse"><stop offset="0" class="a8-g0"/><stop offset="0.38" class="a8-g1"/><stop offset="1" class="a8-g2"/></linearGradient>
 </defs>
+<g class="a8-body" aria-hidden="true">
+<path class="a8-body-sheath" data-part="bodySheath"/><path class="a8-body-gap" data-part="bodyGap"/>
+<path class="a8-body-f1" data-part="bodyF1"/><path class="a8-body-f2" data-part="bodyF2"/>
+<path class="a8-body-stri" data-part="bodyStri"/><path class="a8-body-cap" data-part="bodyCap"/>
+<path class="a8-body-veil" data-part="bodyVeil"/><path data-part="bodyShade" fill="url(#a8-cyl)"/>
+<path class="a8-body-edge" data-part="bodyEdge"/>
+</g>
+<g class="a8-front" transform="${FRONT}">
 <ellipse class="a8-peri" data-part="peri" cx="${C[0]}" cy="${C[1]}" rx="${RX + 9}" ry="${RY + 9}"/>
 <ellipse class="a8-ecw" data-part="ecw" cx="${C[0]}" cy="${C[1]}" rx="${RX}" ry="${RY}" fill="url(#a8-ecw)"/>
 <path class="a8-cap" data-part="caps"/><path class="a8-cap-lumen" data-part="capl"/>
@@ -115,6 +163,7 @@ const svg = `<svg class="iso-svg a8-svg" viewBox="0 0 600 520" role="img" aria-l
 <path class="a8-myo" data-part="myo"/>
 <path class="a8-nuc" data-part="nuc"/>
 <path class="a8-cur-ring" data-part="curRing"/><path class="a8-cur-dot" data-part="curDot"/>
+</g>
 <g class="a8-loc" aria-hidden="true" transform="translate(18 444)">
   <path class="a8-loc-arm" d="M4 22C20 8 52 4 84 8C112 12 132 16 148 24L146 50C130 56 108 58 84 58C54 58 24 54 6 44Z"/>
   <ellipse class="a8-loc-cut" cx="78" cy="33" rx="9" ry="25"/>
@@ -130,7 +179,7 @@ const LINES = [
   "Smaller fibres, as with muscle loss: less water inside, so the share outside rises.",
   "Extra fluid between the fibres: the share outside rises too. The ratio alone can't tell this from muscle loss.",
 ];
-const DATA = { C, RX, RY, cells, gaps, caps, fibres, share: SHARE, freqs: FREQS, lines: LINES };
+const DATA = { body: BODY, C, RX, RY, cells, gaps, caps, fibres, share: SHARE, freqs: FREQS, lines: LINES };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");

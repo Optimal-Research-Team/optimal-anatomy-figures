@@ -75,6 +75,62 @@ function mount(fig) {
       set(part, "rx", f1(DATA.RX * g.spread + pad));
       set(part, "ry", f1(DATA.RY * g.spread + pad));
     }
+    drawBody();
+  }
+  // the 3-D bundle behind the slice: sheath, fluid, the outer fibres running back with their
+  // cross-striations, capillaries in the grooves, a cylinder shade
+  const B = DATA.body;
+  function drawBody() {
+    if (!B) return;
+    const P = (sx, y, sy) => [B.o[0] + sx * B.ex[0] + y * B.ey[0] + (B.H - sy) * B.ez[0], B.o[1] + sx * B.ex[1] + y * B.ey[1] + (B.H - sy) * B.ez[1]];
+    const R = (t, pad, y) => P(C[0] + Math.cos(t) * (DATA.RX * g.spread + pad), y, C[1] + Math.sin(t) * (DATA.RY * g.spread + pad));
+    const L = (p, c = "L") => `${c}${f1(p[0])} ${f1(p[1])}`;
+    const steps = (t0, t1) => {
+      const n = Math.max(1, Math.ceil((t1 - t0) / 0.05));
+      return Array.from({ length: n + 1 }, (_, i) => t0 + ((t1 - t0) * i) / n);
+    };
+    const band = (t0, t1, pad) => {
+      const ts = steps(t0, t1);
+      return ts.map((t, i) => L(R(t, pad, B.D), i ? "L" : "M")).join("") + [...ts].reverse().map((t) => L(R(t, pad, 0))).join("") + "Z";
+    };
+    const clampT = (t) => Math.max(B.ta, Math.min(B.tb, t < B.ta - 1 ? t + 2 * Math.PI : t));
+    const all = band(B.ta, B.tb, 9);
+    set("bodySheath", "d", all);
+    set("bodyVeil", "d", all);
+    set("bodyShade", "d", all);
+    set("bodyGap", "d", band(B.ta, B.tb, 0));
+    let f1d = "", f2d = "", stri = "", cap = "";
+    for (const s of B.spans) {
+      const m = (s.a0 + s.a1) / 2;
+      const h = ((s.a1 - s.a0) / 2) * BASE * g.fibre / g.spread; // fibre share of its cell, as on the face
+      const t0 = clampT(m - h);
+      const t1 = clampT(m + h);
+      if (t1 - t0 < 0.01) continue;
+      const d = band(t0, t1, -0.5);
+      if (s.type === 1) f1d += d;
+      else f2d += d;
+      for (let y = 5; y < B.D; y += 8) stri += steps(t0, t1).map((t, i) => L(R(t, -0.5, y), i ? "L" : "M")).join("");
+      const tc = clampT(s.a1);
+      if (tc > B.ta + 0.04 && tc < B.tb - 0.04) cap += L(R(tc, 0.6, B.D - 2), "M") + L(R(tc, 0.6, 2));
+    }
+    set("bodyF1", "d", f1d);
+    set("bodyF2", "d", f2d);
+    set("bodyStri", "d", stri);
+    set("bodyCap", "d", cap);
+    set("bodyEdge", "d", L(R(B.ta, 9, B.D), "M") + steps(B.ta, B.tb).map((t) => L(R(t, 9, 0))).join("") + L(R(B.tb, 9, B.D)));
+    // the shade runs across the body, square to its axis
+    const n = [-B.ey[1], B.ey[0]];
+    const len = Math.hypot(...n);
+    const u = [n[0] / len, n[1] / len];
+    const pts = steps(B.ta, B.tb).flatMap((t) => [R(t, 9, 0), R(t, 9, B.D)]);
+    const dots = pts.map((p) => p[0] * u[0] + p[1] * u[1]);
+    const lo = pts[dots.indexOf(Math.min(...dots))];
+    const span = Math.max(...dots) - Math.min(...dots);
+    const grad = svg.querySelector("#a8-cyl");
+    grad.setAttribute("x1", f1(lo[0]));
+    grad.setAttribute("y1", f1(lo[1]));
+    grad.setAttribute("x2", f1(lo[0] + u[0] * span));
+    grad.setAttribute("y2", f1(lo[1] + u[1] * span));
   }
   function spawn(inside) {
     if (inside) {
