@@ -31,7 +31,7 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 - NOTES.md;
 - in the gallery.
 
-## 3-D conversion (Peter, 2026-10-12: "make the design more beautiful … isometric 3-D"; A3b approved)
+## 3-D conversion (Peter, 2026-10-12: "make the design more beautiful … isometric 3-D"; A3b approved) · **done 2026-10-12**
 
 | Piece | 3-D state |
 |---|---|
@@ -45,7 +45,9 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 | A2 | done: block of brain (cut top and end), hanging parts cut in half with round backs (2026-10-12) |
 | A6 | done: bone and spleen cut in half, vessels as half-pipes, round backs (2026-10-12) |
 
-Recipe: HANDOFF-LOCAL §6.
+Recipe: HANDOFF-LOCAL §6a (tissue blocks) and §6b (organs cut in half, `shared/round-back.js`). Contact sheet: `review/contact-sheet.png` (`python3 scripts/contact-sheet.py`).
+
+**Open after the conversion:** Peter's verdict on the heart's animation (A4), and moving A7's `drawFar()` onto `shared/round-back.js`.
 
 ## Round-2 options already raised
 

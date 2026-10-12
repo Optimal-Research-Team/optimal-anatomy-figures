@@ -1,6 +1,6 @@
 # Handoff: continuing locally
 
-The cloud session ends here; its credits are nearly spent. This file is the full state of the project for a local Claude Code session on the Mac, which runs on the Max plan's limits, not cloud credits. **Last updated:** 2026-10-12, end of cloud work. `main` and the cloud branch `claude/wonderful-mayer-ga12kl` are identical. Work on `main`, or on a new branch merged to `main`.
+This file is the full state of the project. It was written for the hand-off from the cloud session to a local Claude Code session on the Mac (Max plan limits, not cloud credits), and the local session has kept it current since. **Last updated:** 2026-10-12, end of the local session: every A-piece is now isometric 3-D. Work on `main`.
 
 **First prompt for the local session:**
 > Read CLAUDE.md, HANDOFF.md, HANDOFF-LOCAL.md and BACKLOG.md. Then continue from "Next steps" in HANDOFF-LOCAL.md.
@@ -13,7 +13,7 @@ cd optimal-anatomy-figures
 node -v                               # needs Node 20+ (brew install node)
 bash scripts/setup-cloud.sh           # finds Chrome, writes .env.chrome, smoke-tests a capture
 source .env.chrome                    # every capture/drive/lines command needs CHROME_PATH
-node scripts/build-all.mjs            # builds all 16 figures + gallery into dist/
+node scripts/build-all.mjs            # builds all 15 figures + gallery into dist/ ("15/15 built")
 open dist/index.html
 claude                                # Claude Code reads CLAUDE.md on start
 ```
@@ -21,7 +21,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 - `scripts/chrome-root.sh` (Chrome with `--no-sandbox`) is only for cloud containers that run as root. On the Mac, `setup-cloud.sh` should find `/Applications/Google Chrome.app`. If it doesn't, set `CHROME_PATH` in `.env.chrome` by hand.
 - Live gallery: https://optimal-research-team.github.io/optimal-anatomy-figures/. Pushing `main` deploys it via `.github/workflows/pages.yml` in about a minute.
 
-## 2. Status (16 figures, all in the gallery)
+## 2. Status (15 figures, all in the gallery; every anatomy piece is 3-D)
 
 | # | Figure | State | Folder |
 |---|---|---|---|
@@ -37,7 +37,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | A4 | Beating heart | **Round 3 · 3-D, cut in half** (2026-10-12): back half round and beating (shared/round-back.js), vessels cut open with half-ring ends | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
 | A6 | Red cell's 120 days | **Round 3 · 3-D, cut in half** (2026-10-12): bone cut lengthwise, spleen cut open, arc and return as half-pipes, all with round backs | `a6-red-cell-cycle` |
-| A7 | Kneecap's load | **Round 2 · 3-D, leg cut in half** (2026-10-12): far half stays round (live), thigh cross-section on top. The organ-piece approach, **waiting on Peter's OK** before A2/A4/A6 | `a7-knee` |
+| A7 | Kneecap's load | **Round 2 · 3-D, leg cut in half** (2026-10-12): far half stays round (live), thigh cross-section on top. Peter: "way better, just do it like this", so it became the organ-piece approach | `a7-knee` |
 | A8 | Water in and around the fibres | **Round 2 · 3-D bundle**: slice on the face of a muscle cylinder; body redrawn live | `a8-muscle-water` |
 | A9 | Digging and filling (bone) | **Round 2 · 3-D block**; caption uses the Menopause Protocol's Greendale numbers | `a9-bone-remodelling` |
 
@@ -66,30 +66,31 @@ Every figure folder holds:
     - **Every other piece** is converted in place, as A8 and A9 were. No flat version stays in the gallery once its 3-D version exists.
 11. **A1: yes, convert to 3-D.**
 12. **A2, A4, A6 and A7 go 3-D too.** Pick the best approach from §5.2, build it on A7 (knee) first, and send screenshots. Wait for Peter's OK before converting A2, A4 and A6 the same way.
+13. **The organ approach is "cut in half, far half round."** A first try on A7, a constant-thickness slab, read as "an unnatural slice of some kind". The leg cut in half lengthwise, with the far half keeping its round skin and the thigh's cross-section on top, got "this is way better man just do it like this". A2 (as a brain block, since it's a piece of tissue cut out), A4 and A6 followed (§6b).
+14. **The heart animation "looks not great."** Fixed what a frame review found (aorta across the left atrium, arch seam, lumpy back half; see A4 NOTES). **Ask Peter whether it now reads right**, or what still bothers him: the beat itself (squeeze, valve timing) is unchanged from round 2.
 
 ## 4. Open questions for Peter
 
-- ~~Creator 600 screen size~~, ~~A3 vs A3b~~, ~~A1 look~~: answered 2026-10-12, see §3 items 9–11.
+- **The heart (A4):** after the fixes, does the animation read right? If not, what bothers you (the squeeze, the valves, the vessels, the colours)?
+- **Placement:** see `review/site-placement.md` (the beoptimal.ca scan), which proposes a home for every figure.
 - **Network:** with `beoptimal.ca`, `bici.cc` and `inbodycanada.ca` allowed (or locally), re-read the site pages directly instead of PDFs.
+- ~~Creator 600 screen size~~, ~~A3 vs A3b~~, ~~A1 look~~, ~~organ-piece approach~~: answered 2026-10-12, see §3.
 
 ## 5. Next steps (priority order)
 
-1. **Convert A1 (gut cell) and A5 (alveolus) to 3-D**, using the recipe in §6. A1 suits a block (a strip of gut lining: villi on top, cells on the front face). A5 suits a cut sphere or a block of lung tissue with the air sac opened.
-2. **Organ pieces (A2, A4, A6, A7):** these don't fit a block. Options, cheapest first:
-   - a short, deep slab under the flat drawing, giving a "specimen on a plate" look;
-   - shading the existing outlines with gradients and rim light to make them read as volumes;
-   - a true isometric rebuild (most work).
-
-   Ask Peter which he wants before doing more than one.
-3. **Re-run the full verification on A8 and A9** at 390 and 360 px; only 320 was captured after the 3-D change. Then refresh `review/contact-sheet.png`.
+1. **Peter's call on the heart (A4).** Then any round-4 changes.
+2. **Embeds on the site:** use the placement map (`review/site-placement.md`). Each figure ships `embed/optimal-fig-<slug>.js`, and NOTES.md has the snippet. The site repo (`BeOptimal/beoptimal-landing`) is a separate handoff.
+3. **Site copy fix:** the Creator 600 page says "32″ upright display"; it's about 50″ (§3 item 9).
 4. **Truth pass with the network open:** re-check the MEDIUM/LOW rows in `reference/truth-pack.md`.
 5. **Round-2 options still open** (BACKLOG.md):
    - Fig 2: an ECW/TBW scenario switch, partly covered by A8 now;
    - Fig 3: readout wording;
    - Fig 1: optional WebGL heat shimmer (at most one WebGL layer, and the SVG must read without it).
-6. **Embedding:** each figure ships `embed/optimal-fig-<slug>.js`; NOTES.md has the snippet. Give Peter the snippets for the pages he names.
+6. **Optional tidy-up:** A7's `drawFar()` predates `shared/round-back.js` and could move onto it (`chords()`), as A2, A4 and A6 already have.
 
-## 6. The 3-D recipe (A3b, A8, A9)
+## 6. The 3-D recipe
+
+### 6a. Tissue blocks (A1, A3, A5, A8, A9)
 
 - **Projection:** `k.fitProjection(BOUNDS3, 600, H, { pad, azimuth: 62, elevation: 24 })`, then `FB = figkit(PB)`. At azimuth 62° the front section stays almost face-on and still legible on a phone, and the top and right end show depth. At 30° the face is too foreshortened.
 - **World coordinates = section pixels:** x along the section, y back into the tissue, z up. A helper `W3(sx, y, sy) = [sx - X0, y, H - sy]` puts any section point on the plane at depth y.
@@ -105,6 +106,23 @@ Every figure folder holds:
   - both themes.
 
   The `--audit` check applies to kit solids only, not to these hand-drawn faces.
+- **A1 and A5 add:**
+  - real 3-D detail standing on a face: A1's 272 microvilli are capsules sorted by `k.depthOf`;
+  - faces that are exact sections of one 3-D structure: A5's Voronoi foam is cut by three planes with half-plane clipping, so air spaces meet across every edge.
+
+### 6b. Organs cut in half (A2, A4, A6, A7)
+
+What Peter approved on A7: the section is the cut face, the near half is gone, and **the far half keeps its round surface**. Do not extrude the outline at constant thickness; that read as "an unnatural slice".
+- **Cut face:** as in 6a: `planeMatrix(S3(0, DEP, 0), [1,0,0], [0,0,-1])`, where `S3(sx, y, sy) = [sx, y, -sy]` and the viewer is on the +y side. Clip it flat wherever the organ is cut across (A7's thigh at y = −14, A2's block).
+- **Back half: `shared/round-back.js`,** inlined into the page after the model. Build solves one unit of depth in the cut face's own coordinates (`WD1 = M⁻¹ · (iso(depth 1) − iso(origin))`) and passes `far: { w: WD1, A: 62, E: 24, dep: DEP }`.
+  - `rim(outline, { rho })`: a closed blob rolls back over a quarter-round, so a circle becomes a hemisphere (heart, spleen, bone, pituitary).
+  - `chords(edgeA, edgeB, { caps })`: paired edges become half-circles (a limb, a vessel), with optional half-ring cut ends.
+  - Facets facing away are culled, the rest shaded in 21 tones, and `paintObjects()` merges them per object and tone (about 100 paths a frame).
+  - Moving organs (A4, and A7 via its own `drawFar`) redraw it every frame. Static ones (A2, A6) draw it once at mount.
+- **Cut ends you can see:** draw them as textures on their plane, as real cross-sections (A7's thigh: femur ring and marrow, compartments, femoral vessels, sciatic nerve).
+- **Bounds:** fit the camera to what really shows (the outline plus its back half rolled 30° and 60°), not the back pole, or the figure shrinks.
+- **A piece that is cut-out tissue** (A2) is a block after all, with flat cut faces. Only what's naturally round (pituitary, stalk, nerve) gets round backs.
+
 
 ## 7. How a figure is built (unchanged)
 
@@ -119,6 +137,16 @@ Every figure folder holds:
 
 ## 8. Verify (definition of done)
 
+**One command per figure** (local session): builds both themes; checks line ends on both; takes phones at 390/360/320 in both themes (shot plus no-sideways-scroll check), reduced motion and desktop; requires a clean console on every run; prints a table.
+```bash
+source .env.chrome
+node scripts/verify.mjs a7-knee                                   # all checks, shots into figures/a7-knee/shots/
+node scripts/verify.mjs a7-knee --pre steps.json --tag swing --only desktop   # a second state (drive.mjs actions first)
+python3 scripts/contact-sheet.py                                  # review/contact-sheet.png from the Cream desktop shots
+```
+`--only 320` re-shoots with default timing. For figures whose curated shots show a particular state (A7 at peak force, A9 post-menopause), pass the same `--pre`.
+
+The manual steps, if you need them:
 ```bash
 cd figures/<folder> && source ../../.env.chrome
 node build.mjs && node build.mjs --light
@@ -143,3 +171,7 @@ Use `drive.mjs` for interaction (`click`, `wait`, `eval`, `shot`). Put anything 
 - **320 px:** monitor labels and legend text clip first. Check every new label at 320.
 - **Network (cloud):** PubMed, Crossref, Health Canada, beoptimal.ca, bici.cc and inbodycanada.ca returned 403 under the cloud policy; WebSearch worked. Locally this doesn't apply.
 - **The repo is public:** no patient data, no secrets, no real clinic financials. The VO₂ images in `reference/equipment/*-STOCK.*` are stock photos, not Optimal's equipment.
+- **planeMatrix's y axis points down the section:** `S3(0, DEP, +1)` is one unit *down*. A flipped sign sent A7's walls the wrong way.
+- **objectBoundingBox gradients seam** where two shapes with different boxes meet (A2's square-cut face over the brain outline). Use one `userSpaceOnUse` gradient for the whole face.
+- **`max(44px, min-content)` is invalid CSS:** math functions take no intrinsic keywords, so the rule is dropped silently. The theme now uses `min-width: min-content` (padding keeps buttons ≥ 44 px).
+- **A convex hull is too much smoothing for a back half:** it bridges notches between vessels with a flat flap. Average the outline instead (A4).

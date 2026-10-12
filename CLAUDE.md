@@ -32,6 +32,8 @@ Import the kit by relative path from a figure, e.g. `../../.claude/skills/anatom
 bash scripts/setup-cloud.sh                     # Node + headless Chrome check, prints CHROME_PATH
 node figures/01-menopause-thermostat/build.mjs  # dark; add --light, --audit
 node scripts/build-all.mjs                      # all figures -> dist/ + gallery index
+node scripts/verify.mjs <figure-dir>            # every check (phones 390/360/320 x 2 themes, reduced, desktop, lines) + shots
+python3 scripts/contact-sheet.py                # review/contact-sheet.png
 node .claude/skills/anatomy/scripts/capture.mjs <page.html> --out shots/x.png   # see references/verify.md
 ```
 
