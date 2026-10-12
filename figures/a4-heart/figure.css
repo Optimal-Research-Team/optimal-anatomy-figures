@@ -59,3 +59,32 @@
 .a4-front .a4-vessel-fill { stroke: none; }
 .a4-vessel-edge { fill: none; stroke: var(--a4-wall); stroke-width: 1.4; stroke-linejoin: round; }
 .a4-front .a4-lumen-cut { stroke: none; }
+
+/* round 4: the heart in 3-D: cut muscle, deep chambers, papillary muscles, 3-D leaflets, a vessel-lined back half */
+.iso.optimal { --a4-c0: #a9564d; --a4-c1: #7c3631; --a4-neck: #2c1012; --a4-fat: #b8963e; --a4-ridge-lit: rgba(255, 220, 210, 0.16); --a4-ridge-shade: rgba(0, 0, 0, 0.32); --a4-lumen-lit: rgba(255, 235, 228, 0.12); --a4-bar-in: #9ad38d; --a4-bar-out: #ffb86b; --a4-vol: #ff8b7b; }
+.iso.optimal[data-theme="light"] { --a4-c0: #eca898; --a4-c1: #d07f6d; --a4-neck: #8c4239; --a4-fat: #f2d27a; --a4-ridge-lit: rgba(255, 245, 240, 0.38); --a4-ridge-shade: rgba(90, 30, 25, 0.22); --a4-lumen-lit: rgba(255, 255, 255, 0.24); --a4-bar-in: #9ad38d; --a4-bar-out: #ffb86b; --a4-vol: #ff9a8b; }
+.a4-c0 { stop-color: var(--a4-c0); } .a4-c1 { stop-color: var(--a4-c1); }
+.a4-cut { stroke: var(--a4-edge); stroke-width: 1.6; }
+.a4-open-rim { fill: none; stroke: var(--a4-edge); stroke-width: 1.2; stroke-linejoin: round; opacity: 0.85; }
+.a4-annulus { fill: var(--a4-valve); stroke: var(--a4-valve-edge); stroke-width: 0.8; }
+.a4-annulus-ring { fill: none; stroke: var(--a4-valve); stroke-width: 3.2; stroke-linecap: round; opacity: 0.9; }
+.a4-neck { fill: var(--a4-neck); }
+.a4-ridge-shade { fill: none; stroke: var(--a4-ridge-shade); stroke-width: 4.2; stroke-linecap: round; stroke-linejoin: round; }
+.a4-ridge-lit { fill: none; stroke: var(--a4-ridge-lit); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.a4-leaf { stroke-linejoin: round; }
+.a4-leaf-edge { fill: none; stroke: var(--a4-valve-edge); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
+.a4-cell-deep { opacity: 0.5; }
+.a4-epi-fat { opacity: 0.88; }
+.a4-cor { fill: none; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+.a4-cor-edge { fill: none; stroke: rgba(0, 0, 0, 0.22); stroke-width: 5.2; stroke-linecap: round; stroke-linejoin: round; }
+.a4-cor-a { stroke-width: 2.6; }
+.a4-cor-edge.a4-cor-edge-a { stroke-width: 4.4; }
+.a4-lumen-lit { stroke: none; }
+.a4-lumen-lit-ven, .a4-lumen-lit-art { fill: var(--a4-lumen-lit); }
+.a4-mon-label { fill: var(--a4-ecg); font: 600 17px/1 var(--opt-ui); opacity: 0.85; }
+.a4-mon-num { fill: var(--a4-ecg); font: 500 17px/1 var(--opt-ui); font-variant-numeric: tabular-nums; }
+.a4-bar-track { fill: var(--a4-ecg-dim); opacity: 0.55; }
+.a4-bar-in { fill: var(--a4-bar-in); }
+.a4-bar-out { fill: var(--a4-bar-out); }
+.a4-vol { fill: none; stroke: var(--a4-vol); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.a4-vol-dot { fill: var(--a4-vol); }

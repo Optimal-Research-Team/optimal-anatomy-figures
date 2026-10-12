@@ -34,7 +34,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | A1 | Gut cell's gate | **Round 2 · 3-D block** (2026-10-12): brush border of 272 microvilli on top, cells cut on the right end, capillary half-tube | `a1-gut-cell` |
 | A2 | Hot-flash switch (hypothalamus) | **Round 3 · 3-D brain block** (2026-10-12): top cut at the thalamus, end cut, pituitary/stalk/chiasm/nerve/sella halved with round backs; treatment states as before | `a2-hypothalamus` |
 | A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
-| A4 | Beating heart | **Round 3 · 3-D, cut in half** (2026-10-12): back half round and beating (shared/round-back.js), vessels cut open with half-ring ends | `a4-heart` |
+| A4 | Beating heart | **Round 4 · 3-D heart** (2026-10-12, Peter: "make that much more three dimensional"): cavities with ridged walls, papillary muscles, chordae and 3-D leaflets, a vessel-lined back half, cells at depth with a filling swirl, and an ECG + LV volume + valve-timing monitor | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
 | A6 | Red cell's 120 days | **Round 3 · 3-D, cut in half** (2026-10-12): bone cut lengthwise, spleen cut open, arc and return as half-pipes, all with round backs | `a6-red-cell-cycle` |
 | A7 | Kneecap's load | **Round 2 · 3-D, leg cut in half** (2026-10-12): far half stays round (live), thigh cross-section on top. Peter: "way better, just do it like this", so it became the organ-piece approach | `a7-knee` |
@@ -67,11 +67,11 @@ Every figure folder holds:
 11. **A1: yes, convert to 3-D.**
 12. **A2, A4, A6 and A7 go 3-D too.** Pick the best approach from §5.2, build it on A7 (knee) first, and send screenshots. Wait for Peter's OK before converting A2, A4 and A6 the same way.
 13. **The organ approach is "cut in half, far half round."** A first try on A7, a constant-thickness slab, read as "an unnatural slice of some kind". The leg cut in half lengthwise, with the far half keeping its round skin and the thigh's cross-section on top, got "this is way better man just do it like this". A2 (as a brain block, since it's a piece of tissue cut out), A4 and A6 followed (§6b).
-14. **The heart animation "looks not great."** Fixed what a frame review found (aorta across the left atrium, arch seam, lumpy back half; see A4 NOTES). **Ask Peter whether it now reads right**, or what still bothers him: the beat itself (squeeze, valve timing) is unchanged from round 2.
+14. **The heart animation "looks not great", then "make that much more three dimensional … the animation needs more complexity".** Round 4 rebuilt everything behind the cut in true 3-D, with more motion and a richer monitor (A4 NOTES, round 4). Peter's verdict on round 4 is pending.
 
 ## 4. Open questions for Peter
 
-- **The heart (A4):** after the fixes, does the animation read right? If not, what bothers you (the squeeze, the valves, the vessels, the colours)?
+- **The heart (A4), round 4:** is this the 3-D you wanted? Anything to push further (twist of the ventricles, coronary detail, a pressure–volume loop with sourced pressures)?
 - **Placement:** see `review/site-placement.md` (the beoptimal.ca scan), which proposes a home for every figure.
 - **Network:** with `beoptimal.ca`, `bici.cc` and `inbodycanada.ca` allowed (or locally), re-read the site pages directly instead of PDFs.
 - ~~Creator 600 screen size~~, ~~A3 vs A3b~~, ~~A1 look~~, ~~organ-piece approach~~: answered 2026-10-12, see §3.

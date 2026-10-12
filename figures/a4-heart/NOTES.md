@@ -82,3 +82,49 @@ Checked for flicker: the back half is stable frame to frame (slowed contact shee
 - `lines.mjs`: 0.
 - Reduced motion draws one still mid-ejection.
 - Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (Rest), plus `shots/desktop-max-{dark,light}.png` (All out).
+
+## Round 4 (2026-10-12): a heart in real 3-D
+
+Peter: "the only thing that needs to be re-done is the heart. Can you make that much more three-dimensional, and therefore I guess the animation needs more complexity."
+
+The section is still the cut face (series camera, azimuth 62°, elevation 24°), and the beat model, timing and numbers are unchanged. Everything behind the cut is now built and lit in true depth, every frame, in `live.js`:
+- **Chambers are cavities.**
+  - Each opening on the cut face leads into a half-ellipsoid behind it (depth 0.5–0.82 × the chamber's mean radius; the right ventricle shallowest, since most of it lies in front of the cut).
+  - The inner walls are shaded by facing in 64 tones, tinted by the blood in each chamber.
+  - Muscle ridges run on the inner walls: trabeculae in both ventricles, pectinate muscles in the right atrium; the left atrium is smooth, as it is.
+  - Through an opening every point of the wall is seen once, so the facets merge by tone, clipped to the opening.
+- **Papillary muscles** are tapered 3-D columns standing up from the ventricle floors: one in the right ventricle, two in the left.
+- **Chordae tendineae** run in 3-D from each column's tip to the free edges of the leaflets.
+- **AV valves (tricuspid, mitral) in 3-D.**
+  - The annulus crosses the cut at its two ends and continues behind it as a half-ring.
+  - Two leaflets hang from it: open, their free edges drop along the ventricle wall; shut, they meet in the middle with a belly toward the atrium.
+  - They swing with the model's valve state, and the scalloped free edge is outlined.
+  - The orifice behind them is shaded in its chamber's own tone.
+- **Cut muscle:** a separate cut-surface gradient, distinct from the round outer wall, with fibre lines and rim lines round every opening. Cut fibrous rings mark the annulus ends.
+- **Back half:**
+  - the round outer wall (0.92 × the distance from the centre, 9 bands);
+  - epicardial fat in the left AV groove, with a marginal artery and its vein on the visible left border;
+  - the great vessels' half-tubes behind them.
+  - The descending aorta now runs **behind** the heart, under its back half: it is posterior. On the cut plane it had hidden the heart's round right side.
+- **Vessels on the cut:** wall bands, blood, and the lit far wall of each half-pipe.
+- **Motion** (more going on, all from the beat model):
+  - the base drops toward the apex;
+  - the walls thicken and the cavities shrink in depth as well as across;
+  - the atria squeeze and refill;
+  - leaflets swing open and dome shut;
+  - the papillary muscles shorten with the ventricles;
+  - blood cells move **at their own depths** inside the cavities, so they shift against each other with parallax and fade with depth;
+  - filling **swirls** in each ventricle (inflow curls down the free wall and back along the septum; drawn, not measured), then streams to the outflow valve.
+  - Cells now leave through the vessels' cut ends rather than past them.
+- **Monitor (a simplified Wiggers diagram):** the ECG, the left ventricle's volume (the model's `V`, with the current value in ml), and bars showing when the filling valves (mitral, tricuspid) and outflow valves (aortic, pulmonary) are open, all scrolling together. No new numbers.
+- **Caption:** adds the chordae ("so the valves hold shut instead of blowing back"), the monitor, and "the chambers' depth, the muscle ridges and the swirl … are drawn, not measured".
+- **Performance:** 60 fps in headless Chrome at 390 px.
+
+### Verification (round 4)
+
+- `node scripts/verify.mjs a4-heart`: passed.
+- No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
+- `lines.mjs`: 0.
+- Reduced motion draws one still mid-ejection, with the traces filled in.
+- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png`, `shots/desktop-max-{dark,light}.png` and `shots/reduced-390-*.png`.
+- One beat, slowed, frame by frame: `review/a4-beat-sheet.png`.

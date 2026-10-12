@@ -47,7 +47,7 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 
 Recipe: HANDOFF-LOCAL §6a (tissue blocks) and §6b (organs cut in half, `shared/round-back.js`). Contact sheet: `review/contact-sheet.png` (`python3 scripts/contact-sheet.py`).
 
-**Open after the conversion:** Peter's verdict on the heart's animation (A4), and moving A7's `drawFar()` onto `shared/round-back.js`.
+**Open after the conversion:** Peter's verdict on the round-4 heart (A4), and moving A7's `drawFar()` onto `shared/round-back.js`.
 
 ## Round-2 options already raised
 

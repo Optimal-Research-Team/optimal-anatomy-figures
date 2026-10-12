@@ -43,8 +43,9 @@ const geo = {
   LAin: [412, 196],
   PAPR: [236, 418],
   PAPL: [[376, 432], [422, 424]],
-  PULout: [[[284, 142], [404, 128], [440, 132]], [[284, 142], [196, 116], [140, 120]]],
-  AORout: [[[338, 120], [356, 72], [410, 52], [452, 70], [470, 112], [478, 160]], [[338, 120], [356, 72], [376, 58], [372, 0]], [[338, 120], [356, 72], [408, 50], [412, -4]]],
+  // cells leave through the vessels' cut ends, never past them
+  PULout: [[[284, 142], [362, 120], [398, 127]], [[284, 142], [196, 116], [156, 120]]],
+  AORout: [[[338, 120], [356, 72], [410, 52], [452, 70], [470, 112], [478, 160]], [[338, 120], [356, 72], [376, 58], [373, 18]], [[338, 120], [356, 72], [408, 50], [411, 14]]],
 };
 // ---------------------------------------------------------------- the camera: the cut face in the A-series view
 // World: x = section x, y = toward the viewer (the cut is the plane y = DEP), z = up (−section y).
@@ -74,8 +75,16 @@ const ey = k.iso(S3(0, DEP, 1), PB).map((v, i) => v - o2[i]);
 const b1 = k.iso(S3(0, DEP - 1, 0), PB).map((v, i) => v - o2[i]);
 const det = ex[0] * ey[1] - ey[0] * ex[1];
 const WD1 = [(b1[0] * ey[1] - ey[0] * b1[1]) / det, (ex[0] * b1[1] - b1[0] * ex[1]) / det].map((v) => +v.toFixed(4));
-const ECG = { x0: 40, w: 520, y: Math.ceil(HEART_BOTTOM + 52), h: 34, span: 2.2 };
-const VH = ECG.y + 24;
+// the monitor: ECG, the left ventricle's volume, and when the valves are open (all from the beat model)
+const MT = Math.ceil(HEART_BOTTOM + 16);
+const MON = {
+  top: MT, x0: 168, w: 392, span: 2.4,
+  ecg: { y: MT + 44, h: 28 },
+  vol: { y: MT + 112, h: 48, lo: 15, hi: 145 },
+  inR: { y: MT + 128, h: 9 },
+  outR: { y: MT + 146, h: 9 },
+};
+const VH = MT + 170 + 6;
 const LINES = [
   "Resting: about one beat a second, most of it spent filling.",
   "Walking briskly: faster beats, and each beat empties more fully.",
@@ -83,42 +92,58 @@ const LINES = [
   "All out, about the top rate for a 45-year-old: little time to fill, but each beat is near its biggest.",
 ];
 
-const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" aria-label="The heart cut open front to back and seen in 3-D, beating; the back half keeps its round outer wall. Oxygen-poor blood (blue) comes in through the venae cavae to the right atrium, passes the tricuspid valve into the right ventricle and leaves through the pulmonary valve for the lungs. Oxygen-rich blood (red) returns through the pulmonary veins to the left atrium, passes the mitral valve into the thick-walled left ventricle and leaves through the aortic valve into the aorta. An ECG trace runs underneath.">
+const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" aria-label="The heart cut open front to back and seen in 3-D, beating: deep chambers with ridged walls, papillary muscles and cords holding the valve leaflets, and a round back half lined with its own vessels. Oxygen-poor blood (blue) comes in through the venae cavae to the right atrium, passes the tricuspid valve into the right ventricle and leaves through the pulmonary valve for the lungs. Oxygen-rich blood (red) returns through the pulmonary veins to the left atrium, passes the mitral valve into the thick-walled left ventricle and leaves through the aortic valve into the aorta. A monitor underneath runs the ECG, the left ventricle's volume and when the valves are open.">
 <defs>
   <radialGradient id="a4-muscle" cx="38%" cy="34%" r="72%"><stop offset="0" class="a4-m0"/><stop offset="0.65" class="a4-m1"/><stop offset="1" class="a4-m2"/></radialGradient>
   <radialGradient id="a4-glow-g" cx="50%" cy="50%" r="50%"><stop offset="0" class="a4-g0"/><stop offset="1" class="a4-g1"/></radialGradient>
 </defs>
+<g transform="${FRONT_M}"><g data-part="behind"></g><g data-v="desc"></g></g>
 <g transform="${FRONT_M}"><g class="a4-far" data-part="far"></g></g>
 <g class="a4-front" transform="${FRONT_M}">
-<ellipse data-part="glow" class="a4-glow" cx="312" cy="350" rx="230" ry="215" fill="url(#a4-glow-g)"/>
-<clipPath id="a4-muscleclip"><path data-part="outerClip"/></clipPath>
-<g data-v="rpa"></g><g data-v="pv"></g><g data-v="ivc"></g><g data-v="desc"></g><g data-v="svc"></g>
-<path class="a4-muscle" data-part="outer" fill="url(#a4-muscle)"/>
-<g clip-path="url(#a4-muscleclip)"><path class="a4-fibre" data-part="fibres"/></g>
-<path class="a4-ven a4-pool" data-part="ra"/><path class="a4-ven a4-pool" data-part="rv"/>
-<path class="a4-art a4-pool" data-part="la"/><path class="a4-art a4-pool" data-part="lv"/>
-<path class="a4-chordae" data-part="chordae"/>
-<path class="a4-pap" data-part="pap"/>
+<defs>
+  <mask id="a4-cutmask" maskUnits="userSpaceOnUse" x="-200" y="-200" width="1000" height="1000"><rect x="-200" y="-200" width="1000" height="1000" fill="#fff"/><path data-part="holes" fill="#000"/></mask>
+  <clipPath id="a4-muscleclip"><path data-part="outerClip"/></clipPath>
+  <clipPath id="a4-clipRA"><path data-part="clipRA"/></clipPath><clipPath id="a4-clipLA"><path data-part="clipLA"/></clipPath>
+  <clipPath id="a4-clipRV"><path data-part="clipRV"/></clipPath><clipPath id="a4-clipLV"><path data-part="clipLV"/></clipPath>
+  <radialGradient id="a4-cutg" gradientUnits="userSpaceOnUse" cx="300" cy="300" r="260"><stop offset="0" class="a4-c0"/><stop offset="1" class="a4-c1"/></radialGradient>
+</defs>
+<g data-v="rpa"></g><g data-v="pv"></g><g data-v="ivc"></g><g data-v="svc"></g>
+<g class="a4-cav" data-part="cav"></g>
+<g mask="url(#a4-cutmask)">
+  <path class="a4-cut" data-part="outer" fill="url(#a4-cutg)"/>
+  <g clip-path="url(#a4-muscleclip)"><path class="a4-fibre" data-part="fibres"/></g>
+</g>
+<path class="a4-open-rim" data-part="rims"/>
+<path class="a4-annulus" data-part="annuli"/>
 <path class="a4-valve" data-part="valves"/>
 <g data-v="branches"></g><g data-v="aorta"></g><g data-v="pt"></g>
-<path class="a4-cell a4-cell-ven" data-part="cellsR"/><path class="a4-pal a4-pal-ven" data-part="palR"/>
-<path class="a4-cell a4-cell-art" data-part="cellsL"/><path class="a4-pal a4-pal-art" data-part="palL"/>
+<path class="a4-cell a4-cell-ven" data-part="vcellsR"/><path class="a4-cell a4-cell-art" data-part="vcellsL"/>
 </g>
-<rect class="a4-ecg-bg" x="${ECG.x0 - 16}" y="${ECG.y - 44}" width="${ECG.w + 32}" height="60" rx="8"/>
-<path class="a4-ecg-base" d="M${ECG.x0} ${ECG.y}H${ECG.x0 + ECG.w}"/>
+<g class="a4-mon">
+<rect class="a4-ecg-bg" x="24" y="${MON.top}" width="552" height="170" rx="10"/>
+<text class="a4-mon-label" x="40" y="${MON.ecg.y - 6}">ECG</text>
+<text class="a4-mon-label" x="40" y="${MON.vol.y - 26}">Left ventricle</text>
+<text class="a4-mon-num" x="40" y="${MON.vol.y - 4}" data-part="volnow">120 ml</text>
+<text class="a4-mon-label" x="40" y="${MON.inR.y + 9}">Valves in</text>
+<text class="a4-mon-label" x="40" y="${MON.outR.y + 9}">Valves out</text>
+<path class="a4-ecg-base" d="M${MON.x0} ${MON.ecg.y}H${MON.x0 + MON.w}M${MON.x0} ${MON.vol.y}H${MON.x0 + MON.w}M${MON.x0} ${MON.vol.y - MON.vol.h}H${MON.x0 + MON.w}"/>
+<path class="a4-bar-track" d="M${MON.x0} ${MON.inR.y}H${MON.x0 + MON.w}V${MON.inR.y + MON.inR.h}H${MON.x0}ZM${MON.x0} ${MON.outR.y}H${MON.x0 + MON.w}V${MON.outR.y + MON.outR.h}H${MON.x0}Z"/>
+<path class="a4-bar-in" data-part="barIn"/><path class="a4-bar-out" data-part="barOut"/>
+<path class="a4-vol" data-part="vol"/><circle class="a4-vol-dot" data-part="voldot" r="3.2"/>
 <path class="a4-ecg" data-part="ecg"/><circle class="a4-ecg-dot" data-part="ecgdot" r="3"/>
+</g>
 </svg>`;
 
-const DATA = { geo, ecg: ECG, lines: LINES, far: { w: WD1, A: 62, E: 24, dep: DEP } };
+const DATA = { geo, mon: MON, lines: LINES, far: { w: WD1, A: 62, E: 24, dep: DEP } };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const v60 = M.volumesOf(60);
 const v176 = M.volumesOf(176);
 const CAPTION = [
-  `Each beat starts with a small squeeze of the two upper chambers, the atria. Then the two lower chambers, the ventricles, contract together: the valves between upper and lower chambers snap shut, pressure builds, and the outflow valves open. The right side sends oxygen-poor blood (blue) to the lungs; the thick-walled left side sends oxygen-rich blood (red) to the whole body.`,
+  `Each beat starts with a small squeeze of the two upper chambers, the atria. Then the two lower chambers, the ventricles, contract together: the valves between upper and lower chambers snap shut, pressure builds, and the outflow valves open. The right side sends oxygen-poor blood (blue) to the lungs; the thick-walled left side sends oxygen-rich blood (red) to the whole body. Cords inside the ventricles (chordae) tie the valve leaflets to small muscles in the walls, so the valves hold shut instead of blowing back into the atria. The monitor below tracks the ECG, the left ventricle's volume and when each set of valves is open.`,
   `At rest, about ${Math.round(v60.sv)} ml leaves each ventricle per beat, ${v60.co.toFixed(1)} litres a minute. Flat out, the heart beats about three times as often and empties more fully with each beat, so its output rises to roughly ${Math.round(v176.co)} litres a minute. That is the delivery side of VO₂max.`,
-  `<small>Typical adult values (end of filling ≈ 120 ml, end of ejection ≈ 50 ml at rest); individual hearts differ. Blue and red follow the textbook convention: venous blood is dark red, not blue. As the ventricles squeeze, the valve plane is pulled toward the tip of the heart, which draws blood into the atria at the same time. The ECG is a drawing timed to the beat.</small>`,
+  `<small>Typical adult values (end of filling ≈ 120 ml, end of ejection ≈ 50 ml at rest); individual hearts differ. Blue and red follow the textbook convention: venous blood is dark red, not blue. As the ventricles squeeze, the valve plane is pulled toward the tip of the heart, which draws blood into the atria at the same time. The ECG is a drawing timed to the beat. The chambers' depth, the muscle ridges and the swirl of blood as the left ventricle fills are drawn, not measured.</small>`,
 ]
   .map((p) => `<span class="a4-par">${p}</span>`)
   .join("");
