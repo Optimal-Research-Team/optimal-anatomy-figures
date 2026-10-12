@@ -1,6 +1,6 @@
 # A4 · The beating heart
 
-**What it is:** the heart cut open from the front, beating. Hand-drawn organic SVG in A1's style, redrawn every frame from a small beat model through one deformation field:
+**What it is:** the heart cut open front to back and seen in isometric 3-D (round 3, 2026-10-12), beating. Hand-drawn organic SVG in A1's style, redrawn every frame from a small beat model through one deformation field:
 - the chambers squeeze toward their middles;
 - the walls thicken;
 - the valve plane is pulled toward the apex as the ventricles empty;
@@ -55,3 +55,23 @@ This brings the finish up to A2/A5/A6. The model, timing and numbers are unchang
 
 1. **Placement:** VO₂max page (next to Fig 5), the Performance package, or both?
 2. **Rhythm:** add a "trained athlete" option (resting rate 45–50, a bigger beat)? It would need a source for athletes' stroke volume.
+
+## Round 3 (2026-10-12): cut in half, back half round (the A7 approach)
+
+Peter's decision: every A-piece goes 3-D. Peter approved the A7 approach ("this is way better, just do it like this"): the organ cut in half, with the far half kept round.
+- **Cut face:** the original front section, placed with `planeMatrix` in the series camera (azimuth 62°, elevation 24°). The chambers, valves, chordae, cells and glow all still draw in section coordinates.
+- **Back half (live, `drawBack()` with `shared/round-back.js`):**
+  - **Heart wall:** each frame, the heart's beating outline is rolled back over a quarter-round of 0.9 × its distance from the centre, so a round outline becomes a hemisphere. Facing facets are shaded between the muscle tones, so the back wall beats with the cut face.
+  - **Great vessels:** each becomes a half-tube behind its cut.
+  - **Cut ends** (venae cavae, pulmonary vessels, arch branches, descending aorta) show as half-rings: the wall, with the blood inside.
+- **Vessels on the cut face are now cut open:** a pale wall band each side and blood down the middle, in the chamber pools' colours. The round-1 sheen and the flat end ellipses are gone, because they showed whole tubes.
+- **Frame:** fitted to the heart and its vessels plus the back half's reach. The ECG sits flat underneath, and the view is 600 × 666.
+- **Cost:** facets are merged per object and per tone (21 tones), so a frame is about 100 paths.
+
+## Verification (2026-10-12, round 3, local)
+
+- `node scripts/verify.mjs a4-heart`: passed.
+- No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
+- `lines.mjs`: 0.
+- Reduced motion draws one still mid-ejection.
+- Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (Rest), plus `shots/desktop-max-{dark,light}.png` (All out).

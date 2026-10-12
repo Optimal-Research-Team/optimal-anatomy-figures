@@ -1,4 +1,5 @@
-// A4 live code: the heart cut open, beating at the chosen rate. Everything is redrawn from the
+// A4 live code: the heart cut open front to back, beating at the chosen rate. The back half's round
+// wall and the vessels' half-tubes are redrawn each frame behind the cut (shared/round-back.js). Everything is redrawn from the
 // beat model each frame through one deformation field: the chambers squeeze toward their middles,
 // the walls thicken, and the valve plane is pulled down toward the apex as the ventricles empty.
 const DATA = __DATA__;
@@ -61,50 +62,55 @@ function mount(fig) {
     const pts = [...L, ...R.reverse()];
     return `M${pts.map((p) => `${f1(p[0])} ${f1(p[1])}`).join("L")}Z`;
   }
-  /** A vessel: tube, a sheen on the side facing the light (upper left), and cut ends showing the lumen. */
+  /** A vessel, cut open lengthwise like the heart: a wall band each side, the lumen (blood) down the middle.
+   *  Its back half and any cut ends (capA, capB) are drawn in 3-D behind the cut (drawBack). */
+  const tubes = []; // this frame's vessels, for their back halves
   function vessel(name, list, cls) {
     let h = "";
     for (const [pts, w0, w1, capA, capB] of list) {
-      const c = curve(pts);
-      const wAt = (i) => w0 + (w1 - w0) * (i / (c.length - 1));
-      const nAt = (i) => {
-        const a = c[Math.max(0, i - 1)];
-        const b = c[Math.min(c.length - 1, i + 1)];
-        const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-        return [-(b[1] - a[1]) / l, (b[0] - a[0]) / l];
-      };
-      let side = 0;
-      c.forEach((_, i) => {
-        const n = nAt(i);
-        side += -n[0] - n[1];
-      });
-      side = side >= 0 ? 1 : -1;
-      const i0 = Math.floor(c.length * 0.06);
-      const i1 = Math.ceil(c.length * 0.94);
-      let sh = "";
-      for (let i = i0; i < i1; i++) {
-        const n = nAt(i);
-        const o = side * wAt(i) * 0.24;
-        sh += `${sh ? "L" : "M"}${f1(c[i][0] + n[0] * o)} ${f1(c[i][1] + n[1] * o)}`;
-      }
-      h += `<path class="a4-${cls} a4-vessel" d="${tube(pts, w0, w1)}"/><path class="a4-sheen" d="${sh}" style="stroke-width:${f1(Math.min(w0, w1) * 0.2)}px"/>`;
-      for (const [on, i, w] of [[capA, 0, w0], [capB, c.length - 1, w1]]) {
-        if (!on) continue;
-        const n = nAt(i);
-        const ang = ((Math.atan2(n[1], n[0]) * 180) / Math.PI).toFixed(0);
-        const e = (k) => {
-          const a = (w / 2) * k;
-          const b = a * 0.36;
-          return `M${f1(c[i][0] - n[0] * a)} ${f1(c[i][1] - n[1] * a)}A${f1(a)} ${f1(b)} ${ang} 1 0 ${f1(c[i][0] + n[0] * a)} ${f1(c[i][1] + n[1] * a)}A${f1(a)} ${f1(b)} ${ang} 1 0 ${f1(c[i][0] - n[0] * a)} ${f1(c[i][1] - n[1] * a)}Z`;
-        };
-        h += `<path class="a4-cap a4-cap-${cls}" d="${e(1)}"/><path class="a4-lumen a4-lumen-${cls}" d="${e(0.68)}"/>`;
-      }
+      tubes.push({ pts, w0, w1, cls, caps: [capA, capB] });
+      h += `<path class="a4-${cls} a4-vessel" d="${tube(pts, w0, w1)}"/><path class="a4-lumen a4-lumen-${cls} a4-lumen-cut" d="${tube(pts, w0 * 0.7, w1 * 0.7)}"/>`;
     }
     q(`[data-v="${name}"]`).innerHTML = h;
   }
   const centroid = (pts) => pts.reduce((a, p) => [a[0] + p[0] / pts.length, a[1] + p[1] / pts.length], [0, 0]);
   const C = { RA: centroid(G.RA), LA: centroid(G.LA), RV: centroid(G.RV), LV: centroid(G.LV), V: [320, 392] };
   const FIB = { lv: G.LV.filter((p) => p[1] > G.AVY + 16), rv: G.RV.slice(0, 6) };
+
+  // ---------------------------------------------------------------- the back half (behind the cut)
+  const RB = roundBack(DATA.far);
+  const mixc = (c, to, t) => c.map((v, i) => Math.round(v + (to[i] - v) * t));
+  const TONES = {
+    heart: [RB.rgbOf(fig, "--a4-m2", "#b0604f"), RB.rgbOf(fig, "--a4-m0", "#e7a594")],
+    ven: ((c) => [mixc(c, [0, 0, 0], 0.45), mixc(c, [255, 255, 255], 0.25)])(RB.rgbOf(fig, "--a4-ven", "#8892cc")),
+    art: ((c) => [mixc(c, [0, 0, 0], 0.45), mixc(c, [255, 255, 255], 0.25)])(RB.rgbOf(fig, "--a4-art", "#dc6656")),
+  };
+  // a cut end: the wall as a pale ring, the blood inside in the same colour as the chambers
+  const LUMEN = { ven: `rgb(${RB.rgbOf(fig, "--a4-ven", "#8892cc").join(",")})`, art: `rgb(${RB.rgbOf(fig, "--a4-art", "#dc6656").join(",")})` };
+  const WALL = `rgb(${RB.rgbOf(fig, "--a4-vwall", "#f3d9cf").join(",")})`;
+  function drawBack(outline) {
+    const closed = RB.sampleClosed(outline, 1, 6);
+    const ring = RB.byLength([...closed, closed[0]], 73).slice(0, -1);
+    const cx = ring.reduce((a, p) => a + p[0], 0) / ring.length;
+    const cy = ring.reduce((a, p) => a + p[1], 0) / ring.length;
+    const objects = [RB.rim(ring, { rho: (p) => 0.9 * Math.hypot(p[0] - cx, p[1] - cy), nphi: 8, tones: TONES.heart })];
+    for (const t of tubes) {
+      const c = RB.byLength(curve(t.pts), 18);
+      const Ae = [];
+      const Be = [];
+      c.forEach((p, i) => {
+        const a = c[Math.max(0, i - 1)];
+        const b = c[Math.min(c.length - 1, i + 1)];
+        const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        const n = [-(b[1] - a[1]) / l, (b[0] - a[0]) / l];
+        const w = (t.w0 + (t.w1 - t.w0) * (i / (c.length - 1))) / 2;
+        Ae.push([p[0] + n[0] * w, p[1] + n[1] * w]);
+        Be.push([p[0] - n[0] * w, p[1] - n[1] * w]);
+      });
+      objects.push(RB.chords(Ae, Be, { round: 1, nphi: 12, tones: TONES[t.cls], caps: t.caps || [false, false], capFill: WALL, lumenFill: LUMEN[t.cls] }));
+    }
+    q('[data-part="far"]').innerHTML = RB.paintObjects(objects);
+  }
 
   // ---------------------------------------------------------------- the deformation field
   let def = { d: 0, sV: 1, sA: 1, sO: 1 };
@@ -237,7 +243,9 @@ function mount(fig) {
     const contr = Math.min(1, Math.max(0, (b.edv - b.V) / (b.edv - b.esv)));
     def = { d: 15 * contr, sV, sA: b.A, sO: 1 - 0.22 * (1 - sV) };
     const sA = 0.78 + 0.22 * b.A;
-    set('[data-part="outer"]', smooth(outer()));
+    tubes.length = 0;
+    const outline = outer();
+    set('[data-part="outer"]', smooth(outline));
     set('[data-part="ra"]', smooth(cav(G.RA, C.RA, sA)));
     set('[data-part="la"]', smooth(cav(G.LA, C.LA, sA)));
     set('[data-part="rv"]', smooth(cav(G.RV, C.RV, sV)));
@@ -277,6 +285,7 @@ function mount(fig) {
     }
     // a soft glow as the ventricles squeeze
     q('[data-part="glow"]').setAttribute("opacity", (0.15 + 0.5 * contr).toFixed(2));
+    drawBack(outline);
   }
 
   // ---------------------------------------------------------------- state, input, tour

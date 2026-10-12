@@ -1,6 +1,8 @@
 // A4 · The beating heart (anatomical series).
 //
-// The heart cut open from the front: right atrium and ventricle (oxygen-poor blood, blue),
+// The heart cut open front to back, in isometric 3-D: the front half is taken away, the cut face
+// shows the chambers, and the back half keeps its round outer wall (and each great vessel its
+// half-tube), redrawn live so it beats with the rest. On the cut face: right atrium and ventricle (oxygen-poor blood, blue),
 // left atrium and the thick-walled left ventricle (oxygen-rich, red), the four valves with
 // their chordae and papillary muscles, the great vessels and the arch's three branches. The
 // page redraws it every frame from the beat model: chambers squeeze, walls thicken, the valve
@@ -12,13 +14,13 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
+import { figkit, k } from "../../shared/figkit.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
 const SLUG = "heart";
 const W = 600;
-const H = 640;
 
 // ---------------------------------------------------------------- geometry (front view; the person's right is on the viewer's left)
 const geo = {
@@ -44,7 +46,36 @@ const geo = {
   PULout: [[[284, 142], [404, 128], [440, 132]], [[284, 142], [196, 116], [140, 120]]],
   AORout: [[[338, 120], [356, 72], [410, 52], [452, 70], [470, 112], [478, 160]], [[338, 120], [356, 72], [376, 58], [372, 0]], [[338, 120], [356, 72], [408, 50], [412, -4]]],
 };
-const ECG = { x0: 40, w: 520, y: 600, h: 34, span: 2.2 };
+// ---------------------------------------------------------------- the camera: the cut face in the A-series view
+// World: x = section x, y = toward the viewer (the cut is the plane y = DEP), z = up (−section y).
+const DEP = 200;
+const S3 = (sx, y, sy) => [sx, y, -sy];
+const RAD = Math.PI / 180;
+const cen = geo.OUT.reduce((a, p) => [a[0] + p[0] / geo.OUT.length, a[1] + p[1] / geo.OUT.length], [0, 0]);
+// what the cut face reaches: the heart's outline and every vessel (centrelines ± half their width)
+const VESSEL_PTS = [[158, -12], [166, 60], [84, 384], [108, 330], [470, 110], [494, 470], [356, 72], [410, 52], [452, 70], [376, 60], [372, 14], [412, 8], [456, 18], [284, 140], [404, 128], [150, 120], [566, 168], [566, 214]];
+const BOUNDS3 = [...geo.OUT, ...VESSEL_PTS.flatMap(([x, y]) => [[x - 20, y - 20], [x + 20, y + 20]])].map(([x, y]) => S3(x, DEP, y));
+// the far half's rim can reach beyond the outline: bound it with the outline rolled back 30° and 60°
+geo.OUT.forEach((p, i, a) => {
+  const pr = a[(i - 1 + a.length) % a.length];
+  const nx = a[(i + 1) % a.length];
+  const l = Math.hypot(nx[0] - pr[0], nx[1] - pr[1]) || 1;
+  const n = [(nx[1] - pr[1]) / l, -(nx[0] - pr[0]) / l];
+  const rho = 0.9 * Math.hypot(p[0] - cen[0], p[1] - cen[1]);
+  for (const ph of [30, 60]) BOUNDS3.push(S3(p[0] - n[0] * (1 - Math.cos(ph * RAD)) * rho, DEP - Math.sin(ph * RAD) * rho * 0.95, p[1] - n[1] * (1 - Math.cos(ph * RAD)) * rho));
+});
+const PB = k.fitProjection(BOUNDS3, W, 600, { pad: 10, azimuth: 62, elevation: 24 });
+const HEART_BOTTOM = Math.max(...BOUNDS3.map((p) => k.iso(p, PB)[1]));
+const FB = figkit(PB);
+const FRONT_M = FB.planeMatrix(S3(0, DEP, 0), [1, 0, 0], [0, 0, -1]);
+const o2 = k.iso(S3(0, DEP, 0), PB);
+const ex = k.iso(S3(1, DEP, 0), PB).map((v, i) => v - o2[i]);
+const ey = k.iso(S3(0, DEP, 1), PB).map((v, i) => v - o2[i]);
+const b1 = k.iso(S3(0, DEP - 1, 0), PB).map((v, i) => v - o2[i]);
+const det = ex[0] * ey[1] - ey[0] * ex[1];
+const WD1 = [(b1[0] * ey[1] - ey[0] * b1[1]) / det, (ex[0] * b1[1] - b1[0] * ex[1]) / det].map((v) => +v.toFixed(4));
+const ECG = { x0: 40, w: 520, y: Math.ceil(HEART_BOTTOM + 52), h: 34, span: 2.2 };
+const VH = ECG.y + 24;
 const LINES = [
   "Resting: about one beat a second, most of it spent filling.",
   "Walking briskly: faster beats, and each beat empties more fully.",
@@ -52,11 +83,13 @@ const LINES = [
   "All out, about the top rate for a 45-year-old: little time to fill, but each beat is near its biggest.",
 ];
 
-const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="The heart cut open from the front, beating. Oxygen-poor blood (blue) comes in through the venae cavae to the right atrium, passes the tricuspid valve into the right ventricle and leaves through the pulmonary valve for the lungs. Oxygen-rich blood (red) returns through the pulmonary veins to the left atrium, passes the mitral valve into the thick-walled left ventricle and leaves through the aortic valve into the aorta. An ECG trace runs underneath.">
+const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" aria-label="The heart cut open front to back and seen in 3-D, beating; the back half keeps its round outer wall. Oxygen-poor blood (blue) comes in through the venae cavae to the right atrium, passes the tricuspid valve into the right ventricle and leaves through the pulmonary valve for the lungs. Oxygen-rich blood (red) returns through the pulmonary veins to the left atrium, passes the mitral valve into the thick-walled left ventricle and leaves through the aortic valve into the aorta. An ECG trace runs underneath.">
 <defs>
   <radialGradient id="a4-muscle" cx="38%" cy="34%" r="72%"><stop offset="0" class="a4-m0"/><stop offset="0.65" class="a4-m1"/><stop offset="1" class="a4-m2"/></radialGradient>
   <radialGradient id="a4-glow-g" cx="50%" cy="50%" r="50%"><stop offset="0" class="a4-g0"/><stop offset="1" class="a4-g1"/></radialGradient>
 </defs>
+<g transform="${FRONT_M}"><g class="a4-far" data-part="far"></g></g>
+<g class="a4-front" transform="${FRONT_M}">
 <ellipse data-part="glow" class="a4-glow" cx="312" cy="350" rx="230" ry="215" fill="url(#a4-glow-g)"/>
 <clipPath id="a4-muscleclip"><path data-part="outerClip"/></clipPath>
 <g data-v="rpa"></g><g data-v="pv"></g><g data-v="ivc"></g><g data-v="desc"></g><g data-v="svc"></g>
@@ -70,14 +103,15 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${H}" role="img" aria
 <g data-v="branches"></g><g data-v="aorta"></g><g data-v="pt"></g>
 <path class="a4-cell a4-cell-ven" data-part="cellsR"/><path class="a4-pal a4-pal-ven" data-part="palR"/>
 <path class="a4-cell a4-cell-art" data-part="cellsL"/><path class="a4-pal a4-pal-art" data-part="palL"/>
+</g>
 <rect class="a4-ecg-bg" x="${ECG.x0 - 16}" y="${ECG.y - 44}" width="${ECG.w + 32}" height="60" rx="8"/>
 <path class="a4-ecg-base" d="M${ECG.x0} ${ECG.y}H${ECG.x0 + ECG.w}"/>
 <path class="a4-ecg" data-part="ecg"/><circle class="a4-ecg-dot" data-part="ecgdot" r="3"/>
 </svg>`;
 
-const DATA = { geo, ecg: ECG, lines: LINES };
+const DATA = { geo, ecg: ECG, lines: LINES, far: { w: WD1, A: 62, E: 24, dep: DEP } };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
 const v60 = M.volumesOf(60);
 const v176 = M.volumesOf(176);

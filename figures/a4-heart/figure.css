@@ -48,3 +48,11 @@
 .a4-par { display: block; margin-top: 6px; }
 .a4-par:first-child { margin-top: 0; }
 .a4-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+
+/* round 2: cut open front to back; vessels show wall bands and blood, the back half rounds away behind */
+.iso.optimal { --a4-vwall: #a8695f; }
+.iso.optimal[data-theme="light"] { --a4-vwall: #f3d9cf; }
+.a4-front .a4-vessel { fill: var(--a4-vwall); }
+.a4-front .a4-lumen-cut.a4-lumen-ven { fill: var(--a4-ven); }
+.a4-front .a4-lumen-cut.a4-lumen-art { fill: var(--a4-art); }
+.a4-lumen-cut { stroke: var(--a4-wall); stroke-width: 0.5; stroke-opacity: 0.5; }

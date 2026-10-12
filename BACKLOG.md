@@ -41,7 +41,8 @@ Each piece is done when it meets the same bar as HANDOFF §2, adapted:
 | A1 | done: gut-lining block (brush border on top, cells on the end face), 2026-10-12 |
 | A5 | done: lung-tissue block with the air sac opened (2026-10-12) |
 | A7 | done: leg cut in half lengthwise (cut face + round far half drawn live + thigh cross-section on top), 2026-10-12. The flat-walled slab try read as "an unnatural slice" |
-| A2, A4, A6 | same slab approach once Peter OKs A7 |
+| A4 | done: heart cut in half, back half round and beating, vessels cut open (2026-10-12) |
+| A2, A6 | next: same approach (Peter OK'd A7: "just do it like this") |
 
 Recipe: HANDOFF-LOCAL §6.
 

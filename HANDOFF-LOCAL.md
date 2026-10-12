@@ -34,7 +34,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | A1 | Gut cell's gate | **Round 2 · 3-D block** (2026-10-12): brush border of 272 microvilli on top, cells cut on the right end, capillary half-tube | `a1-gut-cell` |
 | A2 | Hot-flash switch (hypothalamus) | Built; **treatment states added**: Hormone therapy / Non-hormonal (class names only) | `a2-hypothalamus` |
 | A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
-| A4 | Beating heart | Built, round 2 (flat, organ) | `a4-heart` |
+| A4 | Beating heart | **Round 3 · 3-D, cut in half** (2026-10-12): back half round and beating (shared/round-back.js), vessels cut open with half-ring ends | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
 | A6 | Red cell's 120 days | Built (flat, a loop diagram) | `a6-red-cell-cycle` |
 | A7 | Kneecap's load | **Round 2 · 3-D, leg cut in half** (2026-10-12): far half stays round (live), thigh cross-section on top. The organ-piece approach, **waiting on Peter's OK** before A2/A4/A6 | `a7-knee` |
