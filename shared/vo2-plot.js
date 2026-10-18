@@ -1,5 +1,5 @@
 // The tablet's live screen for the VO₂ figures (inlined into the page after the kit).
-// Plots oxygen uptake (ml/kg/min) against the test's work (watts on a bike, km/h on a treadmill),
+// Plots oxygen uptake (mL/kg/min) against the test's work (watts on a bike, km/h on a treadmill),
 // with a dashed guide for the shared slope, the live trace, the current point, the ceiling once
 // it shows, and the big VO₂ number with a breath marker.
 function vo2Plot(host, screen, { xMin = 0, xMax, yMax = 60, xTicks, yTicks = [20, 40, 60], guide, xLabel }) {
@@ -24,7 +24,7 @@ function vo2Plot(host, screen, { xMin = 0, xMax, yMax = 60, xTicks, yTicks = [20
   for (const v of yTicks) el("text", { class: "vp-tick", x: (px(xMin) - 0.5).toFixed(2), y: (py(v) + 0.5).toFixed(2), "font-size": 1.5, "text-anchor": "end" }).textContent = String(v);
   el("text", { class: "vp-unit", x: px(xMax).toFixed(2), y: (py(0) - 0.8).toFixed(2), "font-size": 1.5, "text-anchor": "end" }).textContent = xLabel;
   const big = el("text", { class: "vp-big", x: 1.6, y: 4.3, "font-size": 3.6 });
-  el("text", { class: "vp-unit", x: 12.4, y: 4.3, "font-size": 1.6 }).textContent = "ml/kg/min VO₂";
+  el("text", { class: "vp-unit", x: 12.4, y: 4.3, "font-size": 1.6 }).textContent = "mL/kg/min VO₂";
   const breath = el("circle", { class: "vp-breath", cx: screen.w - 2.4, cy: 2.8, r: 0.8 });
   const ceil = el("path", { class: "vp-ceiling" });
   const trace = el("path", { class: "vp-trace" });

@@ -550,7 +550,7 @@ function mount(fig) {
     const vd = q('[data-part="voldot"]');
     vd.setAttribute("cx", f1(MON.x0 + MON.w));
     vd.setAttribute("cy", f1(MON.vol.y - ((last[2] - MON.vol.lo) / (MON.vol.hi - MON.vol.lo)) * MON.vol.h));
-    q('[data-part="volnow"]').textContent = `${Math.round(last[2])} ml`;
+    q('[data-part="volnow"]').textContent = `${Math.round(last[2])} mL`;
   }
 
   // ---------------------------------------------------------------- one frame
@@ -792,7 +792,7 @@ function mount(fig) {
     hr = HEART.rates[i];
     const v = volumesOf(hr);
     out.hr.textContent = `${hr} bpm`;
-    out.sv.textContent = `${Math.round(v.sv)} ml`;
+    out.sv.textContent = `${Math.round(v.sv)} mL`;
     out.co.textContent = `${v.co.toFixed(1)} L/min`;
     line.textContent = DATA.lines[i];
     buttons.forEach((b, j) => {

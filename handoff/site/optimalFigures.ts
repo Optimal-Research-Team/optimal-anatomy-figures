@@ -24,7 +24,7 @@ export const FIGURE_RESERVE: Record<
   'menopause-thermostat': { phone: 1061, desktop: 1166 },
   'inbody-580': { phone: 1172, desktop: 1190 },
   'iv-iron': { phone: 1039, desktop: 1047 },
-  'creator-600': { phone: 1175, desktop: 1351 },
+  'creator-600': { phone: 1188, desktop: 1351 },
   vo2max: { phone: 1195, desktop: 1300 },
   'vo2max-treadmill': { phone: 1223, desktop: 1405 },
   'gut-cell': { phone: 1066, desktop: 1287 },

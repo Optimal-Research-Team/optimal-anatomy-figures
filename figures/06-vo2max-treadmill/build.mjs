@@ -178,7 +178,7 @@ const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileS
 
 const T45 = M.runTestOf(45);
 const CAPTION = [
-  `On a treadmill ramp the belt speeds up a little every few seconds while you run. At a 1 % incline each extra 1 km/h costs about 3.5 ml of oxygen per kilogram each minute, the same for everyone, so oxygen use climbs in a straight line, a little behind the speed, until the heart and muscles can't deliver or use any more. That ceiling is VO₂max. A fitter body reaches a higher ceiling and a faster belt, but climbs the same slope.`,
+  `On a treadmill ramp the belt speeds up a little every few seconds while you run. At a 1 % incline each extra 1 km/h costs about 3.5 mL of oxygen per kilogram each minute, the same for everyone, so oxygen use climbs in a straight line, a little behind the speed, until the heart and muscles can't deliver or use any more. That ceiling is VO₂max. A fitter body reaches a higher ceiling and a faster belt, but climbs the same slope.`,
   `The analyser on the mask measures every breath, how much air goes out and how much oxygen it has lost, and sends it wirelessly to the assessor's tablet. You run freely, with nothing tethering you to a cart.`,
   `Running usually gives a higher VO₂max than cycling, because more muscle is working: in a large registry, treadmill values averaged about 22 % above bike values. Compare a treadmill result with treadmill norms.`,
   `<small>A typical pattern for one modelled person (45 years, 75 kg), not a prediction. The oxygen cost of running is the standard equation for a typical runner; yours differs a little with running economy. Many people stop before a clear plateau; their top value is called VO₂peak. Heart rates are typical for age and vary by 10 bpm or more.</small>`,
@@ -193,9 +193,9 @@ const body = plate({
   stats: [
     { key: "v", label: "Speed", value: `${T45.s0.toFixed(1)} km/h` },
     { key: "hr", label: "Heart rate", value: "133 bpm" },
-    { key: "vo2", label: "VO₂", value: "28.8 ml/kg/min" },
+    { key: "vo2", label: "VO₂", value: "28.8 mL/kg/min" },
   ],
-  controls: [{ name: "ceiling", label: "VO₂max ceiling, ml/kg/min", options: M.RUN.ceilings.map((c) => ({ value: String(c), label: `${c}`, pressed: c === 45 })) }],
+  controls: [{ name: "ceiling", label: "VO₂max ceiling, mL/kg/min", options: M.RUN.ceilings.map((c) => ({ value: String(c), label: `${c}`, pressed: c === 45 })) }],
   keys: [
     { mark: "lit", label: "The mask's analyser, blinking each breath" },
     { mark: "raised", label: "The belt, speeding up" },

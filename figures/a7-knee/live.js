@@ -239,7 +239,7 @@ function mount(fig) {
   function readout(quiet) {
     const p = PCTS[at];
     const c = cadenceOf(p);
-    out.cad.textContent = `${Math.round(c)} /min`;
+    out.cad.textContent = `${Math.round(c)}/min`;
     out.step.textContent = `${stepOf(c).toFixed(2)} m`;
     out.pf.textContent = `${Math.round(100 * kneeOf(c))}%`;
     line.textContent = DATA.lines[at];

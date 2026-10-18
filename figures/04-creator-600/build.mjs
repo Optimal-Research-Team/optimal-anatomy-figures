@@ -230,7 +230,7 @@ const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSO
 const SCRIPT = `${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
 const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8");
 
-const pc = (v) => `${Math.round(v * 100)} %`;
+const pc = (v) => `${Math.round(v * 100)}%`;
 const CAPTION = [
   `At a steady 10 km/h, step length is simply speed divided by cadence. Taking 10 % more steps per minute makes each step about 9 % shorter, so the heel lands closer under the body and the body bounces less. In a lab study of 30 healthy runners, modelling showed that a 10 % higher step rate lowered the peak force behind the kneecap by about 14 % per step, and a 10 % lower rate raised it by about 15 %.`,
   `The Creator 600 sees a run the way this drawing does: a depth camera under the screen tracks the joints and reports cadence, step length, bounce and vertical ratio. Its knee and hip load rating is the machine's own estimate from that tracking, not a force measurement.`,
@@ -238,25 +238,25 @@ const CAPTION = [
 ]
   .map((p) => `<span class="cr-par">${p}</span>`)
   .join("");
-const presets = [["-10", "−10 %"], ["0", "Your usual"], ["5", "+5 %"], ["10", "+10 %"]];
+const presets = [["-10", "−10%"], ["0", "Your usual"], ["5", "+5%"], ["10", "+10%"]];
 const body = plate({
   fig: "Fig 4",
   title: "The runner rig",
-  hint: "Drag or tap to change cadence",
+  hint: "Drag or tap to change step rate",
   stats: [
-    { key: "spm", label: "Cadence", value: `${M.TRUTH.cadence0} spm` },
+    { key: "spm", label: "Step rate", value: `${M.TRUTH.cadence0}/min` },
     { key: "step", label: "Step", value: `${M.stepOf(M.TRUTH.cadence0).toFixed(2)} m` },
-    { key: "ratio", label: "Vertical ratio", value: `${M.ratioOf(M.TRUTH.cadence0).toFixed(1)} %` },
-    { key: "knee", label: "Kneecap load", value: pc(1) },
+    { key: "ratio", label: "Vertical ratio", value: `${M.ratioOf(M.TRUTH.cadence0).toFixed(1)}%` },
+    { key: "knee", label: "Kneecap force", value: pc(1) },
   ],
-  controls: [{ name: "preset", label: "Cadence change", options: presets.map(([value, label]) => ({ value, label, pressed: value === "0" })) }],
+  controls: [{ name: "preset", label: "Step-rate change", options: presets.map(([value, label]) => ({ value, label, pressed: value === "0" })) }],
   keys: [
     { mark: "lit", label: "Tracking dots on the joints" },
-    { mark: "heat", label: "Kneecap load, each landing" },
+    { mark: "heat", label: "Kneecap force, each landing" },
     { mark: "raised", label: "Plumb, landing ruler and bounce gauge" },
   ],
   caption: CAPTION,
-  body: `<div class="iso-stage cr-stage" tabindex="0" role="slider" aria-label="Cadence at 10 km/h. Left and right arrows change it by 1 step per minute, Page Up and Down by 5." aria-valuemin="${Math.round(M.cadenceOf(-10))}" aria-valuemax="${Math.round(M.cadenceOf(10))}" aria-valuenow="${M.TRUTH.cadence0}" aria-valuetext="${M.TRUTH.cadence0} steps per minute">${svg}</div><div class="cr-scrub"><span class="cr-end" aria-hidden="true">${Math.round(M.cadenceOf(-10))}</span><input type="range" class="cr-range" min="${M.cadenceOf(-10).toFixed(1)}" max="${M.cadenceOf(10).toFixed(1)}" step="0.5" value="${M.TRUTH.cadence0}" aria-label="Cadence, steps per minute"><span class="cr-end" aria-hidden="true">${Math.round(M.cadenceOf(10))}</span><button type="button" class="cr-slow" data-slow aria-pressed="false">Slow</button></div><span class="cr-sr" role="status" aria-live="polite" data-status></span>`,
+  body: `<div class="iso-stage cr-stage" tabindex="0" role="slider" aria-label="Step rate at 10 km/h. Left and right arrows change it by 1 step per minute, Page Up and Down by 5." aria-valuemin="${Math.round(M.cadenceOf(-10))}" aria-valuemax="${Math.round(M.cadenceOf(10))}" aria-valuenow="${M.TRUTH.cadence0}" aria-valuetext="${M.TRUTH.cadence0} steps per minute">${svg}</div><div class="cr-scrub"><span class="cr-end" aria-hidden="true">${Math.round(M.cadenceOf(-10))}</span><input type="range" class="cr-range" min="${M.cadenceOf(-10).toFixed(1)}" max="${M.cadenceOf(10).toFixed(1)}" step="0.5" value="${M.TRUTH.cadence0}" aria-label="Step rate, steps per minute"><span class="cr-end" aria-hidden="true">${Math.round(M.cadenceOf(10))}</span><button type="button" class="cr-slow" data-slow aria-pressed="false">Slow</button></div><span class="cr-sr" role="status" aria-live="polite" data-status></span>`,
 });
 const out = THEME === "light" ? `${SLUG}-light.html` : `${SLUG}.html`;
 writeFileSync(join(HERE, out), page({ title: "The runner rig", theme: THEME, body, css: CSS, script: SCRIPT }));

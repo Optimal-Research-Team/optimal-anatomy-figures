@@ -174,13 +174,13 @@ function mount(fig) {
     const sc = DATA.scenes[i];
     gate = sc.gate;
     target = activeOf(gate);
-    out.gate.textContent = `${Math.round(gate * 100)} % open`;
+    out.gate.textContent = `${Math.round(gate * 100)}% open`;
     sceneLine.textContent = sc.line;
     buttons.forEach((b, j) => {
       b.setAttribute("aria-checked", j === i ? "true" : "false");
       b.tabIndex = j === i ? 0 : -1;
     });
-    if (!quiet) status.textContent = `${buttons[i].textContent}: gut gate ${Math.round(gate * 100)} % open, ${target} of ${DATA.SLOTS} ferroportin channels working.`;
+    if (!quiet) status.textContent = `${buttons[i].textContent}: gut gate ${Math.round(gate * 100)}% open, ${target} of ${DATA.SLOTS} ferroportin channels working.`;
   }
   function renderStill() {
     // one frame: the gates already settled for this scene, iron on its way in and out, a hepcidin docking

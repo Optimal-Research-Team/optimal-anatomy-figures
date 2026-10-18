@@ -3,13 +3,13 @@
 //
 // At 75 bpm a beat lasts 0.8 s: about 0.3 s of ventricular systole and 0.5 s of diastole;
 // as the rate rises, diastole shortens much more than systole [A4-1][A4-2]. Left ventricle
-// 120 ml at the end of filling, 50 ml at the end of ejection (stroke volume 70 ml, EF ≈ 58 %)
-// [A4-1]; in hard exercise stroke volume rises toward ≈ 120 ml as filling rises and emptying
+// 120 mL at the end of filling, 50 mL at the end of ejection (stroke volume 70 mL, EF ≈ 58 %)
+// [A4-1]; in hard exercise stroke volume rises toward ≈ 120 mL as filling rises and emptying
 // deepens [A4-2]. Maximum heart rate for a 45-year-old: 208 − 0.7 × 45 ≈ 176 bpm [16].
 export const HEART = {
   rates: [60, 100, 140, 176],
   rest: { edv: 120, esv: 50 },
-  hard: { edv: 135, esv: 22 }, // SV 113 ml at full effort (LOW: inside the "toward 120" range)
+  hard: { edv: 135, esv: 22 }, // SV 113 mL at full effort (LOW: inside the "toward 120" range)
   systole75: 0.3, // s at 75 bpm [A4-1]
   atrial75: 0.1, //  s, atrial contraction just before ventricular systole (LOW: textbook)
   ivc: 0.05, //      s, isovolumic contraction (LOW)

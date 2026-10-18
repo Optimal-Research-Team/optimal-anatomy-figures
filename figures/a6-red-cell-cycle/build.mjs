@@ -8,7 +8,7 @@
 // spleen, where a macrophage eats them and stores the iron as ferritin or hands it to
 // transferrin, which carries it back under the arc to the marrow. After an IV iron dose the
 // macrophage's stores fill within days (ferritin), but the arc only fills with new, fuller cells
-// at the pace cells are made (haemoglobin): two clocks. Driven by Fig 3's model.
+// at the pace cells are made (hemoglobin): two clocks. Driven by Fig 3's model.
 //
 //   node build.mjs | --light
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -212,7 +212,7 @@ const ticks = [30, 60, 90, 120]
   })
   .join("");
 
-// ---------------------------------------------------------------- the monitor: ferritin and haemoglobin over 8 weeks
+// ---------------------------------------------------------------- the monitor: ferritin and hemoglobin over 8 weeks
 // ---------------------------------------------------------------- the camera: the cut face in the A-series view
 // World: x = section x, y = toward the viewer (the cut is the plane y = DEP), z = up (−section y).
 const DEP = 160;
@@ -253,7 +253,7 @@ const weekTicks = [0, 14, 28, 42, 56].map((d, i) => `<path class="a6-axis" d="M$
 const monitor = `<g class="a6-mon">
 <rect class="a6-mon-bg" x="${MON.box[0]}" y="${MON.box[1]}" width="${MON.box[2]}" height="${MON.box[3]}" rx="12"/>
 <text class="a6-mlabel a6-mlabel-fer" x="${MON.x0}" y="${MON.fer.y1 - 6}">Ferritin (stores)</text>
-<text class="a6-mlabel a6-mlabel-hb" x="${MON.x0}" y="${MON.hb.y1 - 6}">Haemoglobin</text>
+<text class="a6-mlabel a6-mlabel-hb" x="${MON.x0}" y="${MON.hb.y1 - 6}">Hemoglobin</text>
 <path class="a6-axis" d="M${MON.x0} ${MON.fer.y0}H${MON.x1}M${MON.x0} ${MON.hb.y0}H${MON.x1}"/>
 ${weekTicks}
 <path class="a6-trace-ghost a6-fer" data-part="ferGhost"/><path class="a6-trace a6-fer" data-part="ferLine"/>
@@ -263,7 +263,7 @@ ${weekTicks}
 </g>`;
 
 // ---------------------------------------------------------------- the picture
-const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 ${VH}" role="img" aria-label="The red cell's life as a loop, drawn in 3-D with the bone and the spleen cut open. On the left, bone marrow makes red cells on small islands around a nurse cell. New cells leave and ride an arc across the top that stands for their 120-day life, older cells further along. On the right, in the spleen, a large macrophage eats the oldest cells and stores their iron as ferritin or hands it to transferrin, which carries it back under the arc to the marrow. A monitor underneath plots ferritin and haemoglobin over eight weeks.">
+const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 ${VH}" role="img" aria-label="The red cell's life as a loop, drawn in 3-D with the bone and the spleen cut open. On the left, bone marrow makes red cells on small islands around a nurse cell. New cells leave and ride an arc across the top that stands for their 120-day life, older cells further along. On the right, in the spleen, a large macrophage eats the oldest cells and stores their iron as ferritin or hands it to transferrin, which carries it back under the arc to the marrow. A monitor underneath plots ferritin and hemoglobin over eight weeks.">
 <defs>
   <radialGradient id="a6-marrow" cx="45%" cy="45%" r="70%"><stop offset="0" class="a6-mr0"/><stop offset="1" class="a6-mr1"/></radialGradient>
   <radialGradient id="a6-pulp" cx="55%" cy="45%" r="70%"><stop offset="0" class="a6-sp0"/><stop offset="1" class="a6-sp1"/></radialGradient>
@@ -300,8 +300,8 @@ ${monitor}
 </svg>`;
 
 const LINES = [
-  "Untreated iron deficiency: the marrow is short of iron, so it makes too little haemoglobin and the cells come out small and pale. The spleen's stores are nearly empty.",
-  "After IV iron: macrophages soak up the dose within days and their stores (ferritin) jump. New, fuller cells appear in about a week, but the arc of 120-day-old cells is replaced only as fast as the marrow works, so haemoglobin climbs over weeks.",
+  "Untreated iron deficiency: the marrow is short of iron, so it makes too little hemoglobin and the cells come out small and pale. The spleen's stores are nearly empty.",
+  "After IV iron: macrophages soak up the dose within days and their stores (ferritin) jump. New, fuller cells appear in about a week, but the arc of 120-day-old cells is replaced only as fast as the marrow works, so hemoglobin climbs over weeks.",
 ];
 const DATA = { far: { w: WD1, A: 62, E: 24, dep: DEP, bone: BONE, spleen: SPLEEN }, S, arc: ARC, ret: RET, mac: MAC, gran: GRAN, sinus: sinus.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]), mon: MON, lines: LINES, islands: ISLANDS };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
@@ -311,7 +311,7 @@ const ferPeak = Math.max(...fer);
 const ferPeakDay = fer.indexOf(ferPeak) * STEP;
 const CAPTION = [
   `A red cell lives about 120 days. Bone marrow makes about two million a second; when they wear out, macrophages, mostly in the spleen and liver, eat them and recycle the iron, about 20–25 mg a day in a typical adult, far more than the 1–2 mg the gut absorbs. Iron leaves the macrophage on transferrin and goes back to the marrow.`,
-  `That's why ferritin and haemoglobin run on different clocks after IV iron. The macrophages take up the dose within days, so ferritin (a measure of stores) jumps, peaking around day ${Math.round(ferPeakDay)} in this model. Haemoglobin rises only as the marrow turns iron into new cells, over the next four to eight weeks, which is why bloodwork is rechecked at 6–8 weeks.`,
+  `That's why ferritin and hemoglobin run on different clocks after IV iron. The macrophages take up the dose within days, so ferritin (a measure of stores) jumps, peaking around day ${Math.round(ferPeakDay)} in this model. Hemoglobin rises only as the marrow turns iron into new cells, over the next four to eight weeks, which is why bloodwork is rechecked at 6–8 weeks.`,
   `<small>A typical pattern for one modelled woman (Hb ${PARAMS.hb0} g/L, ferritin ${PARAMS.ferritin0} µg/L, ${PARAMS.ivMg} mg IV), from Fig 3's model; not a prediction for any person. Ferritin reads high for weeks after IV iron, so it isn't a reliable store measure in that window. The cells are drawn far fewer and larger than life; one drawn cell stands for a normal day's output. Time runs at about two days a second.</small>`,
 ]
   .map((p) => `<span class="a6-par">${p}</span>`)
@@ -323,7 +323,7 @@ const body = plate({
   stats: [
     { key: "day", label: "Day", value: "—" },
     { key: "fer", label: "Ferritin", value: `${PARAMS.ferritin0} µg/L` },
-    { key: "hb", label: "Haemoglobin", value: `${PARAMS.hb0} g/L` },
+    { key: "hb", label: "Hemoglobin", value: `${PARAMS.hb0} g/L` },
   ],
   controls: [{ name: "mode", label: "Treatment", options: [["none", "Untreated"], ["iv", "IV iron"]].map(([value, label], i) => ({ value, label, pressed: i === 0 })) }],
   keys: [

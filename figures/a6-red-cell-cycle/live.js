@@ -1,7 +1,7 @@
 // A6 live code: every drawn red cell is one normal day's output, placed on the arc by its age.
 // Birth days come from inverting madeBy() (cumulative production from Fig 3's model), so after
 // IV iron the cells crowd closer and fuller from the marrow end at exactly the pace the model's
-// haemoglobin rises. The spleen macrophage's ferritin granules follow the model's ferritin.
+// hemoglobin rises. The spleen macrophage's ferritin granules follow the model's ferritin.
 const DATA = __DATA__;
 
 function mount(fig) {
@@ -210,7 +210,7 @@ function mount(fig) {
       el.setAttribute("cx", f1(treated ? cx : xOf(MON.d1)));
       el.setAttribute("cy", f1(y));
     }
-    out.day.textContent = treated ? (t < 0 ? `${Math.floor(t)} (before)` : `${Math.floor(t)}`) : "—";
+    out.day.textContent = treated ? (t < 0 ? `−${-Math.floor(t)} (before)` : `${Math.floor(t)}`) : "—";
     out.fer.textContent = `${Math.round(fer)} µg/L`;
     out.hb.textContent = `${Math.round(hbOf(t))} g/L`;
   }

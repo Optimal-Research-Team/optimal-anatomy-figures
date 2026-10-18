@@ -204,7 +204,7 @@ function mount(fig) {
     } else nodes.pill.innerHTML = "";
     const gatePct = Math.round(g * 100);
     out.day.textContent = day < 3 ? day.toFixed(1) : String(Math.floor(day));
-    out.gate.textContent = `${gatePct} % open`;
+    out.gate.textContent = `${gatePct}% open`;
     out.fer.textContent = `${Math.round(fer)} µg/L`;
     out.hb.textContent = `${Math.round(hb)} g/L`;
     weekLabel.textContent = `Week ${Math.floor(day / 7)}`;
@@ -215,7 +215,7 @@ function mount(fig) {
     const s = SIM[mode];
     const name = mode === "daily" ? "Daily pills" : mode === "alternate" ? "Pills every other day" : "One IV infusion";
     const day = Math.floor(t / 24);
-    stage.setAttribute("aria-valuetext", `${name}, day ${day}: gut gate ${Math.round(sample(s.gate, t) * 100)} % open, ferritin ${Math.round(sample(s.ferritin, t))}, haemoglobin ${Math.round(sample(s.hb, t))} grams per litre`);
+    stage.setAttribute("aria-valuetext", `${name}, day ${day}: gut gate ${Math.round(sample(s.gate, t) * 100)}% open, ferritin ${Math.round(sample(s.ferritin, t))}, hemoglobin ${Math.round(sample(s.hb, t))} grams per litre`);
   };
 
   function tick(now) {

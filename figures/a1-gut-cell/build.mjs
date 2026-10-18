@@ -270,7 +270,7 @@ const body = plate({
   title: "The gut cell's gate",
   hint: "Pick a moment · watch the gates",
   stats: [
-    { key: "gate", label: "Gut gate", value: pct(SCENES[0].gate) + " open" },
+    { key: "gate", label: "Gut gate", value: `${Math.round(SCENES[0].gate * 100)}% open` },
     { key: "fpn", label: "Ferroportin working", value: `${M.activeOf(SCENES[0].gate)} of ${M.SLOTS}` },
   ],
   controls: [{ name: "scene", label: "Moment", options: SCENES.map((s, i) => ({ value: s.key, label: s.label, pressed: i === 0 })) }],

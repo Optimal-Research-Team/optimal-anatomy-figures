@@ -246,9 +246,9 @@ const body = plate({
   title: "The kneecap's load",
   hint: "Pick a step rate · shown 4× slower",
   stats: [
-    { key: "cad", label: "Step rate", value: `${c0} /min` },
+    { key: "cad", label: "Step rate", value: `${c0}/min` },
     { key: "step", label: "Step length", value: `${F4.stepOf(c0).toFixed(2)} m` },
-    { key: "pf", label: "Peak kneecap force", value: "100%" },
+    { key: "pf", label: "Kneecap force", value: "100%" },
   ],
   controls: [{ name: "rate", label: "Step rate", options: PCTS.map((p, i) => ({ value: String(p), label: p === 0 ? "Usual" : `${p > 0 ? "+" : "−"}${Math.abs(p)}%`, pressed: i === 1 })) }],
   keys: [

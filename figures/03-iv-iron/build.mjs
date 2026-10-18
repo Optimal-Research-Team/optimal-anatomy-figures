@@ -200,7 +200,7 @@ const svg = k.figureSvg({
   width: W,
   height: H,
   label:
-    "A rail yard for iron. At the back: the gut dock, where pills drop into a hopper and a boom gate (ferroportin) lets absorbed iron out; the ferritin silo, the body's store, with its own export gate and a sight glass showing how full it is; and the marrow press, which stamps red discs and counts haemoglobin. Transferrin carts, each able to carry two iron ingots, run a loop in front. A hepcidin dial beside the dock sets both gates. An IV tanker drives up the back road straight to the silo.",
+    "A rail yard for iron. At the back: the gut dock, where pills drop into a hopper and a boom gate (ferroportin) lets absorbed iron out; the ferritin silo, the body's store, with its own export gate and a sight glass showing how full it is; and the marrow press, which stamps red discs and counts hemoglobin. Transferrin carts, each able to carry two iron ingots, run a loop in front. A hepcidin dial beside the dock sets both gates. An IV tanker drives up the back road straight to the silo.",
   body: [...back, ...groups, `<g data-part="booms"></g>`, `<g data-part="carts"></g>`, `<g data-part="pill"></g>`, `<path class="iso-line" data-tone="hi" data-part="needle" data-free="" d="" style="stroke-width:1.1"/>`, `<g data-part="rider"></g>`],
 });
 
@@ -227,8 +227,8 @@ const D = Object.fromEntries(M.MODES.map((m) => [m, M.daily(m)]));
 const r0 = (v) => Math.round(v);
 const CAPTION = [
   `Hepcidin is the body's iron gatekeeper: it closes the export gates (ferroportin) on gut cells and on the cells that store iron. A pill of 60 mg of iron or more raises hepcidin for about a day, so the next day's pill is absorbed roughly 35–45 % less. That's why some people take pills every other day. Pills still work and are the right first step for many people.`,
-  `IV iron skips the gut gate: the infusion is taken up by the storage cells, which then hand iron to transferrin, the body's carts (each carries at most two iron atoms), for the marrow to build red cells. In this model, one 1000 mg infusion lifts ferritin to about ${r0(Math.max(...D.iv.map((d) => d.ferritin)))} µg/L within a week, settling near ${r0(D.iv[49].ferritin)} by week 7, while haemoglobin rises from ${M.PARAMS.hb0} to about ${r0(D.iv[56].hb)} g/L by week 8; on daily pills, haemoglobin also rises but ferritin stays near ${r0(D.daily[56].ferritin)}.`,
-  `<small>A typical pattern for one modelled woman (65 kg, starting Hb ${M.PARAMS.hb0} g/L, ferritin ${M.PARAMS.ferritin0} µg/L), not a prediction. Your NP confirms yours with bloodwork, rechecked at 6–8 weeks; ferritin reads high for a few weeks after an infusion. Dose depends on weight and haemoglobin, and some people need a second infusion.</small>`,
+  `IV iron skips the gut gate: the infusion is taken up by the storage cells, which then hand iron to transferrin, the body's carts (each carries at most two iron atoms), for the marrow to build red cells. In this model, one 1000 mg infusion lifts ferritin to about ${r0(Math.max(...D.iv.map((d) => d.ferritin)))} µg/L within a week, settling near ${r0(D.iv[49].ferritin)} by week 7, while hemoglobin rises from ${M.PARAMS.hb0} to about ${r0(D.iv[56].hb)} g/L by week 8; on daily pills, hemoglobin also rises but ferritin stays near ${r0(D.daily[56].ferritin)}.`,
+  `<small>A typical pattern for one modelled woman (65 kg, starting Hb ${M.PARAMS.hb0} g/L, ferritin ${M.PARAMS.ferritin0} µg/L), not a prediction. Your NP confirms yours with bloodwork, rechecked at 6–8 weeks; ferritin reads high for a few weeks after an infusion. Dose depends on weight and hemoglobin, and some people need a second infusion.</small>`,
 ]
   .map((p) => `<span class="fe-par">${p}</span>`)
   .join("");
@@ -238,9 +238,9 @@ const body = plate({
   hint: "Pick a route · drag the days · space to play",
   stats: [
     { key: "day", label: "Day", value: "0" },
-    { key: "gate", label: "Gut gate", value: "97 % open" },
+    { key: "gate", label: "Gut gate", value: "97% open" },
     { key: "fer", label: "Ferritin", value: `${M.PARAMS.ferritin0} µg/L` },
-    { key: "hb", label: "Hb", value: `${M.PARAMS.hb0} g/L` },
+    { key: "hb", label: "Hemoglobin", value: `${M.PARAMS.hb0} g/L` },
   ],
   controls: [{ name: "mode", label: "Route", options: [["daily", "Daily pills"], ["alternate", "Alternate days"], ["iv", "IV infusion"]].map(([value, label], i) => ({ value, label, pressed: i === 0 })) }],
   keys: [

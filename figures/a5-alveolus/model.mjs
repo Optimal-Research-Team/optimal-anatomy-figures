@@ -8,7 +8,7 @@ export const LUNG = {
   PA: 100, //          mmHg, alveolar oxygen
   transitRest: 0.75, // s at rest [A5-1]
   equil: 0.25, //      s to reach the alveolar value (within ≈ 1 mmHg) [A5-1][A5-2]
-  p50: 26.8, hill: 2.7, // oxygen–haemoglobin curve (standard adult values; LOW in this pack)
+  p50: 26.8, hill: 2.7, // oxygen–hemoglobin curve (standard adult values; LOW in this pack)
   states: [
     // cardiac output from A4; venous PO₂ falls as muscles extract more (LOW, typical)
     { key: "rest", label: "Rest", co: 4.2, pv: 40, f: 14, tv: 0.5 },
@@ -22,5 +22,5 @@ export const transitOf = (co) => LUNG.transitRest * (LUNG.states[0].co / co) ** 
 const tau = LUNG.equil / Math.log(60); // 60 mmHg gap closed to 1 mmHg by `equil`
 /** Oxygen pressure in a red cell t seconds after it reaches the air sac. */
 export const po2At = (t, pv) => LUNG.PA - (LUNG.PA - pv) * Math.exp(-Math.max(0, t) / tau);
-/** Haemoglobin saturation for an oxygen pressure (Hill curve). */
+/** Hemoglobin saturation for an oxygen pressure (Hill curve). */
 export const satOf = (p) => p ** LUNG.hill / (p ** LUNG.hill + LUNG.p50 ** LUNG.hill);

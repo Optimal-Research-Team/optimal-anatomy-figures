@@ -153,7 +153,7 @@ const svg = `<svg class="iso-svg a4-svg" viewBox="0 0 ${W} ${VH}" role="img" ari
 <rect class="a4-ecg-bg" x="24" y="${MON.top}" width="552" height="170" rx="10"/>
 <text class="a4-mon-label" x="40" y="${MON.ecg.y - 6}">ECG</text>
 <text class="a4-mon-label" x="40" y="${MON.vol.y - 26}">Left ventricle</text>
-<text class="a4-mon-num" x="40" y="${MON.vol.y - 4}" data-part="volnow">120 ml</text>
+<text class="a4-mon-num" x="40" y="${MON.vol.y - 4}" data-part="volnow">120 mL</text>
 <text class="a4-mon-label" x="40" y="${MON.inR.y + 9}">Valves in</text>
 <text class="a4-mon-label" x="40" y="${MON.outR.y + 9}">Valves out</text>
 <path class="a4-ecg-base" d="M${MON.x0} ${MON.ecg.y}H${MON.x0 + MON.w}M${MON.x0} ${MON.vol.y}H${MON.x0 + MON.w}M${MON.x0} ${MON.vol.y - MON.vol.h}H${MON.x0 + MON.w}"/>
@@ -174,8 +174,8 @@ const v60 = M.volumesOf(60);
 const v176 = M.volumesOf(176);
 const CAPTION = [
   `Each beat starts with a small squeeze of the two upper chambers, the atria. Then the two lower chambers, the ventricles, contract together: the valves between upper and lower chambers snap shut, pressure builds, and the outflow valves open. The right side sends oxygen-poor blood (blue) to the lungs; the thick-walled left side sends oxygen-rich blood (red) to the whole body. Cords inside the ventricles (chordae) tie the valve leaflets to small muscles in the walls, so the valves hold shut instead of blowing back into the atria. The monitor below tracks the ECG, the left ventricle's volume and when each set of valves is open.`,
-  `At rest, about ${Math.round(v60.sv)} ml leaves each ventricle per beat, ${v60.co.toFixed(1)} litres a minute. Flat out, the heart beats about three times as often and empties more fully with each beat, so its output rises to roughly ${Math.round(v176.co)} litres a minute. That is the delivery side of VO₂max.`,
-  `<small>Typical adult values (end of filling ≈ 120 ml, end of ejection ≈ 50 ml at rest); individual hearts differ. Blue and red follow the textbook convention: venous blood is dark red, not blue. As the ventricles squeeze, the valve plane is pulled toward the tip of the heart, which draws blood into the atria at the same time. The ECG is a drawing timed to the beat. The heart's 3-D shape, the chambers' depth, the muscle ridges and the swirl of blood as the left ventricle fills are drawn from textbook anatomy, not measured.</small>`,
+  `At rest, about ${Math.round(v60.sv)} mL leaves each ventricle per beat, ${v60.co.toFixed(1)} litres a minute. Flat out, the heart beats about three times as often and empties more fully with each beat, so its output rises to roughly ${Math.round(v176.co)} litres a minute. That is the delivery side of VO₂max.`,
+  `<small>Typical adult values (end of filling ≈ 120 mL, end of ejection ≈ 50 mL at rest); individual hearts differ. Blue and red follow the textbook convention: venous blood is dark red, not blue. As the ventricles squeeze, the valve plane is pulled toward the tip of the heart, which draws blood into the atria at the same time. The ECG is a drawing timed to the beat. The heart's 3-D shape, the chambers' depth, the muscle ridges and the swirl of blood as the left ventricle fills are drawn from textbook anatomy, not measured.</small>`,
 ]
   .map((p) => `<span class="a4-par">${p}</span>`)
   .join("");
@@ -185,7 +185,7 @@ const body = plate({
   hint: "Pick a heart rate · Slow to watch the valves",
   stats: [
     { key: "hr", label: "Heart rate", value: "60 bpm" },
-    { key: "sv", label: "Per beat", value: `${Math.round(v60.sv)} ml` },
+    { key: "sv", label: "Per beat", value: `${Math.round(v60.sv)} mL` },
     { key: "co", label: "Per minute", value: `${v60.co.toFixed(1)} L/min` },
   ],
   controls: [{ name: "rate", label: "Heart rate", options: [["60", "Rest"], ["100", "Walk"], ["140", "Run"], ["176", "All out"]].map(([value, label], i) => ({ value, label, pressed: i === 0 })) }],

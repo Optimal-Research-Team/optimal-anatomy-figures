@@ -166,7 +166,7 @@ function mount(fig) {
   function readout(s) {
     out.w.textContent = `${Math.round(s.W)} W`;
     out.hr.textContent = `${Math.round(s.hr)} bpm`;
-    out.vo2.textContent = `${s.perKg.toFixed(1)} ml/kg/min`;
+    out.vo2.textContent = `${s.perKg.toFixed(1)} mL/kg/min`;
     clockEl.textContent = fmt(t);
     const phaseText = { rest: "at rest", unloaded: "pedalling, no load", ramp: s.t > T.tCross ? "at the ceiling" : "on the ramp", recovery: "recovery" }[s.phase];
     stage.setAttribute("aria-valuenow", t.toFixed(1));

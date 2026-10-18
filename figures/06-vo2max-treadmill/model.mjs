@@ -299,18 +299,18 @@ export function setSpeed(kmh) {
 export const RUN = {
   bm: 75, age: 45,
   grade: 0.01, //          1 % incline, a common treadmill setting
-  acsm: [0.2, 0.9, 3.5], // VO₂ = 0.2 S + 0.9 S G + 3.5 ml/kg/min, S in m/min [20] MEDIUM-HIGH
+  acsm: [0.2, 0.9, 3.5], // VO₂ = 0.2 S + 0.9 S G + 3.5 mL/kg/min, S in m/min [20] MEDIUM-HIGH
   startShare: 0.65, //     warm-up and ramp start where the cost is ≈ 65 % of the ceiling (model choice)
   rampMin: 10, //          ramp sized to reach the ceiling in about 10 min [1][3]
   tau: 0.6, tauOff: 1.0, // min, LOW shape only
   hrRest: 65, hrMax: [208, 0.7], // [16] HIGH for the maximum
   phases: { warm: 3, recovery: 3 },
-  plateau: 0.6, hold: 1.0, // ml/kg/min softness of the ceiling; minutes on it before stopping
+  plateau: 0.6, hold: 1.0, // mL/kg/min softness of the ceiling; minutes on it before stopping
   breath: { f0: 14, f1: 36, exhale: 0.55 }, // LOW, drives the analyser light only
   ceilings: [35, 45, 55],
 };
 const softMin = (a, b, k) => -k * Math.log(Math.exp(-a / k) + Math.exp(-b / k));
-/** Oxygen cost of running at km/h on the test grade (ml/kg/min). */
+/** Oxygen cost of running at km/h on the test grade (mL/kg/min). */
 export const costOf = (kmh) => RUN.acsm[0] * (kmh * 1000 / 60) + RUN.acsm[1] * (kmh * 1000 / 60) * RUN.grade + RUN.acsm[2];
 export const speedFor = (cost) => (cost - RUN.acsm[2]) / (RUN.acsm[0] + RUN.acsm[1] * RUN.grade) * 60 / 1000;
 export function runTestOf(ceiling) {

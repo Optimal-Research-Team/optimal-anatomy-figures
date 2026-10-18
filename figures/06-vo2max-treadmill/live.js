@@ -182,7 +182,7 @@ function mount(fig) {
   function readout(s) {
     out.v.textContent = `${s.v.toFixed(1)} km/h`;
     out.hr.textContent = `${Math.round(s.hr)} bpm`;
-    out.vo2.textContent = `${s.vo2.toFixed(1)} ml/kg/min`;
+    out.vo2.textContent = `${s.vo2.toFixed(1)} mL/kg/min`;
     clockEl.textContent = fmt(t);
     const phaseText = { warm: "warm-up jog", ramp: s.t > T.tCross ? "at the ceiling" : "on the ramp", recovery: "recovery jog" }[s.phase];
     stage.setAttribute("aria-valuenow", t.toFixed(1));

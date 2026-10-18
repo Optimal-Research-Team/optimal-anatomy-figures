@@ -206,10 +206,10 @@ const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileS
 
 const T35 = M.testOf(35);
 const CAPTION = [
-  `On a ramp test the smart bike's brake adds a few watts every couple of seconds while you keep pedalling. Each extra watt costs about 10 ml of oxygen a minute, so oxygen use climbs in a straight line, a little behind the power, until the heart and muscles can't deliver or use any more. That ceiling is VO₂max. A fitter body reaches a higher ceiling and more watts, but climbs the same slope.`,
+  `On a ramp test the smart bike's brake adds a few watts every couple of seconds while you keep pedalling. Each extra watt costs about 10 mL of oxygen a minute, so oxygen use climbs in a straight line, a little behind the power, until the heart and muscles can't deliver or use any more. That ceiling is VO₂max. A fitter body reaches a higher ceiling and more watts, but climbs the same slope.`,
   `The analyser on the mask measures every breath, how much air goes out and how much oxygen it has lost, and sends it wirelessly to the assessor's tablet. Nothing tethers you to a cart.`,
   `In 122,007 adults who had treadmill exercise tests, the least fit group had about five times the death rate of the fittest 2–3 % over a median of 8.4 years. That's an association between fitness and survival, not a promise that training will change anyone's risk by that much.`,
-  `<small>A typical pattern for one modelled person (45 years, 75 kg), not a prediction. Many people stop before a clear plateau; their top value is called VO₂peak. Bike values run about 13–22 % below treadmill values, so compare a bike result with bike norms (in a large registry, the median on a bike was 41.9 ml/kg/min for men in their 20s and 19.5 in their 70s; for women, 31.0 and 14.8). Heart rates are typical for age and vary by 10 bpm or more.</small>`,
+  `<small>A typical pattern for one modelled person (45 years, 75 kg), not a prediction. Many people stop before a clear plateau; their top value is called VO₂peak. Bike values run about 13–22 % below treadmill values, so compare a bike result with bike norms (in a large registry, the median on a bike was 41.9 mL/kg/min for men in their 20s and 19.5 in their 70s; for women, 31.0 and 14.8). Heart rates are typical for age and vary by 10 bpm or more.</small>`,
 ]
   .map((p) => `<span class="vo-par">${p}</span>`)
   .join("");
@@ -221,9 +221,9 @@ const body = plate({
   stats: [
     { key: "w", label: "Power", value: "0 W" },
     { key: "hr", label: "Heart rate", value: `${M.TRUTH.hrRest} bpm` },
-    { key: "vo2", label: "VO₂", value: `${M.TRUTH.rest.toFixed(1)} ml/kg/min` },
+    { key: "vo2", label: "VO₂", value: `${M.TRUTH.rest.toFixed(1)} mL/kg/min` },
   ],
-  controls: [{ name: "ceiling", label: "VO₂max ceiling, ml/kg/min", options: M.TRUTH.ceilings.map((c) => ({ value: String(c), label: `${c}`, pressed: c === 35 })) }],
+  controls: [{ name: "ceiling", label: "VO₂max ceiling, mL/kg/min", options: M.TRUTH.ceilings.map((c) => ({ value: String(c), label: `${c}`, pressed: c === 35 })) }],
   keys: [
     { mark: "lit", label: "The mask's analyser, blinking each breath" },
     { mark: "raised", label: "Power, as an arc on the flywheel cover" },

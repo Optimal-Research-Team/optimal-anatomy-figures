@@ -2,6 +2,15 @@
 
 In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINEERING_HANDOFF.md` for the why and where.
 
+## Changed since the handoff
+
+- **Oct 18, 2026: readout names and units unified with the reception TV.** The clinic TV plays these same figures and had been fixing labels on its own copies. The fixes now live in this repo, so the site and the TV say the same thing. Text only: no numbers, models or drawings changed.
+  - **Fig 4 and A7:** "Step rate 165/min" and "Kneecap force 100%" (were "Cadence 165 spm", "Kneecap load" and "Peak kneecap force"). Fig 4's slider, presets, hint, legend and screen-reader text follow.
+  - **Fig 3 and A1:** "97% open", with no space before %. Fig 3's "Hb" readout is spelled out as "Hemoglobin". Fig 3 and A6 use the Canadian spelling "hemoglobin" throughout.
+  - **A6:** the days before the dose read "−4 (before)", with a true minus sign.
+  - **A4, Fig 5 and Fig 6:** millilitres are "mL" ("70 mL", "mL/kg/min"), including the tablet plot.
+  - **For step 1:** the zip's `embeds/` predate this change, so run `scripts/export-embeds.mjs` instead of copying them. Fig 4's phone card is 13 px taller, because two readout labels now wrap at 358 px. `FIGURE_RESERVE['creator-600'].phone` is now 1188 in `handoff/site/optimalFigures.ts`; carry that into the site's copy. Sizes in `placements.json` are updated.
+
 ## Ship (primary placements, pages that exist today)
 
 1. **Apply the reference integration** (S, about 1 h including review)

@@ -238,14 +238,14 @@ function mount(fig) {
   let lastText = "";
   function readout() {
     const c = Math.round(cadence * 2) / 2;
-    out.spm.textContent = `${Math.round(c)} spm`;
+    out.spm.textContent = `${Math.round(c)}/min`;
     out.step.textContent = `${stepOf(c).toFixed(2)} m`;
-    out.ratio.textContent = `${ratioOf(c).toFixed(1)} %`;
-    out.knee.textContent = `${Math.round(kneeOf(c) * 100)} %`;
+    out.ratio.textContent = `${ratioOf(c).toFixed(1)}%`;
+    out.knee.textContent = `${Math.round(kneeOf(c) * 100)}%`;
     stage.setAttribute("aria-valuenow", String(Math.round(c)));
     stage.setAttribute("aria-valuetext", `${Math.round(c)} steps per minute`);
     const pct = Math.round(pctOf(c));
-    const text = `${Math.round(c)} steps per minute (${pct > 0 ? "+" : ""}${pct} %): step ${stepOf(c).toFixed(2)} metres, vertical ratio ${ratioOf(c).toFixed(1)} %, kneecap load ${Math.round(kneeOf(c) * 100)} % of usual per step.`;
+    const text = `${Math.round(c)} steps per minute (${pct > 0 ? "+" : ""}${pct}%): step ${stepOf(c).toFixed(2)} metres, vertical ratio ${ratioOf(c).toFixed(1)}%, kneecap force ${Math.round(kneeOf(c) * 100)}% of usual per step.`;
     if (text !== lastText && Math.abs(cadence - target) < 0.3) {
       status.textContent = text;
       lastText = text;
