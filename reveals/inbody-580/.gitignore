@@ -2,3 +2,6 @@ node_modules/
 out/
 object/*.html
 motion/motion.html
+# the built pages ship in optimal-anatomy-figures (its build only copies them)
+!object/figure.html
+!object/figure-light.html
