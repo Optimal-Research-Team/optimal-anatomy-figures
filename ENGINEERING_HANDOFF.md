@@ -1,6 +1,6 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
-**Date:** 2026-10-12
+**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19)
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -21,6 +21,54 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `scripts/export-embeds.mjs` | Copies the 15 built scripts into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
 | **Zip only** (`~/Downloads/optimal-figures-handoff-2026-10-12.zip`) | `patch/beoptimal-landing-anatomy-figures.patch` (the reference integration; it stays out of this public repo because the site repo is private), `embeds/` (the 15 built scripts and manifest), and `qa/shots/` (13 screenshots of the figures in place). |
+
+## Added Oct 19: equipment, taken apart (E1–E4)
+
+The clinic's four testing machines are rebuilt part by part from their published dimensions, using the `anatomy-reveal` skill (MIT). Each machine comes with two things:
+- **A 12 s silent film**, in 16:9 for the reception TV and desktop and 9:16 for Reels and phones.
+- **An interactive take-apart page**: drag to turn, tap or press a button to take it apart. It's phone-first, with real 44 px buttons and no hover-only behaviour.
+
+These are **round 1, for Peter's review. They are not yet approved for the site.** Peter records approvals on the internal content library page. Build the component now, but ship a machine only once its film is approved.
+
+| Fig | Machine | Film (gallery) | Take-apart page | Goes on | Where |
+|---|---|---|---|---|---|
+| E1 | InBody 580 | `figures/e1-inbody-580/assets/` | `inbody-580-apart(-light).html` | `/services/inbody-580` | Hero media, or its own block before "Why" |
+| E2 | Creator 600 | `figures/e2-creator-600/assets/` | `creator-600-apart(-light).html` | `/services/creator-600` | Hero media, or its own block before Fig 4 |
+| E3 | Wahoo KICKR BIKE SHIFT | `figures/e3-kickr-bike/assets/` | `kickr-bike-apart(-light).html` | `/services/vo2-max-testing` | "02 — Equipment", next to Fig 5 |
+| E4 | Hand dynamometer | `figures/e4-grip-dynamometer/assets/` | `grip-dynamometer-apart(-light).html` | `/optimal-longevity-protocol` | §1.3 Strength, the grip table (optional; no service page) |
+
+**Files per machine** (in `assets/`):
+
+| File | Size | Use |
+|---|---|---|
+| `<slug>-web-16x9.mp4` | 1280×720, 1.0–1.4 MB | Desktop |
+| `<slug>-web-9x16.mp4` | 720×1280, 1.1–1.6 MB | Phones |
+| `<slug>-16x9.jpg`, `<slug>-9x16.jpg` | | Posters, taken from the hero frame |
+| `<slug>-16x9.mp4`, `<slug>-9x16.mp4` | 1080p masters, 8–12 MB | TV and Instagram. Don't serve these on the site. |
+
+**Embedding the film.** Copy the four web files into `public/figures/reveals/` and use a plain video. A small component can pick the source with `matchMedia('(max-width: 640px)')`.
+
+```tsx
+<video autoPlay muted loop playsInline preload="none" poster="/figures/reveals/inbody-580-16x9.jpg"
+       aria-label="The InBody 580, taken apart: a 12-second silent film" style={{ width: '100%', aspectRatio: '16 / 9' }}>
+  <source src="/figures/reveals/inbody-580-web-9x16.mp4" media="(max-width: 640px)" type="video/mp4" />
+  <source src="/figures/reveals/inbody-580-web-16x9.mp4" type="video/mp4" />
+</video>
+```
+
+- **Lazy-load** like the figures: set `preload="none"` and start playback when the video is within 800 px of the viewport.
+- **Reduced motion:** with `prefers-reduced-motion`, show the poster only.
+- **Aspect ratio:** reserve it so the layout doesn't shift.
+
+**The take-apart pages** are full HTML documents (fonts embedded, 0.9–1.2 MB), not custom elements like the 15 figures. Ship them as files and link to them under the film: "Take it apart →" opens the page. Iframing works too, but needs a fixed height per breakpoint, and on a phone the link reads better. If Peter wants them inline later, we'll convert them to `<optimal-fig-*>` elements in this repo.
+
+**Source.** `reveals/<slug>/` holds the source and `REPORT.md` for each machine: spec with sources, assumptions, part counts, checks and how to rebuild. `reveals/SERIES-SPEC.md` holds the shared look and QA rules. The films take about 2 minutes of render per second of film, so they're committed as files, and the gallery build only copies them.
+
+**Open questions on these four** (Peter's or the clinic's to answer, not engineering's):
+- Confirm the clinic's dynamometer model. E4 is built as a Jamar-style hydraulic unit.
+- Confirm the InBody footplate colour. The photos show both black and white.
+- The Creator 600 page still says a "32-inch" display. It's 50″, as already noted above.
+- The KICKR BIKE SHIFT doesn't physically tilt. Its grade is simulated by the brake, so don't describe it as tilting anywhere on the site.
 
 ## Where each figure goes
 

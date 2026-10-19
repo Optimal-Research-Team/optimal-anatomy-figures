@@ -4,6 +4,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 19, 2026: four equipment films and take-apart pages (E1–E4).** InBody 580, Creator 600, KICKR Bike and the hand dynamometer are now in the gallery under "Equipment, taken apart". They're round 1 and **not approved for the site yet**. See ENGINEERING_HANDOFF.md, "Added Oct 19". The new tasks are under **Equipment films** below.
 - **Oct 18, 2026: readout names and units unified with the reception TV.** The clinic TV plays these same figures and had been fixing labels on its own copies. The fixes now live in this repo, so the site and the TV say the same thing. Text only: no numbers, models or drawings changed.
   - **Fig 4 and A7:** "Step rate 165/min" and "Kneecap force 100%" (were "Cadence 165 spm", "Kneecap load" and "Peak kneecap force"). Fig 4's slider, presets, hint, legend and screen-reader text follow.
   - **Fig 3 and A1:** "97% open", with no space before %. Fig 3's "Hb" readout is spelled out as "Hemoglobin". Fig 3 and A6 use the Canadian spelling "hemoglobin" throughout.
@@ -36,6 +37,13 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 8. **Longevity Protocol:** Fig 5 in place of the stock bike photo (§1.2); Fig 2 / A8 / A9 in §10. Each is a widget slot plus a `page.test.ts` entry.
 9. **Menopause care (sales page):** Fig 1 under the symptoms list, with a link to Protocol §5.
 10. **VO₂ max FAQ:** A5 inside "How is this different from my watch's estimate?"
+
+## Equipment films (after Peter approves each one)
+
+1. **`EquipmentFilm` component** (S): a lazy, muted, looping `<video>` that picks the 16:9 or 9:16 web encode by viewport. It shows the poster under `prefers-reduced-motion` and reserves its aspect ratio.
+2. **Place E1, E2 and E3** on their service pages (S). Copy `figures/e*/assets/*-web-*.mp4` and the posters to `public/figures/reveals/`, and put a "Take it apart →" link to the page under each film.
+3. **E4 on the Longevity Protocol page**, §1.3 (S, optional).
+4. **Fix "32-inch" on the Creator 600 page** (XS). It's a 50″ display.
 
 ## Blocked
 

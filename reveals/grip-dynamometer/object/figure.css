@@ -1,0 +1,219 @@
+/* Optimal Health chrome for the anatomy pages: Forest night (dark, default) and Cream (light). */
+.iso {
+  --anatomy-page: #152511;
+  --anatomy-card: #1c3118;
+  --anatomy-text: #c9cdbf;
+  --anatomy-strong: #fffcf7;
+  --anatomy-muted: #8e9884;
+  --anatomy-paper: #1c3118;
+  --anatomy-face: #253821;
+  --anatomy-top: #283c24;
+  --anatomy-shade-0: #172812;
+  --anatomy-shade-1: #1a2c16;
+  --anatomy-shade-2: #1e321a;
+  --anatomy-shade-3: #22371e;
+  --anatomy-lit-top: #34492f;
+  --anatomy-lit-shade: #2a3f26;
+  --anatomy-hi: #e9e6dc;
+  --anatomy-mid: #7e8a74;
+  --anatomy-lo: #4d5c46;
+  --anatomy-faint: #33452e;
+  --anatomy-lit: #fffcf7;
+  --anatomy-halo: #0b1508;
+  --anatomy-halo-opacity: 0.85;
+  --anatomy-dot: #e9e6dc;
+  --opt-rule: rgba(233, 230, 220, 0.14);
+  --opt-accent: #a9d49c;
+  --opt-title: #fffcf7;
+  --opt-kbd: rgba(233, 230, 220, 0.08);
+  --opt-line: rgba(233, 230, 220, 0.3);
+  --opt-on-accent: #152511;
+  --anatomy-mono: "Public Sans", system-ui, sans-serif;
+}
+.iso[data-theme="light"] {
+  --anatomy-page: #f8f3e9;
+  --anatomy-card: #fffcf7;
+  --anatomy-text: #3d4a37;
+  --anatomy-strong: #2c4e25;
+  --anatomy-muted: #8e9884;
+  --anatomy-paper: #fffcf7;
+  --anatomy-face: #fffefb;
+  --anatomy-top: #fffefb;
+  --anatomy-shade-0: #e3e2d6;
+  --anatomy-shade-1: #ebeae0;
+  --anatomy-shade-2: #f2f1e8;
+  --anatomy-shade-3: #f8f7f0;
+  --anatomy-lit-top: #fffefb;
+  --anatomy-lit-shade: #efede3;
+  --anatomy-hi: #2c4e25;
+  --anatomy-mid: #8e9884;
+  --anatomy-lo: #c9cdbf;
+  --anatomy-faint: #e2e4da;
+  --anatomy-lit: #2c4e25;
+  --anatomy-halo: #5e6e55;
+  --anatomy-halo-opacity: 0.26;
+  --anatomy-dot: #2c4e25;
+  --opt-rule: rgba(44, 78, 37, 0.16);
+  --opt-accent: #2c4e25;
+  --opt-title: #2c4e25;
+  --opt-kbd: rgba(44, 78, 37, 0.06);
+  --opt-line: rgba(44, 78, 37, 0.32);
+  --opt-on-accent: #fffcf7;
+}
+body.iso {
+  font: 15px/1.6 "Public Sans", system-ui, sans-serif;
+  font-feature-settings: "tnum" 0, "kern" 1;
+  -webkit-font-smoothing: antialiased;
+}
+.opt-head {
+  margin: 0 0 28px;
+}
+.opt-eyebrow {
+  margin: 0 0 14px;
+  font: 600 11.5px/1 "Public Sans", system-ui, sans-serif;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--anatomy-muted);
+}
+.opt-title {
+  margin: 0;
+  font: 400 clamp(34px, 6vw, 48px) / 1.04 Castoro, Georgia, serif;
+  letter-spacing: -0.015em;
+  color: var(--opt-title);
+}
+.opt-title em {
+  font-style: italic;
+  color: var(--opt-accent);
+}
+.opt-lead {
+  margin: 14px 0 0;
+  max-width: 54ch;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--anatomy-text);
+}
+.iso-plate {
+  box-shadow: 0 0 0 1px var(--opt-rule);
+  border-radius: 3px;
+}
+.iso-plate-corner {
+  font: 500 10.5px/1 "Public Sans", system-ui, sans-serif;
+  letter-spacing: 0.1em;
+  font-feature-settings: "tnum" 1;
+}
+.iso-plate-corner[data-corner="fig"] {
+  /* Public Sans spaced caps, like the top-right label (series style: OPTIMAL HEALTH · BARRIE). */
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--anatomy-strong);
+}
+.iso-plate-corner[data-corner="title"] {
+  color: var(--anatomy-muted);
+}
+.iso-plate-corner[data-corner="readout"] {
+  letter-spacing: 0.02em;
+  color: var(--anatomy-text);
+}
+.iso-legend {
+  font-size: 13.5px;
+  gap: 12px;
+  margin-top: 16px;
+}
+.iso-caption {
+  max-width: 66ch;
+}
+.opt-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--anatomy-muted);
+  font-size: 13px;
+}
+.opt-keys kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin-right: 7px;
+  padding: 0 6px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 0 1px var(--opt-rule);
+  background: var(--opt-kbd);
+  font: 600 11.5px/1 "Public Sans", system-ui, sans-serif;
+  color: var(--anatomy-strong);
+}
+.opt-note {
+  margin: 26px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--opt-rule);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--anatomy-muted);
+  max-width: 70ch;
+}
+/* Controls under the figure: real buttons, flat, hairline outline. Two per row on phones, one row on wider screens. */
+.opt-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+.opt-btn {
+  appearance: none;
+  flex: 1 1 calc(50% - 4px);
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 1px solid var(--opt-line);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--anatomy-strong);
+  font: 500 14px/1.1 "Public Sans", system-ui, sans-serif;
+  letter-spacing: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+@media (min-width: 600px) {
+  .opt-btn {
+    flex: 0 0 auto;
+  }
+}
+@media (hover: hover) {
+  .opt-btn:hover {
+    background: var(--opt-kbd);
+  }
+}
+.opt-btn:focus-visible {
+  outline: 2px solid var(--opt-accent);
+  outline-offset: 2px;
+}
+.opt-btn[aria-pressed="true"] {
+  background: var(--opt-accent);
+  border-color: var(--opt-accent);
+  color: var(--opt-on-accent);
+}
+/* Hint line: touch devices can't hover, so they get the tap wording. */
+.hint-touch {
+  display: none;
+}
+@media (hover: none) {
+  .hint-hover {
+    display: none;
+  }
+  .hint-touch {
+    display: inline;
+  }
+}
+@media (max-width: 560px) {
+  .opt-head {
+    margin-bottom: 20px;
+  }
+  .iso-plate-corner[data-corner="title"] {
+    display: none;
+  }
+}

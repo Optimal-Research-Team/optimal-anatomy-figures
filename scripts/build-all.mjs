@@ -28,6 +28,12 @@ const PLAN = [
   { dir: "a6-red-cell-cycle", n: "A6", title: "The red cell's 120 days", line: "Why ferritin jumps in days after IV iron but hemoglobin takes weeks." },
   { dir: "a5-alveolus", n: "A5", title: "The air sac and the red cell", line: "A block of lung cut open: a red cell fills with oxygen in a quarter-second; how much time it has to spare." },
   { dir: "a1-gut-cell", n: "A1", title: "The gut cell's gate", line: "A block of gut lining: iron in through the brush border, out through ferroportin, and hepcidin pulling the gates in." },
+  // Equipment, taken apart: the clinic's machines built from their published dimensions (reveals/, anatomy-reveal skill),
+  // each with an interactive take-apart page and a 12 s film for the reception TV (16:9) and Reels (9:16).
+  { dir: "e1-inbody-580", n: "E1", group: "equipment", title: "The InBody 580, taken apart", line: "The body composition analyser, built part by part from its published dimensions." },
+  { dir: "e2-creator-600", n: "E2", group: "equipment", title: "The Creator 600, taken apart", line: "The running gait analysis treadmill, built part by part from its published dimensions." },
+  { dir: "e3-kickr-bike", n: "E3", group: "equipment", title: "The KICKR Bike, taken apart", line: "The indoor bike, built part by part from its published dimensions." },
+  { dir: "e4-grip-dynamometer", n: "E4", group: "equipment", title: "The hand dynamometer, taken apart", line: "How a squeeze becomes a reading on the dial." },
 ];
 
 rmSync(dist, { recursive: true, force: true });
@@ -64,7 +70,7 @@ for (const dir of dirs) {
 }
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const rows = PLAN.map((p) => {
+const row = (p) => {
   const b = built.get(p.dir);
   const title = b?.title ?? p.title;
   const line = b?.line ?? p.line;
@@ -72,14 +78,17 @@ const rows = PLAN.map((p) => {
   const light = b?.pages.find((f) => f.endsWith("-light.html"));
   const dark = b?.pages.find((f) => !f.endsWith("-light.html"));
   const links = b
-    ? `${light ? `<a href="${p.dir}/${light}">Cream</a>` : ""}${dark ? `<a href="${p.dir}/${dark}">Forest night</a>` : ""}`
+    ? `${light ? `<a href="${p.dir}/${light}">Cream</a>` : ""}${dark ? `<a href="${p.dir}/${dark}">Forest night</a>` : ""}` +
+      (b.films || []).map((f) => `<a href="${p.dir}/${esc(f.href)}">${esc(f.label)}</a>`).join("")
     : `<span class="soon">Not built yet</span>`;
   return `<li class="${b ? "is-built" : ""}">
     <div class="n">Fig ${p.n}</div>
     <div class="body"><h2>${esc(title)}</h2><p>${esc(line)}</p></div>
     <div class="meta"><span class="status">${esc(status)}</span><div class="links">${links}</div></div>
   </li>`;
-}).join("\n");
+};
+const rows = PLAN.filter((p) => !p.group).map(row).join("\n");
+const equipment = PLAN.filter((p) => p.group === "equipment").map(row).join("\n");
 
 writeFileSync(join(dist, "index.html"), `<!doctype html>
 <html lang="en"><head>
@@ -107,6 +116,8 @@ li.is-built .status{color:var(--forest)}
 .links a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--forest);color:var(--forest);text-decoration:none;font-size:14px;font-weight:500}
 .links a:first-child{background:var(--forest);color:var(--cream)}
 .soon{font-size:13px;color:var(--muted)}
+h3.group{font:400 clamp(28px,5vw,36px)/1.05 Castoro,Georgia,serif;letter-spacing:-.03em;color:var(--forest);margin:56px 0 10px}
+h3.group em{font-style:italic}
 footer{margin-top:40px;font-size:12.5px;color:var(--muted)}
 footer a{color:var(--forest)}
 @media (max-width:640px){li{grid-template-columns:1fr;gap:8px}.meta{text-align:left;align-items:flex-start}.links{justify-content:flex-start}}
@@ -117,6 +128,11 @@ footer a{color:var(--forest)}
 <p class="lede">Interactive figures for Optimal's services. Each one is a real, carefully built machine whose motion is the medical idea, driven by real numbers.</p>
 <ol>
 ${rows}
+</ol>
+<h3 class="group">Equipment, <em>taken apart</em></h3>
+<p class="lede">The clinic's machines, built part by part from their published dimensions. Turn each one, take it apart, or play its film.</p>
+<ol>
+${equipment}
 </ol>
 <footer>Built with <a href="https://github.com/wheresryan22/anatomy">Anatomy</a> (MIT). Explainers only, not medical advice. Your NP interprets your results.</footer>
 </main></body></html>
