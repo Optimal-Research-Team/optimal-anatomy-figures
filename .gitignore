@@ -9,3 +9,6 @@ figures/*/embed/*.js
 
 # QA screenshots of the site (from handoff/qa/check-embeds.mjs)
 handoff/qa/shots/
+
+# The engineering handoff package (scripts/package-handoff.mjs); the zip goes on the GitHub release
+handoff/package/

@@ -4,6 +4,11 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 21, 2026 (b): A2 gets a real-time 3-D layer. Ship one more file: `hypothalamus-3d.js`, next to `optimal-fig-hypothalamus.js` in `public/figures/`.** (Release `handoff-2026-10-21b`, `embeds/`; or `scripts/export-embeds.mjs`, which now copies it.) See ENGINEERING_HANDOFF.md, "Added Oct 21 (b)".
+  - Only `optimal-fig-hypothalamus.js` changed among the 15 embeds; the other 14 are byte-identical to the Oct 21 ones.
+  - No site code changes: the placement, `FIGURE_RESERVE.hypothalamus` (1311 / 1306, re-measured) and the private patch stay as they are. Checked: the patch still applies to `main` (`0c0473c`), `yarn build` passes, and `check-embeds.mjs` passes on every page of the patched preview at 390 and 1280 px, with A2's 3-D layer on and, without WebGL, its SVG fallback.
+  - The chunk is fetched as `hypothalamus-3d.js?v=<sha>`, so it's cache-busted on every build. Whatever caching you set for `/figures/*` (task 3) covers it.
+  - **Approval:** round 4 awaits Peter's OK. To hold it, don't copy `hypothalamus-3d.js` (A2 stays on its approved SVG), or pass `gl="off"` to the element.
 - **Oct 21, 2026: seven card reserves raised; update `FIGURE_RESERVE` from `handoff/site/optimalFigures.ts` (the private patch carries the new values).** I re-measured every card at 358 and 760 px, in a desktop browser and as a phone (touch, 3× pixels). Seven cards came out taller than their reserves, so content below them would jump by 4–29 px when they mount.
   - Raised: Fig 5 1224 / 1315 (also its new pose, below); A2 phone 1311; A3 phone 1040; A4 desktop 1626; A5 phone 1186; A6 phone 1175; A9 998 / 1060.
   - The other eight already fit. `placements.json` matches.
@@ -28,8 +33,8 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 ## Ship (primary placements, pages that exist today)
 
 1. **Apply the reference integration** (S, about 1 h including review)
-   - Apply `beoptimal-landing-anatomy-figures.patch` from the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch) on a branch from `main` (`git apply`). It was made against `0f36c00`; on Oct 21 it applied cleanly there and to `main` at `0c0473c`.
-   - Copy `embeds/` from the `handoff-2026-10-21` release into `public/figures/`, or run `scripts/export-embeds.mjs`.
+   - Apply `beoptimal-landing-anatomy-figures.patch` from the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch) on a branch from `main` (`git apply`). It was made against `0f36c00`; on Oct 21 it applied cleanly there and to `main` at `0c0473c` (re-checked that afternoon with the A2 3-D embeds: build and QA pass).
+   - Copy `embeds/` from the `handoff-2026-10-21b` release into `public/figures/` (15 scripts plus `hypothalamus-3d.js`), or run `scripts/export-embeds.mjs`.
    - `yarn test` (80/80), `yarn build`, `yarn preview`.
 2. **Compliance look at the Menopause Protocol** (owner: Peter and the Protocol's reviewer)
    - Four figures go in the reviewed page: A9 in §3, Fig 1 and A3 in §5, A2 in §14.
@@ -38,12 +43,14 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 4. **Real-device check** (S)
    - **Devices:** iPhone (Safari) and a mid-range Android, at 320 and 390 px.
    - **A4 heart** (WebGL): check the frame rate on the VO₂ max page. It should look smooth; a governor lowers resolution if frames run long.
+   - **A2 hot-flash switch** (WebGL since Oct 21): on the Menopause Protocol §14, check it crossfades from the drawing to the 3-D block within a second or two of scrolling near, stays smooth, turns on a sideways drag while vertical swipes still scroll, and that the phone doesn't get warm. If a device can't hold ~22 fps it hands back to the drawing by itself; `data-gl` on its `.a2-stage` (in the shadow root) says why.
    - **Every page:** reduced motion and keyboard only.
 5. **Run QA on the Vercel preview** (XS): `node handoff/qa/check-embeds.mjs <preview URL>` from the figures repo. It must say "all pages passed". Attach `handoff/qa/shots/` to the PR.
 6. **Copy fixes on the Creator 600 page** (XS, owner: Peter to confirm wording)
    - "32″ upright display" should read 50″.
    - Soften the "180 spm benchmark" line. The evidence supports a 5–10 % change from your own rate.
 7. **A4 heart: wait for Peter's OK on round 6.** It can merge with the rest and be held back by removing the one `<OptimalFigure slug="heart" gutter />`, and the journal block, if needed.
+   **A2 round 4 (3-D):** also waits for Peter's OK; hold it by leaving out `hypothalamus-3d.js` (see the Oct 21 (b) note above).
 
 ## Later (secondary placements)
 

@@ -1,7 +1,7 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
-**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21)
-**Start here if you had the Oct 12 package:** [`handoff/README.md`](handoff/README.md) lists everything that changed since then. The download is the [`handoff-2026-10-21` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
+**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b")
+**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-10-21b` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21b), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -19,9 +19,35 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `DEV_TODO.md` | The task list, in order, with owners and sizes. |
 | `handoff/placements.json` | Machine-readable map: every figure, its script, size, reserved heights, approval state, and every placement (route, file, anchor, priority). |
 | `handoff/site/` | Drop-in files for `src/components/optimal-figures/`: `OptimalFigure.tsx`, `optimalFigures.ts`, `optimal-figures.css`. |
-| `scripts/export-embeds.mjs` | Copies the 15 built scripts into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha). |
+| `scripts/export-embeds.mjs` | Copies the 15 built scripts, and A2's lazy 3-D chunk `hypothalamus-3d.js`, into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha; the chunk is listed under A2's `chunks`). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
-| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts and their manifest are in `embeds/` in the [`handoff-2026-10-21` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21), along with the equipment films. |
+| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-10-21b` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21b), along with the equipment films. |
+
+## Added Oct 21 (b): A2 real-time 3-D
+
+**What changed.** A2, the hot-flash switch, now carries the real-time 3-D hypothalamus Peter first used on slide 3 of the Ongoing Care deck: a block of cleared brain tissue lit as a translucent volume, with the KNDy cells, the heat-loss centre, the signals, estrogen, the pituitary and its bony cup at their real depths, turning gently. It's A2's one WebGL layer. The card around it is the same: the four state buttons, the readouts, the scene line and the compliance-reviewed caption haven't changed by a word, and it runs on A2's own model, so every burst and flash matches the drawing. The round 3 SVG is still the first paint and the fallback. **Placements are unchanged** (Menopause Protocol §14, after `figure#fig-11`), and **so are the reserves** (re-measured at 358 and 760 px, desktop and touch at 3×: 1281 / 1306 px against `FIGURE_RESERVE.hypothalamus` 1311 / 1306).
+
+**The embed contract: two files now.**
+
+| File | Size | Loaded |
+|---|---|---|
+| `optimal-fig-hypothalamus.js` | 256,119 bytes (75,090 gzip) | As before, by `loadFigure('hypothalamus')` |
+| `hypothalamus-3d.js` | 633,678 bytes (169,253 gzip) | By the embed itself, lazily, from **the same folder as `optimal-fig-hypothalamus.js`** |
+
+- Copy both into `public/figures/` (`scripts/export-embeds.mjs` and the release's `embeds/` include it). The embed resolves the chunk from its own script URL (`document.currentScript`), so `FIGURE_BASE` (or any versioned folder) just works; no site code changes.
+- It's a classic script (an IIFE that sets `window.OptimalFigA2GL`), not a module: no `import()`, no workers, no WebAssembly, no `eval`, no network or storage calls (audited at build). With a CSP, `script-src 'self'` covers it.
+- It loads only when A2 is within 600 px of the viewport and the page is idle, and only where the device can run it. Pages without A2, and phones that end up on the SVG, never download it. It's requested as `hypothalamus-3d.js?v=<sha>`, so a new build busts caches even though the file name doesn't change.
+- Kept separate rather than inlined: inlining three.js would make every A2 page load about 3.5× more script up front, including phones that never show the 3-D.
+
+**When the SVG stays** (the figure is complete either way; `data-gl` on its `.a2-stage` says which, for QA): no WebGL 2 or only a software renderer; no float render targets; Save-Data or 2G; `navigator.deviceMemory` < 3 or fewer than 4 cores; the chunk fails to load; a shader fails to link; frames stay under ~22 fps after the resolution governor has stepped down; `gl="off"` on the element. A lost WebGL context crossfades back to the SVG and returns to 3-D when the context is restored. Reduced motion shows one still, in 3-D when it can (the A4 convention), with no fade.
+
+**Performance.** The layer builds in short steps after the page is idle; shaders compile in parallel. Phones (coarse pointers) get lighter geometry (74 k triangles instead of 215 k), a pixel ratio capped at 1.5, and an adaptive governor that lowers resolution when frames run long. Nothing renders off screen, in a hidden tab, or while the element is detached. Headless Chrome on an Apple M4 (not a phone): 60 fps at 390 px; 3-D on 0.9 s after navigation; 1.4 ms of main-thread work per frame (4.6 ms at 6× CPU throttle); the longest task it adds is ~160 ms at 4× throttle; CLS 0. **Real-device check still needed** (DEV_TODO 4).
+
+**Host attributes** (the clinic TV uses them; the site doesn't need any): `stage="before|after|therapy|nonhormonal"`, `tour="before,after"` or `tour="none"`, `size-readout="word"` (Small / Larger instead of 100 % / 194 %), `gl="off"`, `gl-src="<url>"`, a `stage` property and a `stagechange` event. Taken off the page the element pauses; put back, it carries on with the same WebGL context. Details: `figures/a2-hypothalamus/NOTES.md`, "Round 4".
+
+**Approval.** Round 4 is **awaiting Peter's OK**. The round 3 SVG (approved Oct 12) is what ships if he holds it: either add `gl="off"` to the element (the `<OptimalFigure>` slot would need to pass it through) or simply don't copy `hypothalamus-3d.js` (the figure then stays on its SVG; QA reports `3-D FAILED: svg:load`, which is expected in that case).
+
+**QA.** `node handoff/qa/check-embeds.mjs <preview URL>` now also waits for A2's 3-D layer (`hypothalamus: ok (3-D on)`), then reloads the page with WebGL switched off and checks the SVG fallback (`hypothalamus: ok (SVG fallback)`, no chunk download, console clean). Run it on a machine with a GPU. By hand: on a phone, A2 should turn on a sideways drag while vertical swipes still scroll the page; with reduced motion on, it should be a still.
 
 ## Added Oct 19: equipment, taken apart (E1–E4)
 
@@ -171,8 +197,8 @@ import OptimalFigure from 'components/optimal-figures/OptimalFigure'
 
 ## Ship the scripts
 
-1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the `handoff-2026-10-21` release.
-2. Total size is about 3.5 MB raw and 0.9 MB gzipped across all 15. A page only loads its own figures (1–4 per page), each 112–424 KB raw (35–94 KB gzipped).
+1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the `handoff-2026-10-21b` release. Either way `public/figures/` gets the 15 `optimal-fig-*.js` scripts **and** `hypothalamus-3d.js`.
+2. Total size is about 3.6 MB raw and 0.93 MB gzipped across all 15. A page only loads its own figures (1–4 per page), each 112–424 KB raw (35–94 KB gzipped). A2 also loads its 3-D chunk (634 KB raw, 169 KB gzipped) when it's near the screen on a device that can run it.
 3. Caching: the file names aren't hashed. Either serve `/figures/*` with `Cache-Control: public, max-age=3600, stale-while-revalidate=86400` (a `headers` entry in `vercel.json`), or version the folder (`/figures/2026-10-12/`) and set `FIGURE_BASE`. `manifest.json` has a sha per file, for cache-busting or CI checks.
 4. Don't hot-link GitHub Pages in production. It's the review gallery and it changes when we iterate.
 
@@ -181,6 +207,7 @@ import OptimalFigure from 'components/optimal-figures/OptimalFigure'
 - Every figure pauses when off screen (IntersectionObserver) and respects `prefers-reduced-motion` with a single still frame.
 - Controls are real buttons, ≥44 px, keyboard operable. Each card has `role="img"` with a full text description, plus a polite live region for state changes.
 - **A4 (heart) uses WebGL:** one canvas, ray-marched. It's 60 fps on desktop-class GPUs, and a governor lowers resolution if frames run long. Without WebGL it falls back automatically to an SVG drawing. **Please check frame rate on a mid-range Android and an older iPhone** (DEV_TODO 4).
+- **A2 (hot-flash switch) uses WebGL since Oct 21:** one canvas (three.js), loaded lazily as a second file, with a lighter phone build, a governor and an automatic SVG fallback (see "Added Oct 21 (b)"). Same device check.
 - All the other figures are SVG and DOM only.
 
 ## QA
@@ -227,6 +254,7 @@ Manual pass before launch:
 ## Approvals and compliance
 
 - **Approved for the site by Peter (2026-10-12):** every figure except A4. His words: "the only thing that needs to be re-done is the heart".
+- **A2 round 4 (the real-time 3-D layer, Oct 21):** pending Peter's OK. The approved round 3 drawing is inside the same embed and is what shows without the chunk or with `gl="off"`.
 - **A4 (heart):** round 6 is pending Peter's OK. It can ship behind the others.
 - **Medical content:** every number in every figure is sourced in the figures repo (`reference/truth-pack.md`, each figure's `NOTES.md`). Peter owns the regulatory call. The Menopause Protocol is compliance-reviewed copy, so its reviewer should see A9, Fig 1, A3 and A2 in place.
 - The figures make no promises and show typical patterns, labelled as typical. Keep them that way: don't edit captions in the site repo. Request changes in the figures repo, and they come back as a rebuilt script.
@@ -236,5 +264,5 @@ Manual pass before launch:
 Change it in `Optimal-Research-Team/optimal-anatomy-figures`, then:
 1. run `node scripts/build-all.mjs`;
 2. run `node scripts/export-embeds.mjs --out <site>/public/figures`;
-3. commit the changed scripts in the site repo;
+3. commit the changed scripts in the site repo (including `hypothalamus-3d.js` when A2's 3-D layer changed);
 4. if a figure's height changed, update `FIGURE_RESERVE`.

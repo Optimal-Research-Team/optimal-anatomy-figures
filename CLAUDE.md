@@ -36,6 +36,8 @@ node scripts/verify.mjs <figure-dir>            # every check (phones 390/360/32
 python3 scripts/contact-sheet.py                # review/contact-sheet.png
 node scripts/export-embeds.mjs --out <dir>      # copy the 15 embed scripts + manifest (for the website's public/figures)
 node handoff/qa/check-embeds.mjs <site URL>     # QA the figures on a running site (see ENGINEERING_HANDOFF.md)
+node scripts/package-handoff.mjs --tag handoff-YYYY-MM-DD   # the release zip for engineering (handoff/package/, git-ignored)
+bash figures/a2-hypothalamus/gl/build-gl.sh      # rebuild A2's 3-D chunk after editing gl/ (commit gl/hypothalamus-3d.js + gl/chunk.json)
 node .claude/skills/anatomy/scripts/capture.mjs <page.html> --out shots/x.png   # see references/verify.md
 ```
 

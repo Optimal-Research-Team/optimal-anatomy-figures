@@ -270,18 +270,18 @@
       "slug": "hypothalamus",
       "tag": "optimal-fig-hypothalamus",
       "script": "optimal-fig-hypothalamus.js",
-      "bytes": 244066,
-      "gzipBytes": 70884,
+      "bytes": 256119,
+      "gzipBytes": 75090,
       "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/hypothalamus-light.html",
       "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/hypothalamus.html",
       "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/embed/optimal-fig-hypothalamus.js",
       "reserve": {
         "phone": 1311,
         "desktop": 1306,
-        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide; the taller of a desktop browser and a phone (touch, 3x). Re-measured Oct 21"
+        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide; the taller of a desktop browser and a phone (touch, 3x). Re-measured Oct 21 (and again with the 3-D layer on: 1281 / 1306)"
       },
-      "webgl": false,
-      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
+      "webgl": true,
+      "approval": "Round 3 (SVG) approved by Peter 2026-10-12; round 4 (real-time 3-D layer, 2026-10-21) pending Peter's OK. Without hypothalamus-3d.js, or with gl=\"off\", the embed shows the approved round 3 drawing",
       "placements": [
         {
           "page": "Menopause Protocol (free protocol)",
@@ -294,6 +294,15 @@
           "why": "Its four states (Before / After / Hormone therapy / Non-hormonal) mirror the options table, including 'not treating is always an option'",
           "priority": "primary",
           "compliance": "Treatment content: keep off sales pages; reviewer of the Protocol should see it in place"
+        }
+      ],
+      "chunks": [
+        {
+          "file": "hypothalamus-3d.js",
+          "bytes": 633678,
+          "gzipBytes": 169253,
+          "loaded": "lazily by optimal-fig-hypothalamus.js, from the same folder, when the figure is within 600 px of the viewport on a device that can run it",
+          "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/a2-hypothalamus/embed/hypothalamus-3d.js"
         }
       ]
     },
