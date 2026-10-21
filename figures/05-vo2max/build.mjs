@@ -30,7 +30,7 @@ const ELEVATION = 22;
 const BB = [0, 0, M.BIKE.bb[1]]; // bottom bracket
 const FLY = { x: -45, y: 0, z: 33, r: 24, t: 10 }; // flywheel disc low at the back (≈ 48 cm across)
 const RAD = Math.PI / 180;
-const ASSESSOR = { at: [92, -52], heading: 186 }; // standing beside the bike, turned to read the tablet
+const ASSESSOR = { at: [92, -52], heading: 172 }; // standing beside the bike, turned so the whole tablet shows past the near arm
 
 const B = { ...MANNEQUIN.BODY };
 B.hipZ = M.saddleOf(B);

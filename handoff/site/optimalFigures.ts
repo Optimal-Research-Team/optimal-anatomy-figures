@@ -16,7 +16,8 @@
 
 export const FIGURE_BASE = '/figures'
 
-/** Whole-card heights (px) measured at 358 px wide (390 px phones) and at 760 px. */
+/** Whole-card heights (px) at 358 px wide (390 px phones) and at 760 px: the taller of a desktop browser and a
+ * phone (touch, 3× pixels), so no card is taller than its slot when it mounts. Re-measured Oct 21. */
 export const FIGURE_RESERVE: Record<
   string,
   { phone: number; desktop: number }
@@ -25,17 +26,17 @@ export const FIGURE_RESERVE: Record<
   'inbody-580': { phone: 1172, desktop: 1190 },
   'iv-iron': { phone: 1039, desktop: 1047 },
   'creator-600': { phone: 1188, desktop: 1351 },
-  vo2max: { phone: 1195, desktop: 1300 },
+  vo2max: { phone: 1224, desktop: 1315 },
   'vo2max-treadmill': { phone: 1223, desktop: 1405 },
   'gut-cell': { phone: 1066, desktop: 1287 },
-  hypothalamus: { phone: 1290, desktop: 1306 },
-  'finger-skin': { phone: 1036, desktop: 1228 },
-  heart: { phone: 1379, desktop: 1605 },
-  alveolus: { phone: 1181, desktop: 1374 },
-  'red-cell-cycle': { phone: 1171, desktop: 1293 },
+  hypothalamus: { phone: 1311, desktop: 1306 },
+  'finger-skin': { phone: 1040, desktop: 1228 },
+  heart: { phone: 1379, desktop: 1626 },
+  alveolus: { phone: 1186, desktop: 1374 },
+  'red-cell-cycle': { phone: 1175, desktop: 1293 },
   knee: { phone: 1117, desktop: 1424 },
   'muscle-water': { phone: 1136, desktop: 1119 },
-  'bone-remodelling': { phone: 981, desktop: 1039 },
+  'bone-remodelling': { phone: 998, desktop: 1060 },
 }
 
 export type FigureSlug = keyof typeof FIGURE_RESERVE

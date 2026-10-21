@@ -4,6 +4,10 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 21, 2026: seven card reserves raised; update `FIGURE_RESERVE` from `handoff/site/optimalFigures.ts` (the zip's patch carries the new values).** I re-measured every card at 358 and 760 px, in a desktop browser and as a phone (touch, 3× pixels). Seven cards came out taller than their reserves, so content below them would jump by 4–29 px when they mount.
+  - Raised: Fig 5 1224 / 1315 (also its new pose, below); A2 phone 1311; A3 phone 1040; A4 desktop 1626; A5 phone 1186; A6 phone 1175; A9 998 / 1060.
+  - The other eight already fit. `placements.json` matches.
+  - **Fig 5:** the assessor turns 14° so the whole tablet shows past the near arm. The arm had hidden where the VO₂ line flattens at the 45 and 55 ceilings.
 - **Oct 21, 2026: small polish. Re-export all 15 embeds again.** The light theme's muted and legend grey is now #716e68 (4.97:1 on cream, up from 4.46:1). Fig 1's hint reads "tap for a small rise" and Fig 3's "press Play", in place of "space" on phones. **Fig 6:** the side panel moved 6 cm forward along the far handrail and its speed is right-aligned, so the runner's mask no longer hides the first digit ("15.6" had read "5.6" at points in every stride). Card heights are unchanged.
 - **Oct 21, 2026: the equipment films were re-cut and the take-apart pages polished (E1–E4).** The camera now only moves forward, so any change to a wider framing is a hard cut. All 16:9, 9:16 and web encodes in `figures/e*/assets/` are replaced, along with their posters. The pages share one header, corner labels and equal-width button rows, and meet 4.5:1 contrast. Re-copy every `assets/` file you took before Oct 21.
 - **Oct 20, 2026: visual-bug sweep. Re-export all 15 embeds** (`scripts/export-embeds.mjs`); every embed script changed. Card heights are unchanged (re-measured at 358 and 760 px), so `FIGURE_RESERVE` and `placements.json` stay as they are.

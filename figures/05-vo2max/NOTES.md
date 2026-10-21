@@ -15,6 +15,12 @@ Power is now an orange arc sweeping round the disc's rim, full at 420 W; the mag
 
 **Mapping in one sentence:** the mannequin pedals a generic lab bike whose magnet brake closes in on the flywheel as the ramp adds watts. A small wireless analyser on its mask blinks with every breath, and the assessor's tablet plots oxygen uptake against watts: a straight line at about 10 ml/min per watt that flattens at the ceiling. The ceiling control moves the ceiling, never the slope.
 
+**Round 4 (2026-10-21, visual-bug sweep):** the assessor's near upper arm covered the right third of the tablet, which is where the VO₂ line meets the ceiling and flattens. At the 45 and 55 ceilings the live dot and the plateau ran behind the arm, hiding the figure's main point.
+- The assessor now faces 172° (was 186°). With the turn, the whole plot shows past the near arm, including the dot at the ceiling and the 100–400 W axis.
+- Hit-testing the screen at the ceiling: 33 % of the screen was covered, and 71 % of its right third. It's now 11 % (the gripping fists at the edges) and 1 %.
+- The stage grows from 600 × 589 to 600 × 602. `FIGURE_RESERVE.vo2max` is now 1224 / 1315 (was 1195 / 1300).
+- `scripts/verify.mjs` passed: line ends 0 in both themes, fits at 390/360/320, console clean.
+
 ## Parts
 
 - **Bike** (round 3): smart-bike proportions as above. Base bar and feet, flywheel post, vented disc, drive case, bottom-bracket block, crank cover, frame post, top beam with two adjuster knobs, seat slider, post, clamp and saddle, riser, bar, hoods, drops and plugs.
