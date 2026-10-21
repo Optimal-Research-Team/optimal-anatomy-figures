@@ -4,6 +4,13 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 20, 2026: visual-bug sweep. Re-export all 15 embeds** (`scripts/export-embeds.mjs`); every embed script changed. Card heights are unchanged (re-measured at 358 and 760 px), so `FIGURE_RESERVE` and `placements.json` stay as they are.
+  - **All figures:** segmented options are at least 44 px wide at 320 px (Fig 2 "Arm"/"Leg", Fig 5 "25"–"55", A4/A5 "Rest"/"Run", A7 "+5%" were 30–43 px). Captions keep a number on the same line as its unit and both ends of a range together (no more "13–22" / "% below"). Words are unchanged.
+  - **Fig 4:** the four readout values sit in equal columns on phones. **Fig 6:** the tablet's big VO₂ number moved to the right of its strip, clear of the assessor's arm.
+  - **A6:** the monitor's "Hemoglobin" label sits clear of the ferritin dot and line, the day cursor breaks around both labels, and "8 wk" has room from the panel edge.
+  - **A4:** a new blood cell gets its angle when it's born. Round 5 drew newborn cells in the veins with no angle and logged `attribute d: Expected number` (the reception TV's console errors). Round 6 doesn't draw those cells, so this is a guard only; nothing visible changes.
+  - The equipment pages (E1–E4) now share one header, corner labels, button row and colours. They aren't embeds, so nothing to export for them.
+
 - **Oct 19, 2026: four equipment films and take-apart pages (E1–E4).** InBody 580, Creator 600, KICKR Bike and the hand dynamometer are now in the gallery under "Equipment, taken apart". They're round 1 and **not approved for the site yet**. See ENGINEERING_HANDOFF.md, "Added Oct 19". The new tasks are under **Equipment films** below.
 - **Oct 18, 2026: readout names and units unified with the reception TV.** The clinic TV plays these same figures and had been fixing labels on its own copies. The fixes now live in this repo, so the site and the TV say the same thing. Text only: no numbers, models or drawings changed.
   - **Fig 4 and A7:** "Step rate 165/min" and "Kneecap force 100%" (were "Cadence 165 spm", "Kneecap load" and "Peak kneecap force"). Fig 4's slider, presets, hint, legend and screen-reader text follow.
