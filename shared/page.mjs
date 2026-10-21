@@ -21,9 +21,17 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 export const THEME_CSS = readFileSync(join(HERE, "optimal-theme.css"), "utf8");
 
 export const FONTS_HREF = "https://fonts.googleapis.com/css2?family=Castoro:ital@0;1&family=Public+Sans:wght@400;500;600;700&display=swap";
+// an inline icon (the gallery's forest ring), so a page served on its own doesn't log a /favicon.ico 404
+const ICON_LINK = `<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232c4e25' stroke-width='4'/%3E%3C/svg%3E">`;
 const FONT_LINKS = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="${FONTS_HREF}">`;
 
 export const escape = (text) => String(text ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+// Typography only (the words don't change): keep a number on the same line as its unit, and both ends of a
+// range together, so a phone never shows "13–22" at a line end with "% below" under it, or "(200" then "µA".
+const UNIT = String.raw`(?:°C|°|kHz|Hz|[μµ]A|Ω|mg|[μµ]g/L|g/L|mL/kg/min|mL|kg|cm|mm|[μµ]m|nm|km/h|m|%|ms|s|min|h|bpm|spm|W|mmHg)`;
+const NUMBER_UNIT = new RegExp(String.raw`(\d) (${UNIT})(?![\w/])`, "g");
+export const tidy = (html) => String(html ?? "").replace(NUMBER_UNIT, "$1\u00a0$2").replace(/(\d)–(?=\d)/g, "$1–\u2060");
 
 const swatch = (mark) => {
   if (mark === "raised" || mark === "flat" || mark === "lit") {
@@ -57,7 +65,7 @@ export function plate({ fig, title, hint, stats = [], controls = [], keys = [], 
     .join("");
   const legend =
     keys.length || caption
-      ? `<figcaption class="iso-legend">${keys.length ? `<span class="iso-keys">${keys.map((key) => `<span class="iso-key">${swatch(key.mark)}${escape(key.label)}</span>`).join("")}</span>` : ""}${caption ? `<span class="iso-caption">${caption}</span>` : ""}</figcaption>`
+      ? `<figcaption class="iso-legend">${keys.length ? `<span class="iso-keys">${keys.map((key) => `<span class="iso-key">${swatch(key.mark)}${tidy(escape(key.label))}</span>`).join("")}</span>` : ""}${caption ? `<span class="iso-caption">${tidy(caption)}</span>` : ""}</figcaption>`
       : "";
   return `<figure class="iso-figure opt-figure ${className}"><div class="iso-plate opt-plate"><div class="iso-plate-corners" aria-hidden="true">${corner("fig", fig)}${title ? corner("title", title) : ""}</div>${body}${groups ? `<div class="opt-controls">${groups}</div>` : ""}<div class="opt-foot"><span class="opt-hint">${escape(hint)}</span>${readout}</div></div>${legend}</figure>`;
 }
@@ -74,7 +82,7 @@ body{margin:0;background:var(--anatomy-page);color:var(--anatomy-text);font:15px
 /** A standalone page. `script` must define `mount(root)`; the page calls it on the figure. */
 export function page({ title, theme = "dark", body, script = "", css = "" }) {
   const run = script ? `${kitScript()}\n${script}\nmount(document.querySelector(".opt-figure"));` : "";
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)}</title>${FONT_LINKS}<style>${ISO_CSS}${THEME_CSS}${PAGE_CSS}${css}</style></head><body class="iso optimal" data-theme="${theme}"><main class="iso-page">${body}</main>${run ? `<script type="module">${run.replace(/<\/(script)/gi, "<\\/$1")}</script>` : ""}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)}</title>${ICON_LINK}${FONT_LINKS}<style>${ISO_CSS}${THEME_CSS}${PAGE_CSS}${css}</style></head><body class="iso optimal" data-theme="${theme}"><main class="iso-page">${body}</main>${run ? `<script type="module">${run.replace(/<\/(script)/gi, "<\\/$1")}</script>` : ""}</body></html>`;
 }
 
 /**
