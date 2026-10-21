@@ -62,7 +62,9 @@
 .a6-tick { fill: none; stroke: var(--a6-tick); stroke-width: 1.4; }
 .a6-tick-txt { fill: var(--a6-tick); font: 500 17px/1 var(--opt-ui); font-variant-numeric: tabular-nums; }
 .a6-mon-bg { fill: var(--a6-mon-bg); }
-.a6-mlabel { font: 600 18px/1 var(--opt-ui); }
+/* "Hemoglobin" sits clear of the ferritin baseline and of the ferritin dot riding along it before the dose, and both
+   labels are painted over the cursor with a knock-out halo, so the moving day line breaks around them */
+.a6-mlabel { font: 600 18px/1 var(--opt-ui); paint-order: stroke; stroke: var(--a6-mon-bg); stroke-width: 6px; stroke-linejoin: round; }
 .a6-mlabel-fer { fill: var(--a6-fer); } .a6-mlabel-hb { fill: var(--a6-hb); }
 .a6-axis { fill: none; stroke: var(--a6-mon-ink); stroke-width: 1; opacity: 0.45; }
 .a6-mtick { fill: var(--a6-mon-ink); font: 500 17px/1 var(--opt-ui); opacity: 0.8; }

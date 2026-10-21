@@ -246,19 +246,20 @@ const b1 = k.iso(S3(0, DEP - 1, 0), PB).map((v, i) => v - o2[i]);
 const det = ex2[0] * ey2[1] - ey2[0] * ex2[1];
 const WD1 = [(b1[0] * ey2[1] - ey2[0] * b1[1]) / det, (ex2[0] * b1[1] - b1[0] * ex2[1]) / det].map((v) => +v.toFixed(4));
 const MT = Math.ceil(DRAW_BOTTOM + 12); // the monitor's top
-const MON = { x0: 64, x1: 552, d0: -M.LOOP.before, d1: M.LOOP.after, fer: { y0: MT + 70, y1: MT + 26, max: 500 }, hb: { y0: MT + 134, y1: MT + 90, lo: 100, hi: 135 }, box: [24, MT, 552, 172] };
+// x1 leaves the "8 wk" tick label as much room from the panel's right edge as the labels have on the left
+const MON = { x0: 64, x1: 532, d0: -M.LOOP.before, d1: M.LOOP.after, fer: { y0: MT + 70, y1: MT + 26, max: 500 }, hb: { y0: MT + 134, y1: MT + 90, lo: 100, hi: 135 }, box: [24, MT, 552, 172] };
 const VH = MT + 172 + 6;
 const xOfDay = (d) => MON.x0 + ((d - MON.d0) / (MON.d1 - MON.d0)) * (MON.x1 - MON.x0);
 const weekTicks = [0, 14, 28, 42, 56].map((d, i) => `<path class="a6-axis" d="M${f1(xOfDay(d))} ${MON.hb.y0}v5"/><text class="a6-mtick" x="${f1(xOfDay(d))}" y="${MON.hb.y0 + 26}" text-anchor="middle">${i === 0 ? "dose" : `${i * 2} wk`}</text>`).join("");
 const monitor = `<g class="a6-mon">
 <rect class="a6-mon-bg" x="${MON.box[0]}" y="${MON.box[1]}" width="${MON.box[2]}" height="${MON.box[3]}" rx="12"/>
-<text class="a6-mlabel a6-mlabel-fer" x="${MON.x0}" y="${MON.fer.y1 - 6}">Ferritin (stores)</text>
-<text class="a6-mlabel a6-mlabel-hb" x="${MON.x0}" y="${MON.hb.y1 - 6}">Hemoglobin</text>
 <path class="a6-axis" d="M${MON.x0} ${MON.fer.y0}H${MON.x1}M${MON.x0} ${MON.hb.y0}H${MON.x1}"/>
 ${weekTicks}
 <path class="a6-trace-ghost a6-fer" data-part="ferGhost"/><path class="a6-trace a6-fer" data-part="ferLine"/>
 <path class="a6-trace-ghost a6-hbl" data-part="hbGhost"/><path class="a6-trace a6-hbl" data-part="hbLine"/>
 <path class="a6-cursor" data-part="cursor" d="M0 ${MON.fer.y1 - 2}V${MON.hb.y0}"/>
+<text class="a6-mlabel a6-mlabel-fer" x="${MON.x0}" y="${MON.fer.y1 - 6}">Ferritin (stores)</text>
+<text class="a6-mlabel a6-mlabel-hb" x="${MON.x0}" y="${MON.hb.y1 + 3}">Hemoglobin</text>
 <circle class="a6-cdot a6-cdot-fer" data-part="ferDot" r="5"/><circle class="a6-cdot a6-cdot-hb" data-part="hbDot" r="5"/>
 </g>`;
 
