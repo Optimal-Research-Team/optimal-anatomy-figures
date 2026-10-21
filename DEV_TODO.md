@@ -4,7 +4,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
-- **Oct 21, 2026: seven card reserves raised; update `FIGURE_RESERVE` from `handoff/site/optimalFigures.ts` (the zip's patch carries the new values).** I re-measured every card at 358 and 760 px, in a desktop browser and as a phone (touch, 3× pixels). Seven cards came out taller than their reserves, so content below them would jump by 4–29 px when they mount.
+- **Oct 21, 2026: seven card reserves raised; update `FIGURE_RESERVE` from `handoff/site/optimalFigures.ts` (the private patch carries the new values).** I re-measured every card at 358 and 760 px, in a desktop browser and as a phone (touch, 3× pixels). Seven cards came out taller than their reserves, so content below them would jump by 4–29 px when they mount.
   - Raised: Fig 5 1224 / 1315 (also its new pose, below); A2 phone 1311; A3 phone 1040; A4 desktop 1626; A5 phone 1186; A6 phone 1175; A9 998 / 1060.
   - The other eight already fit. `placements.json` matches.
   - **Fig 5:** the assessor turns 14° so the whole tablet shows past the near arm. The arm had hidden where the VO₂ line flattens at the 45 and 55 ceilings.
@@ -23,13 +23,13 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
   - **Fig 3 and A1:** "97% open", with no space before %. Fig 3's "Hb" readout is spelled out as "Hemoglobin". Fig 3 and A6 use the Canadian spelling "hemoglobin" throughout.
   - **A6:** the days before the dose read "−4 (before)", with a true minus sign.
   - **A4, Fig 5 and Fig 6:** millilitres are "mL" ("70 mL", "mL/kg/min"), including the tablet plot.
-  - **For step 1:** the zip's `embeds/` predate this change, so run `scripts/export-embeds.mjs` instead of copying them. Fig 4's phone card is 13 px taller, because two readout labels now wrap at 358 px. `FIGURE_RESERVE['creator-600'].phone` is now 1188 in `handoff/site/optimalFigures.ts`; carry that into the site's copy. Sizes in `placements.json` are updated.
+  - **For step 1:** the Oct 12 zip's `embeds/` predate this change, so run `scripts/export-embeds.mjs` instead of copying them. Fig 4's phone card is 13 px taller, because two readout labels now wrap at 358 px. `FIGURE_RESERVE['creator-600'].phone` is now 1188 in `handoff/site/optimalFigures.ts`; carry that into the site's copy. Sizes in `placements.json` are updated.
 
 ## Ship (primary placements, pages that exist today)
 
 1. **Apply the reference integration** (S, about 1 h including review)
-   - Apply the zip's `patch/beoptimal-landing-anatomy-figures.patch` on a branch from `main` (`git am`). It was made against `0f36c00` and applies cleanly there.
-   - Copy the zip's `embeds/` into `public/figures/`, or run `scripts/export-embeds.mjs`.
+   - Apply `beoptimal-landing-anatomy-figures.patch` from the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch) on a branch from `main` (`git apply`). It was made against `0f36c00`; on Oct 21 it applied cleanly there and to `main` at `0c0473c`.
+   - Copy `embeds/` from the `handoff-2026-10-21` release into `public/figures/`, or run `scripts/export-embeds.mjs`.
    - `yarn test` (80/80), `yarn build`, `yarn preview`.
 2. **Compliance look at the Menopause Protocol** (owner: Peter and the Protocol's reviewer)
    - Four figures go in the reviewed page: A9 in §3, Fig 1 and A3 in §5, A2 in §14.

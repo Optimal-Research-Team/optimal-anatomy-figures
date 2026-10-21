@@ -1,6 +1,7 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
-**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19)
+**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21)
+**Start here if you had the Oct 12 package:** [`handoff/README.md`](handoff/README.md) lists everything that changed since then. The download is the [`handoff-2026-10-21` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -20,7 +21,7 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `handoff/site/` | Drop-in files for `src/components/optimal-figures/`: `OptimalFigure.tsx`, `optimalFigures.ts`, `optimal-figures.css`. |
 | `scripts/export-embeds.mjs` | Copies the 15 built scripts into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
-| **Zip only** (`~/Downloads/optimal-figures-handoff-2026-10-12.zip`) | `patch/beoptimal-landing-anatomy-figures.patch` (the reference integration; it stays out of this public repo because the site repo is private), `embeds/` (the 15 built scripts and manifest), and `qa/shots/` (13 screenshots of the figures in place). |
+| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts and their manifest are in `embeds/` in the [`handoff-2026-10-21` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21), along with the equipment films. |
 
 ## Added Oct 19: equipment, taken apart (E1–E4)
 
@@ -170,7 +171,7 @@ import OptimalFigure from 'components/optimal-figures/OptimalFigure'
 
 ## Ship the scripts
 
-1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy the zip's `embeds/` folder.
+1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the `handoff-2026-10-21` release.
 2. Total size is about 3.5 MB raw and 0.9 MB gzipped across all 15. A page only loads its own figures (1–4 per page), each 112–424 KB raw (35–94 KB gzipped).
 3. Caching: the file names aren't hashed. Either serve `/figures/*` with `Cache-Control: public, max-age=3600, stale-while-revalidate=86400` (a `headers` entry in `vercel.json`), or version the folder (`/figures/2026-10-12/`) and set `FIGURE_BASE`. `manifest.json` has a sha per file, for cache-busting or CI checks.
 4. Don't hot-link GitHub Pages in production. It's the review gallery and it changes when we iterate.
