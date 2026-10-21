@@ -498,7 +498,7 @@ const CAPTION = [
 const body = plate({
   fig: "Fig 1",
   title: "The narrowing thermostat",
-  hint: "Pick a stage · drag sideways · space for a small rise",
+  hint: "Pick a stage · drag sideways · tap for a small rise",
   stats: [
     { key: "core", label: "Core", value: "+0.00 °C" },
     { key: "zone", label: "Zone", value: `${T.zonePre.toFixed(1)} °C` },

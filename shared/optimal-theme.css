@@ -57,7 +57,7 @@
   --anatomy-card: #fffcf7;
   --anatomy-text: #3e3d39;
   --anatomy-strong: #252525;
-  --anatomy-muted: #76736d;
+  --anatomy-muted: #716e68; /* 4.97:1 on the cream card (was 4.46:1 for the legend) */
   --anatomy-paper: #fffcf7;
   --anatomy-face: #fffefb;
   --anatomy-top: #fffefb;

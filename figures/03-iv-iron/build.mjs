@@ -235,7 +235,7 @@ const CAPTION = [
 const body = plate({
   fig: "Fig 3",
   title: "The depot with a gate",
-  hint: "Pick a route · drag the days · space to play",
+  hint: "Pick a route · drag the days · press Play",
   stats: [
     { key: "day", label: "Day", value: "0" },
     { key: "gate", label: "Gut gate", value: "97% open" },

@@ -14,7 +14,7 @@ export const FILM = {
 export const FIGURE = {
   title: "Hand dynamometer · anatomy",
   pageTitle: "Hand dynamometer · Optimal Health",
-  lead: "The clinical grip-strength meter, taken apart. A sealed hydraulic system turns a squeeze into a reading on a dual kilogram and pound dial, and a peak-hold needle keeps the highest value until it is reset.",
+  lead: "The clinical grip-strength meter. A sealed hydraulic system turns a squeeze into a reading on a dual kilogram and pound dial, and a peak-hold needle keeps the highest value until it is reset.",
   note: "Drawn as the clinical-standard hydraulic design: five handle positions from 35 to 86 mm, a 0–90 kg / 0–200 lb dial and a peak-hold needle, from the manufacturer's user manual and published clinical protocols. Overall size, the internal layout of the body and the handle clip are estimates; handle travel is shown larger than on the real, near-isometric instrument. Geometry only: no photographs.",
   start: { yaw: -32, pitch: 12 },
   label:

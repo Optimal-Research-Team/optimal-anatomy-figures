@@ -6,12 +6,12 @@ Interactive isometric explainer figures for **Optimal Health** (Barrie, ON) serv
 
 | # | Figure | Idea | Size | Status |
 |---|---|---|---|---|
-| 1 | The narrowing thermostat | Hot flashes and the thermoneutral zone | Figure | Round 1 · for review |
-| 2 | Five cylinders on a bridge | InBody 580 bioimpedance: ECW vs total water, segments | Figure | Round 1 · for review |
-| 3 | The depot with a gate | Hepcidin, oral vs IV iron | Figure | Round 1 · for review |
-| 4 | The runner rig | Creator 600 gait: cadence, foot strike, joint load | Hero | Round 1 · for review |
-| 5 | The ramp and the mask | VO2max ramp on a bike: wireless mask, assessor with a tablet | Hero + WebGL | Round 2 · for review |
-| 6 | The treadmill ramp | VO2max ramp on the Creator 600: wireless mask, assessor with a tablet | Figure | Round 1 · for review |
+| 1 | The narrowing thermostat | Hot flashes and the thermoneutral zone | Figure | Approved (Oct 12) |
+| 2 | Five cylinders on a bridge | InBody 580 bioimpedance: ECW vs total water, segments | Figure | Approved (Oct 12) |
+| 3 | The depot with a gate | Hepcidin, oral vs IV iron | Figure | Approved (Oct 12) |
+| 4 | The runner rig | Creator 600 gait: cadence, foot strike, joint load | Hero | Approved (Oct 12) |
+| 5 | The ramp and the mask | VO₂max ramp on a bike: wireless mask, assessor with a tablet | Hero + WebGL | Approved (Oct 12) |
+| 6 | The treadmill ramp | VO₂max ramp on the Creator 600: wireless mask, assessor with a tablet | Figure | Approved (Oct 12) |
 | E1 | The InBody 580, taken apart | 114 parts from the published dimensions; 12 s film (16:9 + 9:16) and a take-apart page | Film + page | Approved (Oct 19) |
 | E2 | The Creator 600, taken apart | Depth camera under a 50″ portrait screen; film and take-apart page | Film + page | Approved (Oct 19) |
 | E3 | The KICKR Bike, taken apart | Belt drive, electronic brake, five-point fit (no tilt: grade is simulated); film and page | Film + page | Approved (Oct 19) |
