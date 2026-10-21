@@ -77,14 +77,16 @@ const row = (p) => {
   const status = b?.status ?? (b ? "Draft" : "Planned");
   const light = b?.pages.find((f) => f.endsWith("-light.html"));
   const dark = b?.pages.find((f) => !f.endsWith("-light.html"));
+  // Theme links and film links sit in their own rows, so a row of four never wraps into 3 + 1.
+  const films = (b?.films || []).map((f) => `<a href="${p.dir}/${esc(f.href)}">${esc(f.label)}</a>`).join("");
   const links = b
-    ? `${light ? `<a href="${p.dir}/${light}">Cream</a>` : ""}${dark ? `<a href="${p.dir}/${dark}">Forest night</a>` : ""}` +
-      (b.films || []).map((f) => `<a href="${p.dir}/${esc(f.href)}">${esc(f.label)}</a>`).join("")
+    ? `<div class="links">${light ? `<a href="${p.dir}/${light}">Cream</a>` : ""}${dark ? `<a href="${p.dir}/${dark}">Forest night</a>` : ""}</div>` +
+      (films ? `<div class="links films">${films}</div>` : "")
     : `<span class="soon">Not built yet</span>`;
   return `<li class="${b ? "is-built" : ""}">
     <div class="n">Fig ${p.n}</div>
     <div class="body"><h2>${esc(title)}</h2><p>${esc(line)}</p></div>
-    <div class="meta"><span class="status">${esc(status)}</span><div class="links">${links}</div></div>
+    <div class="meta"><span class="status">${esc(status).replace(/\S+-\S+/g, (w) => `<span class="nw">${w}</span>`)}</span>${links}</div>
   </li>`;
 };
 const rows = PLAN.filter((p) => !p.group).map(row).join("\n");
@@ -94,6 +96,7 @@ writeFileSync(join(dist, "index.html"), `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Optimal Figures</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232c4e25' stroke-width='4'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Castoro:ital@0;1&family=Public+Sans:wght@400;500;600&display=swap">
 <style>
@@ -105,22 +108,25 @@ h1{font:400 clamp(40px,8vw,64px)/.98 Castoro,Georgia,serif;letter-spacing:-.04em
 h1 em{font-style:italic}
 .lede{max-width:560px;color:var(--body);margin:0 0 40px}
 ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--forest)}
-li{display:grid;grid-template-columns:64px 1fr auto;gap:20px;align-items:start;padding:22px 0;border-bottom:1px solid var(--rule)}
+li{display:grid;grid-template-columns:64px minmax(0,1fr) 232px;gap:20px;align-items:start;padding:22px 0;border-bottom:1px solid var(--rule)}
 .n{font:italic 400 15px Castoro,Georgia,serif;color:var(--sage);padding-top:4px}
-h2{font:400 24px/1.1 Castoro,Georgia,serif;letter-spacing:-.02em;color:var(--forest);margin:0 0 6px}
+h2{font:400 24px/1.1 Castoro,Georgia,serif;letter-spacing:-.02em;color:var(--forest);margin:0 0 6px;text-wrap:balance}
 p{margin:0;color:var(--body);font-size:14.5px}
-.meta{text-align:right;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
-.status{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.meta{text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.status+.links{margin-top:2px}
+.status{font-size:10.5px;font-weight:600;line-height:1.5;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-wrap:balance;padding-top:3px}
 li.is-built .status{color:var(--forest)}
+.nw{white-space:nowrap}
 .links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .links a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--forest);color:var(--forest);text-decoration:none;font-size:14px;font-weight:500}
-.links a:first-child{background:var(--forest);color:var(--cream)}
+.links:not(.films) a:first-child{background:var(--forest);color:var(--cream)}
+.films a::before{content:"";width:0;height:0;margin-right:8px;border-left:7px solid currentColor;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
 .soon{font-size:13px;color:var(--muted)}
 h3.group{font:400 clamp(28px,5vw,36px)/1.05 Castoro,Georgia,serif;letter-spacing:-.03em;color:var(--forest);margin:56px 0 10px}
 h3.group em{font-style:italic}
 footer{margin-top:40px;font-size:12.5px;color:var(--muted)}
 footer a{color:var(--forest)}
-@media (max-width:640px){li{grid-template-columns:1fr;gap:8px}.meta{text-align:left;align-items:flex-start}.links{justify-content:flex-start}}
+@media (max-width:640px){li{grid-template-columns:1fr;gap:8px}.meta{text-align:left;align-items:flex-start}.links{justify-content:flex-start}.status{padding-top:0}}
 </style></head>
 <body><main>
 <div class="eyebrow">Optimal Health · Barrie</div>
