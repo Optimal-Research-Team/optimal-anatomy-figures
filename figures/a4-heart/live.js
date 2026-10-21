@@ -429,12 +429,16 @@ function mount(fig) {
   let spawnR = 0;
   let spawnL = 0;
   let cham = null; // this frame's chambers, for depths
+  // A new cell gets its tilt and spin when it is born. They used to be set on its first step, so a cell spawned
+  // during a step was drawn that same frame with no angle: round 5 drew those in the veins and wrote "MNaN NaN"
+  // into the cell path (the TV's console errors). Round 6 only draws cells inside the chambers, but keep it safe.
+  const born = () => ({ a: Math.random() * Math.PI, spin: (Math.random() - 0.5) * 3 });
   function spawn(side) {
     const d = rnd(0, 8);
     if (side === "R") {
       const fromTop = Math.random() < 0.55;
-      cells.push({ side, stage: 0, p: fromTop ? [rnd(165, 188), -6] : [rnd(78, 98), 372], path: fromTop ? [[176, 120]] : [[132, 288]], j: [rnd(-16, 16), rnd(-16, 16)], d, dT: d });
-    } else cells.push({ side, stage: 0, p: [560, Math.random() < 0.5 ? 168 : 214], path: [[470, 196]], j: [rnd(-16, 16), rnd(-14, 14)], d, dT: d });
+      cells.push({ side, stage: 0, p: fromTop ? [rnd(165, 188), -6] : [rnd(78, 98), 372], path: fromTop ? [[176, 120]] : [[132, 288]], j: [rnd(-16, 16), rnd(-16, 16)], d, dT: d, ...born() });
+    } else cells.push({ side, stage: 0, p: [560, Math.random() < 0.5 ? 168 : 214], path: [[470, 196]], j: [rnd(-16, 16), rnd(-14, 14)], d, dT: d, ...born() });
   }
   function moveTo(c, t, v, dt) {
     const dx = t[0] - c.p[0], dy = t[1] - c.p[1];
