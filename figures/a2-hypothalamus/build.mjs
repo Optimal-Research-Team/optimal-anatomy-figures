@@ -11,14 +11,19 @@
 // the blood keeps them small and quiet; take it away and they swell and signal more, until the
 // heat-loss centre tips over with small everyday wanders: a hot flash.
 //
+// Round 4 (Oct 21): where the device can run it, a real-time 3-D specimen (gl/, one WebGL canvas) crossfades in
+// over this drawing once the figure nears the screen. The SVG stays the first paint and the fallback.
+//
 //   node build.mjs | --light
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
 import * as M from "./model.mjs";
 import { rateOf } from "../01-menopause-thermostat/model.mjs";
+import * as A3 from "./gl/hypo3d-anatomy.js";
+import { sourcesHash } from "./gl/stamp.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
@@ -265,6 +270,7 @@ const svg = `<svg class="iso-svg a2-svg" viewBox="0 0 ${VW} ${VH}" role="img" ar
   <radialGradient id="a2-mglow" cx="50%" cy="50%" r="50%"><stop offset="0" class="a2-mg0"/><stop offset="1" class="a2-mg1"/></radialGradient>
   <radialGradient id="a2-hglow" cx="50%" cy="50%" r="50%"><stop offset="0" class="a2-hg0"/><stop offset="1" class="a2-hg1"/></radialGradient>
 </defs>
+<g class="a2-specimen">
 <g transform="${FRONT_M}"><g class="a2-far" data-part="far"></g></g>
 ${TOP_FACE}
 ${END_FACE}
@@ -307,6 +313,7 @@ ${kndySvg}
 <path data-part="estro" class="a2-estro"/>
 <path data-part="nkb" class="a2-nkb"/>
 </g></g>
+</g>
 <g class="a2-loc" aria-hidden="true" transform="translate(${VW - 128} ${VH - 92}) scale(0.72) translate(-16 -478)"><rect class="a2-loc-bg" x="${LOC.x}" y="${LOC.y}" width="${LOC.w}" height="${LOC.h}" rx="10"/><path class="a2-loc-brain" d="${locBrain}"/><path class="a2-loc-brain" d="${locCbm}"/><path class="a2-loc-brain" d="${locStem}"/><rect class="a2-loc-mark" x="76" y="536" width="20" height="16" rx="3"/></g>
 </svg>`;
 
@@ -316,7 +323,21 @@ const LINES = [
   "Hormone therapy, where it suits: estrogen is replaced, the KNDy cells quieten, and the heat-loss centre moves back from its edge.",
   "A non-hormonal prescription option: the cells still signal, but a neurokinin-receptor blocker stops the heat-loss centre from receiving it.",
 ];
-const DATA = { far: { w: WD1, A: 62, E: 24, dep: DEP, parts: FAR_PARTS, nerve: NERVE_C, nerveW: [24, 25] }, kndy: KNDY, mnpo: MNPO, axons: AXONS, down: DOWN, out: OUT, vessels: VESSELS.map((v) => curve(v, 6).map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])), lines: LINES, rate: [rateOf(1), rateOf(0)] };
+// ---------------------------------------------------------------- the 3-D layer (gl/)
+// The chunk is built by gl/build-gl.sh and committed; refuse to ship one whose sources have changed since.
+const CHUNK = JSON.parse(readFileSync(join(HERE, "gl", "chunk.json"), "utf8"));
+if (CHUNK.sources !== sourcesHash()) throw new Error(`A2: gl/${CHUNK.file} is stale (its sources changed). Run: bash figures/a2-hypothalamus/gl/build-gl.sh`);
+// The 3-D layer runs this figure's simulation on its own copy of the section paths (with depths added). They
+// must be the same 2-D paths the SVG uses, or bursts and flashes would land at different moments.
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const VESSELS6 = VESSELS.map((v) => curve(v, 6).map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]));
+if (!same(A3.KNDY_POS.map((p) => p.slice(0, 2)), KNDY) || !same(A3.AXONS.map((m) => m.pts), AXONS) || !same(A3.DOWN.map((m) => m.pts), DOWN) || !same(A3.OUT.pts, OUT) || !same(A3.VESSELS.map((v) => v.map((p) => p.slice(0, 2))), VESSELS6))
+  throw new Error("A2: gl/hypo3d-anatomy.js has drifted from the section paths in build.mjs");
+// The specimen's outline in the drawing, as fractions of the stage: the 3-D camera frames itself to it.
+const PROJ = BOUNDS3.map((p) => k.iso(p, PB));
+const BOX = [Math.min(...PROJ.map((p) => p[0])) / VW, Math.min(...PROJ.map((p) => p[1])) / VH, Math.max(...PROJ.map((p) => p[0])) / VW, BLOCK_BOTTOM / VH].map((v) => +v.toFixed(4));
+const GL = { file: CHUNK.file, v: CHUNK.sha256.slice(0, 10), box: BOX };
+const DATA = { far: { w: WD1, A: 62, E: 24, dep: DEP, parts: FAR_PARTS, nerve: NERVE_C, nerveW: [24, 25] }, kndy: KNDY, mnpo: MNPO, axons: AXONS, down: DOWN, out: OUT, vessels: VESSELS6, lines: LINES, rate: [rateOf(1), rateOf(0)], gl: GL };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
 const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
@@ -344,12 +365,15 @@ const body = plate({
     { mark: "estro", label: "Estrogen" },
   ],
   caption: CAPTION,
-  body: `<div class="iso-stage a2-stage">${svg}</div><p class="a2-scene" data-scene>${LINES[0]}</p><span class="a2-sr" role="status" aria-live="polite" data-status></span>`,
+  body: `<div class="iso-stage a2-stage"><canvas class="a2-gl" aria-hidden="true"></canvas>${svg}</div><p class="a2-scene" data-scene>${LINES[0]}</p><span class="a2-sr" role="status" aria-live="polite" data-status></span>`,
 });
 const out = THEME === "light" ? `${SLUG}-light.html` : `${SLUG}.html`;
 writeFileSync(join(HERE, out), page({ title: "The hot-flash switch", theme: THEME, body, css: CSS, script: SCRIPT }));
+// the chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+mkdirSync(join(HERE, "embed"), { recursive: true });
+copyFileSync(join(HERE, "gl", CHUNK.file), join(HERE, "embed", CHUNK.file));
 if (THEME === "light") {
-  mkdirSync(join(HERE, "embed"), { recursive: true });
-  writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // host API: stage / tour / size-readout attributes, a stage property, and pause-on-detach (see live.js)
+  writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS, host: { attributes: ["stage", "tour", "size-readout"], props: ["stage"] } }));
 }
 console.log("wrote", out, `mean drive pre ${M.meanDrive(1).toFixed(2)}, post ${M.meanDrive(0).toFixed(2)}`);

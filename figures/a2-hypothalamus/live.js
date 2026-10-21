@@ -2,7 +2,64 @@
 // centre's drive (a leaky sum of what arrives, plus a small natural wander) tips into a hot flash
 // when it reaches 1. Estrogen from the vessels docks on the KNDy cells; its level, the cells'
 // size, how often they burst and how much they send all come from kndyOf(e).
+//
+// Round 4: where the device can run it, the real-time 3-D specimen (gl/, embed/hypothalamus-3d.js)
+// takes over the drawing. This file keeps the card (buttons, readouts, scene line, tour); the SVG below is
+// the first paint and the fallback, and stays the figure with no WebGL 2, a lost context, Save-Data, a
+// low-memory or few-core device, a device too slow to hold ~22 fps, or gl="off" on the element.
 const DATA = __DATA__;
+// The 3-D chunk sits next to this script. Resolve it now, while this script is the current one: the embed
+// is a classic script, so currentScript is its own element. A standalone page runs this inline (no
+// currentScript), so the chunk is in its embed/ folder. A gl-src attribute on the element overrides both.
+const A2_GL_BASE = (() => {
+  try {
+    const s = document.currentScript;
+    return s && s.src ? s.src : new URL("embed/", document.baseURI).href;
+  } catch (_) {
+    return "";
+  }
+})();
+/** Why the 3-D layer shouldn't run here, before downloading anything ("" when it can try). */
+function a2GlSkip(want) {
+  if (want === "off") return "off";
+  if (typeof WebGL2RenderingContext === "undefined" || typeof IntersectionObserver === "undefined") return "no-webgl2";
+  const c = navigator.connection;
+  if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ""))) return "save-data";
+  if (navigator.deviceMemory && navigator.deviceMemory < 3) return "low-memory";
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4) return "few-cores";
+  return "";
+}
+/** A throwaway WebGL 2 context: a real GPU (no software fallback), float render targets, big textures. */
+function a2GlProbe() {
+  let g = null;
+  try {
+    g = document.createElement("canvas").getContext("webgl2", { failIfMajorPerformanceCaveat: true });
+  } catch (_) {}
+  if (!g) return "no-webgl2";
+  const floats = g.getExtension("EXT_color_buffer_float") || g.getExtension("EXT_color_buffer_half_float");
+  const big = g.getParameter(g.MAX_TEXTURE_SIZE) >= 2048;
+  const lose = g.getExtension("WEBGL_lose_context");
+  if (lose) lose.loseContext();
+  return !floats ? "no-float-targets" : !big ? "small-textures" : "";
+}
+/** Load the chunk once per page (a classic script, so it also works from file:// and any static host). */
+function a2GlLoad(src) {
+  const w = window;
+  if (w.OptimalFigA2GL) return Promise.resolve(w.OptimalFigA2GL);
+  if (w.__optimalFigA2GLLoading) return w.__optimalFigA2GLLoading;
+  w.__optimalFigA2GLLoading = new Promise((resolve, reject) => {
+    const el = document.createElement("script");
+    el.src = src;
+    el.async = true;
+    el.onload = () => (w.OptimalFigA2GL ? resolve(w.OptimalFigA2GL) : reject(new Error("no layer")));
+    el.onerror = () => {
+      w.__optimalFigA2GLLoading = null;
+      reject(new Error("load"));
+    };
+    document.head.appendChild(el);
+  });
+  return w.__optimalFigA2GLLoading;
+}
 
 function mount(fig) {
   const svg = fig.querySelector("svg");
@@ -219,14 +276,32 @@ function mount(fig) {
   }
 
   // ---------------------------------------------------------------- input, tour, loop
-  function setState(i, quiet) {
+  // The host page can drive the figure (the clinic TV does): attributes on <optimal-fig-hypothalamus>
+  //   stage="before|after|therapy|nonhormonal"   show that state now (the tour, if any, continues from it)
+  //   tour="before,after" | "none"               which states the idle tour visits, in order (default: all four)
+  //   size-readout="word"                         "Small / Larger / Smaller" in place of the % (the 194 % rests on a LOW source)
+  //   gl="off" · gl-src="<url>"                   keep the SVG drawing · load the 3-D chunk from elsewhere
+  // and it announces every change with a "stagechange" event ({ stage, source: "tour" | "user" | "host" }).
+  // The standalone pages read the same names from the URL (?stage=after&tour=none&size-readout=word&gl=off).
+  const STAGE_NAMES = ["before", "after", "therapy", "nonhormonal"];
+  const host = fig.getRootNode && fig.getRootNode().host;
+  const params = host ? null : new URLSearchParams(location.search);
+  const attr = (name) => (host ? host.getAttribute(name) : params.get(name));
+  const tourOf = (v) => {
+    if (v === null || v === undefined || v.trim() === "") return [0, 1, 2, 3];
+    return v.split(/[\s,]+/).map((n) => STAGE_NAMES.indexOf(n.trim().toLowerCase())).filter((i) => i >= 0);
+  };
+  let tour = tourOf(attr("tour"));
+  let sizeWords = attr("size-readout") === "word";
+  const stageOf = (v) => STAGE_NAMES.indexOf(String(v ?? "").trim().toLowerCase());
+  function setState(i, quiet, source = "user") {
     // 0 before, 1 after, 2 hormone therapy (estrogen replaced), 3 non-hormonal blocker
     target = [1, 0, KNDY.therapy, 0][i];
     block = i === 3;
     svg.classList.toggle("a2-blocked", block);
     const s = kndyOf(target);
     out.estro.textContent = ["Cycling", "Low", "Replaced", "Low"][i];
-    out.size.textContent = i === 2 ? "Smaller" : `${Math.round(100 * s.area)}%`;
+    out.size.textContent = sizeWords ? ["Small", "Larger", "Smaller", "Larger"][i] : i === 2 ? "Smaller" : `${Math.round(100 * s.area)}%`;
     out.rate.textContent = i < 2 ? (DATA.rate[i] < 0.05 ? "Rare" : `≈ ${DATA.rate[i].toFixed(1)} an hour`) : "Fewer, typically";
     line.textContent = DATA.lines[i];
     buttons.forEach((b, j) => {
@@ -234,11 +309,14 @@ function mount(fig) {
       b.tabIndex = j === i ? 0 : -1;
     });
     if (!quiet) status.textContent = DATA.lines[i];
+    if (L) L.setStage(i);
+    (host || fig).dispatchEvent(new CustomEvent("stagechange", { detail: { stage: STAGE_NAMES[i], source }, bubbles: true, composed: true }));
   }
   let touring = true;
   let idle = -1e9;
   let tourClock = 0;
-  let stateAt = 0;
+  let stateAt = Math.max(0, stageOf(attr("stage")));
+  if (stageOf(attr("stage")) < 0 && tour.length && !tour.includes(stateAt)) stateAt = tour[0];
   const takeOver = () => {
     touring = false;
     idle = performance.now();
@@ -280,23 +358,28 @@ function mount(fig) {
   let raf = 0;
   let last = 0;
   let visible = true;
+  let attached = true; // false while the host has taken the element off the page
   function tick(now) {
     raf = 0;
-    if (!visible || still.matches) return;
+    if (!visible || !attached || still.matches) return;
     const dt = Math.min(0.05, last ? (now - last) / 1000 : 0.016);
     last = now;
     if (!touring && now - idle > 9000) touring = true;
-    if (touring && (tourClock += dt) > 12) {
+    if (touring && tour.length > 1 && (tourClock += dt) > 12) {
       tourClock = 0;
-      stateAt = (stateAt + 1) % 4;
-      setState(stateAt, true);
+      const at = tour.indexOf(stateAt);
+      stateAt = tour[(at + 1) % tour.length];
+      setState(stateAt, true, "tour");
     }
-    step(dt);
-    draw();
+    // while the 3-D layer is shown it runs the simulation and draws; this loop only keeps the tour
+    if (!gl) {
+      step(dt);
+      draw();
+    }
     raf = requestAnimationFrame(tick);
   }
   const start = () => {
-    if (!raf && visible && !still.matches) {
+    if (!raf && visible && attached && !still.matches) {
       last = 0;
       raf = requestAnimationFrame(tick);
     }
@@ -305,12 +388,140 @@ function mount(fig) {
     visible = entries.some((en) => en.isIntersecting);
     if (visible) start();
   }).observe(svg);
-  still.addEventListener("change", () => (still.matches ? renderStill() : start()));
-  setState(0, true);
+  const onMotion = () => (still.matches ? renderStill() : start());
+  still.addEventListener("change", onMotion);
+
+  // ---------------------------------------------------------------- the 3-D layer (one WebGL canvas)
+  // Lazy: nothing loads until the figure is within about a screen of the viewport, and then only after the
+  // page goes idle. The layer draws its first frame, then crossfades in over the drawing (the locator
+  // stays on top). A lost context hands the figure back to the SVG and back again when it's restored.
+  const stage = fig.querySelector(".a2-stage");
+  const canvas = fig.querySelector(".a2-gl");
+  const hint = fig.querySelector(".opt-hint");
+  const hintText = hint ? hint.textContent : "";
+  let L = null;
+  let gl = false;
+  const showGL = (on) => {
+    gl = on;
+    stage.dataset.gl = on ? "on" : stage.dataset.gl === "on" ? "svg:lost" : stage.dataset.gl;
+    if (!on) {
+      // the drawing comes back exactly where the simulation is now
+      if (still.matches) renderStill();
+      else start();
+    }
+  };
+  const giveUp = (why) => {
+    if (L) L.dispose();
+    L = null;
+    gl = false;
+    stage.dataset.gl = `svg:${why}`;
+    if (hint) hint.textContent = hintText;
+    if (still.matches) renderStill();
+    else start();
+  };
+  const skipWhy = a2GlSkip(attr("gl"));
+  if (skipWhy) stage.dataset.gl = `svg:${skipWhy}`;
+  else if (canvas && stage) {
+    // say it can be turned from the start, so the footer doesn't change height when the layer arrives
+    if (hint) hint.textContent = `${hintText} ·\u00a0Drag\u00a0to\u00a0turn`; // wraps as one phrase on narrow phones
+    stage.dataset.gl = "waiting";
+    const src = attr("gl-src") || (A2_GL_BASE ? new URL(`${DATA.gl.file}?v=${DATA.gl.v}`, A2_GL_BASE).href : "");
+    const begin = async () => {
+      const why = src ? a2GlProbe() : "no-src";
+      if (why) return giveUp(why);
+      stage.dataset.gl = "loading";
+      let api;
+      try {
+        api = await a2GlLoad(src);
+      } catch (_) {
+        return giveUp("load");
+      }
+      if (api.version !== 1) return giveUp("version"); // a cached embed and a newer chunk (or the reverse) that don't match
+      const theme = (fig.closest("[data-theme]") || document.body).getAttribute("data-theme") === "light" ? "light" : "dark";
+      L = api.create({
+        canvas,
+        theme,
+        coarse: matchMedia("(pointer: coarse)").matches,
+        box: DATA.gl.box,
+        onLost: () => showGL(false),
+        onRestored: () => showGL(true),
+        onGiveUp: giveUp,
+        onInteract: takeOver,
+      });
+      if (!L) return giveUp("init");
+      L.setStage(stateAt);
+      if (!attached) L.detach();
+      if (!(await L.ready)) return giveUp("init");
+      if (!L) return;
+      stage.__a2gl = L; // QA (drive.mjs, check-embeds.mjs) reads stats and takes stills through this
+      showGL(true);
+    };
+    const whenIdle = () => (window.requestIdleCallback ? requestIdleCallback(() => begin(), { timeout: 1500 }) : setTimeout(begin, 200));
+    const near = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((en) => en.isIntersecting)) return;
+        near.disconnect();
+        whenIdle();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    near.observe(stage);
+  }
+
+  setState(stateAt, true, "host");
   if (still.matches) renderStill();
   else {
     for (let i = 0; i < 300; i++) step(1 / 60);
     draw();
     start();
   }
+
+  // ---------------------------------------------------------------- the host API (embed.mjs forwards to this)
+  // Taken off the page, the figure stops: no animation frames, no listeners left on the document, so a host
+  // that drops the element lets it (and its one WebGL context) be collected. A host that keeps the element
+  // and puts it back (the TV re-attaches one element per airing) gets the same context back: none is
+  // ever created twice.
+  return {
+    get stage() {
+      return STAGE_NAMES[stateAt];
+    },
+    disconnected() {
+      attached = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+      still.removeEventListener("change", onMotion);
+      if (L) L.detach();
+    },
+    connected() {
+      if (attached) return;
+      attached = true;
+      still.addEventListener("change", onMotion);
+      if (L) L.attach();
+      if (still.matches) renderStill();
+      else start();
+    },
+    attribute(name, value) {
+      if (name === "stage") {
+        const i = stageOf(value);
+        if (i < 0) return;
+        tourClock = 0; // the tour, if any, carries on from here after a full turn
+        if (i !== stateAt) {
+          stateAt = i;
+          setState(i, true, "host");
+          if (still.matches) renderStill();
+        }
+      } else if (name === "tour") {
+        tour = tourOf(value);
+        tourClock = 0;
+        if (tour.length && !tour.includes(stateAt)) {
+          stateAt = tour[0];
+          setState(stateAt, true, "host");
+          if (still.matches) renderStill();
+        }
+      } else if (name === "size-readout") {
+        sizeWords = value === "word";
+        out.size.textContent = sizeWords ? ["Small", "Larger", "Smaller", "Larger"][stateAt] : stateAt === 2 ? "Smaller" : `${Math.round(100 * kndyOf([1, 0, KNDY.therapy, 0][stateAt]).area)}%`;
+      }
+    },
+  };
 }

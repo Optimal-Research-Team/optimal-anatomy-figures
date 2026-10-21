@@ -1,0 +1,20 @@
+{
+  "file": "hypothalamus-3d.js",
+  "three": "0.186.1",
+  "esbuild": "0.25.10",
+  "format": "iife",
+  "global": "OptimalFigA2GL",
+  "bytes": 633678,
+  "gzipBytes": 169253,
+  "sha256": "b6c6733a89fc8088",
+  "sources": "17d8d45f6e32590b",
+  "sourceFiles": [
+    "a2-layer.js",
+    "hypo3d-scene.js",
+    "hypo3d-geo.js",
+    "hypo3d-anatomy.js",
+    "hypo3d-model.js",
+    "../model.mjs"
+  ],
+  "built": "2026-10-21T18:44:19.402Z"
+}

@@ -1,6 +1,6 @@
 # Handoff: continuing locally
 
-This file is the full state of the project. It was written for the hand-off from the cloud session to a local Claude Code session on the Mac (Max plan limits, not cloud credits), and the local session has kept it current since. **Last updated:** 2026-10-12, end of the local session: every A-piece is now isometric 3-D. Work on `main`.
+This file is the full state of the project. It was written for the hand-off from the cloud session to a local Claude Code session on the Mac (Max plan limits, not cloud credits), and the local session has kept it current since. **Last updated:** 2026-10-21: A2 round 4, the real-time 3-D hypothalamus (one WebGL layer, lazy chunk), and the `handoff-2026-10-21b` release. Work on `main`.
 
 **First prompt for the local session:**
 > Read CLAUDE.md, HANDOFF.md, HANDOFF-LOCAL.md and BACKLOG.md. Then continue from "Next steps" in HANDOFF-LOCAL.md.
@@ -32,7 +32,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | 5 | VO₂max on a bike | **Round 3**: smart bike at KICKR BIKE SHIFT proportions (no logo or copied design), power arc on the flywheel cover, wireless mask, assessor with tablet | `05-vo2max` |
 | 6 | VO₂max on the Creator 600 | **Round 2**: dashboard mockup on the treadmill screen (speed, cadence, step, grade, live runner trace) | `06-vo2max-treadmill` |
 | A1 | Gut cell's gate | **Round 2 · 3-D block** (2026-10-12): brush border of 272 microvilli on top, cells cut on the right end, capillary half-tube | `a1-gut-cell` |
-| A2 | Hot-flash switch (hypothalamus) | **Round 3 · 3-D brain block** (2026-10-12): top cut at the thalamus, end cut, pituitary/stalk/chiasm/nerve/sella halved with round backs; treatment states as before | `a2-hypothalamus` |
+| A2 | Hot-flash switch (hypothalamus) | **Round 4 · real-time 3-D · awaiting Peter's OK** (2026-10-21): the deck's slide-3 `<hypo-3d>` specimen is A2's one WebGL layer (`gl/`, lazy chunk `hypothalamus-3d.js` next to the embed), driven by A2's own model, buttons and tour; new Forest night look; host API for the TV (`stage`, `tour`, `size-readout`). Round 3 (the SVG brain block, approved Oct 12) stays the first paint and the fallback | `a2-hypothalamus` |
 | A3 | Finger's heat valves · 3-D | **Approved look** ("a3b is great"). The A3b block build folded into A3 on 2026-10-12; flat A3 and `a3b-skin-block` retired | `a3-finger-skin` |
 | A4 | Beating heart | **Round 6 · a solid heart in WebGL** (2026-10-12, Peter: "THINK IN THREE DIMENSIONS"): ray-marched in the figure's camera (one kit WebGL layer, `gl-heart.js`). It is the outline puffed into a lit solid, cut in front of its widest section, with ridged chambers, curved leaflets, chordae, papillary muscles, hollow great vessels, coronaries and a floor shadow. It sways and turns under a drag. The round-5 SVG heart is the fallback | `a4-heart` |
 | A5 | Air sac and red cell | **Round 2 · 3-D block of lung** (2026-10-12): Voronoi foam cut on three faces, one sac opened with its bowl, duct to the top | `a5-alveolus` |
@@ -71,6 +71,7 @@ Every figure folder holds:
 
 ## 4. Open questions for Peter
 
+- **A2 round 4 (2026-10-21):** is the real-time 3-D hypothalamus (from slide 3 of the Ongoing Care deck) the A2 you want on the site and the reception TV? Check it on a real phone. Until then the round 3 SVG is the approved one, and `gl="off"` ships exactly that (A2 NOTES, "Round 4").
 - **The heart (A4), round 6:** is the WebGL heart the 3-D you wanted? Check on a real phone (frame rate unmeasured on devices; a governor lowers resolution if frames run long). Next options: the outflow valves cut open, ventricular twist, a pressure–volume loop with sourced pressures.
 - **Placement:** see `review/site-placement.md` (the beoptimal.ca scan), which proposes a home for every figure.
 - **Network:** with `beoptimal.ca`, `bici.cc` and `inbodycanada.ca` allowed (or locally), re-read the site pages directly instead of PDFs.
@@ -78,6 +79,7 @@ Every figure folder holds:
 
 ## 5. Next steps (priority order)
 
+0. **Peter's call on A2 round 4** (the real-time 3-D layer), then a real-phone frame-rate check. The engineering side shipped as the `handoff-2026-10-21b` release (ENGINEERING_HANDOFF.md, "Added Oct 21: A2 real-time 3-D"). If you change anything in `figures/a2-hypothalamus/gl/`, rebuild the chunk with `bash figures/a2-hypothalamus/gl/build-gl.sh` and commit `gl/hypothalamus-3d.js` and `gl/chunk.json`: `build.mjs` refuses a stale chunk.
 1. **Peter's call on the heart (A4), round 6.** Then any changes, and a real-phone frame-rate check (`gl-heart.js` governor).
 2. **Embeds on the site: handed to engineering 2026-10-12.** `ENGINEERING_HANDOFF.md` (where every figure goes, how to embed, QA), `DEV_TODO.md`, `handoff/` (placements.json, Preact components, QA script) and `scripts/export-embeds.mjs`. The tested reference patch for `beoptimal-landing` is in the zip only (`~/Downloads/optimal-figures-handoff-2026-10-12.zip`), because the site repo is private. The older placement map is `review/site-placement.md`. Each figure ships `embed/optimal-fig-<slug>.js`, and NOTES.md has the snippet. The site repo (`BeOptimal/beoptimal-landing`) is a separate handoff.
 3. **Site copy fix:** the Creator 600 page says "32″ upright display"; it's about 50″ (§3 item 9).

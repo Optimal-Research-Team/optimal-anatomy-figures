@@ -88,3 +88,16 @@
 .a2-block-edge { fill: none; stroke: var(--a2-edge); stroke-width: 1.2; stroke-linejoin: round; }
 .a2-brain-fill { stroke: none; }
 .a2-base-edge { fill: none; stroke: var(--a2-edge); stroke-width: 1.4; }
+
+/* round 4: the real-time 3-D layer (gl/). The canvas sits under the drawing and covers the stage exactly, so
+   nothing moves when it arrives. Once its first frame is drawn, the drawing's specimen fades out and the
+   canvas fades in (the locator stays on top). Reduced motion swaps without the fade. */
+.a2-stage { position: relative; }
+.a2-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; pointer-events: none; touch-action: pan-y; transition: opacity 0.9s ease; }
+.a2-stage .a2-svg { position: relative; z-index: 1; }
+.a2-specimen { transition: opacity 0.9s ease; }
+.a2-stage[data-gl="on"] .a2-gl { opacity: 1; pointer-events: auto; cursor: grab; }
+.a2-stage[data-gl="on"] .a2-gl.is-dragging { cursor: grabbing; }
+.a2-stage[data-gl="on"] .a2-svg { pointer-events: none; }
+.a2-stage[data-gl="on"] .a2-specimen { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .a2-gl, .a2-specimen { transition: none; } }

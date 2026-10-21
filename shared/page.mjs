@@ -90,9 +90,22 @@ export function page({ title, theme = "dark", body, script = "", css = "" }) {
  * The figure renders in a shadow root, so the host page's CSS (Tailwind preflight)
  * can't reach it. The host page loads the two Google fonts itself (see NOTES.md).
  */
-export function embed({ tag, body, script, css = "" }) {
+export function embed({ tag, body, script, css = "", host = null }) {
   const styles = JSON.stringify(ISO_CSS + THEME_CSS + EMBED_CSS + css);
   const markup = JSON.stringify(body);
+  // Optional host API (A2): `mount` returns { connected(), disconnected(), attribute(name, value), <props> },
+  // the element forwards its lifecycle and the listed attributes to it, and exposes the listed properties.
+  // Figures that don't ask for it get exactly the element they always had.
+  const hooks = host
+    ? `
+  static get observedAttributes() { return ${JSON.stringify(host.attributes || [])}; }
+  disconnectedCallback() { if (this._api && this._api.disconnected) this._api.disconnected(); }
+  attributeChangedCallback(name, _old, value) { if (this._api && this._api.attribute) this._api.attribute(name, value); }${(host.props || [])
+    .map((p) => `\n  get ${p}() { return this._api ? this._api.${p} : this.getAttribute(${JSON.stringify(p)}); }\n  set ${p}(v) { this.setAttribute(${JSON.stringify(p)}, String(v)); }`)
+    .join("")}`
+    : "";
+  const reconnect = host ? `if (this.shadowRoot) { if (this._api && this._api.connected) this._api.connected(); return; }` : "if (this.shadowRoot) return;";
+  const run = host ? `this._api = mount(root.querySelector(".opt-figure")) || null;` : `mount(root.querySelector(".opt-figure"));`;
   return `/* ${tag}: Optimal Health explainer figure. Built with Anatomy (MIT). Generated; do not edit. */
 (() => {
 if (customElements.get(${JSON.stringify(tag)})) return;
@@ -100,12 +113,12 @@ ${kitScript()}
 ${script}
 class Fig extends HTMLElement {
   connectedCallback() {
-    if (this.shadowRoot) return;
+    ${reconnect}
     const root = this.attachShadow({ mode: "open" });
     const theme = this.getAttribute("theme") === "dark" ? "dark" : "light";
     root.innerHTML = "<style>" + ${styles} + "</style><div class=\\"iso optimal opt-host\\" data-theme=\\"" + theme + "\\">" + ${markup} + "</div>";
-    mount(root.querySelector(".opt-figure"));
-  }
+    ${run}
+  }${hooks}
 }
 customElements.define(${JSON.stringify(tag)}, Fig);
 })();
