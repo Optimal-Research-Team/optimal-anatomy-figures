@@ -65,33 +65,6 @@ body.iso {
   font-feature-settings: "tnum" 0, "kern" 1;
   -webkit-font-smoothing: antialiased;
 }
-.opt-head {
-  margin: 0 0 28px;
-}
-.opt-eyebrow {
-  margin: 0 0 14px;
-  font: 600 11.5px/1 "Public Sans", system-ui, sans-serif;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--anatomy-muted);
-}
-.opt-title {
-  margin: 0;
-  font: 400 clamp(34px, 6vw, 48px) / 1.04 Castoro, Georgia, serif;
-  letter-spacing: -0.015em;
-  color: var(--opt-title);
-}
-.opt-title em {
-  font-style: italic;
-  color: var(--opt-accent);
-}
-.opt-lead {
-  margin: 14px 0 0;
-  max-width: 54ch;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--anatomy-text);
-}
 .iso-plate {
   box-shadow: 0 0 0 1px var(--opt-rule);
   border-radius: 3px;
@@ -154,49 +127,6 @@ body.iso {
   color: var(--anatomy-muted);
   max-width: 70ch;
 }
-/* Controls under the figure: real buttons, flat, hairline outline. Two per row on phones, one row on wider screens. */
-.opt-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0 0;
-}
-.opt-btn {
-  appearance: none;
-  flex: 1 1 calc(50% - 4px);
-  min-height: 44px;
-  margin: 0;
-  padding: 0 16px;
-  border: 1px solid var(--opt-line);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--anatomy-strong);
-  font: 500 14px/1.1 "Public Sans", system-ui, sans-serif;
-  letter-spacing: 0;
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-}
-@media (min-width: 600px) {
-  .opt-btn {
-    flex: 0 0 auto;
-  }
-}
-@media (hover: hover) {
-  .opt-btn:hover {
-    background: var(--opt-kbd);
-  }
-}
-.opt-btn:focus-visible {
-  outline: 2px solid var(--opt-accent);
-  outline-offset: 2px;
-}
-.opt-btn[aria-pressed="true"] {
-  background: var(--opt-accent);
-  border-color: var(--opt-accent);
-  color: var(--opt-on-accent);
-}
 /* Hint line: touch devices can't hover, so they get the tap wording. */
 .hint-touch {
   display: none;
@@ -209,11 +139,4 @@ body.iso {
     display: inline;
   }
 }
-@media (max-width: 560px) {
-  .opt-head {
-    margin-bottom: 20px;
-  }
-  .iso-plate-corner[data-corner="title"] {
-    display: none;
-  }
-}
+/* Phones: the series chrome (series.css) drops the title label under OPTIMAL HEALTH · BARRIE, as on E1–E3. */

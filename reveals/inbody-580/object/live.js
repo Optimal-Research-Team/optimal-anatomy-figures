@@ -136,7 +136,10 @@ function sync() {
   if (key === synced) return;
   synced = key;
   const apart = button("apart");
-  if (apart) apart.textContent = target.apart ? "Put together" : "Take apart";
+  if (apart) {
+    apart.textContent = target.apart ? "Put together" : "Take apart";
+    apart.setAttribute("aria-pressed", target.apart ? "true" : "false");
+  }
   for (const f of FEATURE_KEYS) {
     const b = button(f.channel);
     if (!b) continue;

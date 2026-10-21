@@ -57,13 +57,23 @@ function frameView(dt) {
   halo.setAttribute("rx", (view.w * 0.34).toFixed(2));
   halo.setAttribute("ry", (view.w * 0.034 + 2).toFixed(2));
 }
+// The readout in words, like the other three machines ("grips held · screen on"), not raw channel values
+// ("cranks 0° · cover 0 · saddle 0 · paddle 0"). Only what has changed from the bike at rest is named.
+function bikeState(d) {
+  const words = [];
+  if (Math.abs(target.cadence - d.cadence) > 1) words.push("cranks turning");
+  if (d.cover > 0.5) words.push("cover off");
+  if (d.saddle > 0.5) words.push("saddle up");
+  if (d.shift > 0.5) words.push("paddle clicked");
+  return words.length ? words.join(" · ") : `${DATA.parts} parts`;
+}
 function paint(dt = 0) {
   ctl.set({ root: { R: orient(drawn.yaw, drawn.pitch, 0) }, ...featureValues(drawn, explodeValues(drawn.apart)) });
   frameView(dt);
   const state =
     drawn.apart > 0.02
       ? `apart ${Math.round(drawn.apart * 100)}% · ${DATA.parts} parts`
-      : FEATURE_KEYS.map((f) => `${f.name} ${Math.round(drawn[f.channel])}${f.unit ?? ""}`).join(" · ") || `${DATA.parts} parts`;
+      : bikeState(drawn);
   const text = `${state} · ${(((drawn.yaw % 360) + 360) % 360).toFixed(0)}°`;
   if (readout.textContent !== text) readout.textContent = text;
   stage.setAttribute("aria-valuetext", text);

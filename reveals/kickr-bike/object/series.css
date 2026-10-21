@@ -1,0 +1,56 @@
+/* Equipment, taken apart: the page chrome shared by E1–E4 (InBody 580, Creator 600, KICKR Bike, hand dynamometer).
+   The same file sits in each project's object/ folder; keep the four copies identical (cmp them after an edit).
+   object/build.mjs appends it after the page's own CSS, so it wins over older per-page styles. Pages only: the films
+   don't read it. Corner labels follow SERIES-SPEC.md: OPTIMAL HEALTH · BARRIE and <DEVICE> · <WHAT IT MEASURES>. */
+
+/* one page and plate colour for the series (the gallery's cream; the figures' forest night). The kit paints each
+   part's paper with the plate colour, so the drawings sit on it the same way on all four pages. */
+body.iso:not([data-theme="light"]) { --anatomy-page: #152511; --anatomy-card: #1c3118; --anatomy-text: #c9cdbf; --anatomy-strong: #fffcf7; --anatomy-muted: #8e9884; }
+/* light UI inks: the muted grey-green is darkened from #8e9884 (2.8:1 on cream) to pass AA for the small caption,
+   legend and corner text (4.7:1); text and strong match the gallery. The drawings don't use these three. */
+body.iso[data-theme="light"] { --anatomy-page: #fef8f1; --anatomy-card: #fffcf7; --anatomy-text: #3e3d39; --anatomy-strong: #2c4e25; --anatomy-muted: #6b7262; }
+
+/* header: eyebrow, "<Device>, taken apart", one lead paragraph */
+.ar-head { display: block; margin: 0 0 24px; }
+.ar-eyebrow { margin: 0 0 12px; font: 600 11px/1.3 "Public Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--anatomy-muted); white-space: normal; }
+.ar-head h1 { margin: 0; font: 400 40px/1.08 "Castoro", Georgia, serif; letter-spacing: -0.01em; color: var(--anatomy-strong); text-wrap: balance; }
+.ar-head h1 em { font-style: italic; color: inherit; }
+.ar-head p.ar-sub { margin: 12px 0 0; max-width: 56ch; font-size: 15px; line-height: 1.55; letter-spacing: 0; text-transform: none; white-space: normal; color: var(--anatomy-text); }
+
+/* the plate and its four corner labels */
+.iso-plate { border-radius: 0; box-shadow: 0 0 0 1px color-mix(in srgb, var(--anatomy-muted) 50%, transparent); }
+.iso-plate-corner { font: 500 10.5px/1.4 "Public Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.1em; }
+.iso-plate-corner[data-corner="fig"] { display: block; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--anatomy-strong); }
+.iso-plate-corner[data-corner="title"] { display: block; letter-spacing: 0.1em; text-transform: uppercase; color: var(--anatomy-muted); }
+.iso-plate-corner[data-corner="hint"] { letter-spacing: 0.08em; text-transform: uppercase; color: var(--anatomy-muted); }
+.iso-plate-corner[data-corner="readout"] { letter-spacing: 0.02em; text-transform: none; color: var(--anatomy-text); font-feature-settings: "tnum" 1; }
+.iso-plate-corner sub { font-size: 0.72em; vertical-align: -0.22em; line-height: 0; }
+
+/* legend and caption: one sans voice under every plate */
+.iso-legend { font-size: 13.5px; line-height: 1.6; }
+.iso-caption { max-width: 68ch; font-family: inherit; font-size: inherit; line-height: inherit; color: inherit; }
+.iso-legend .iso-swatch[data-mark="raised"] path, .iso-legend .iso-swatch[data-mark="flat"] path { stroke: var(--anatomy-muted); }
+
+/* controls: equal-width buttons, one row on wide screens, two columns on phones (an odd first button spans both) */
+.ar-controls { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; margin: 12px 0 4px; }
+.ar-btn { appearance: none; -webkit-appearance: none; min-height: 44px; margin: 0; padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--anatomy-muted) 60%, transparent); border-radius: 0; background: transparent; color: var(--anatomy-strong); font: 500 14px/1.2 "Public Sans", ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.01em; text-align: center; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: border-color 0.15s, background-color 0.15s; }
+.ar-btn:focus-visible { outline: 2px solid var(--anatomy-strong); outline-offset: 2px; }
+.ar-btn[aria-pressed="true"] { border-color: var(--anatomy-strong); background: color-mix(in srgb, var(--anatomy-strong) 8%, transparent); color: var(--anatomy-strong); }
+.ar-btn[aria-disabled="true"] { cursor: default; color: var(--anatomy-muted); }
+.ar-btn:active { background: color-mix(in srgb, var(--anatomy-strong) 12%, transparent); }
+@media (hover: hover) { .ar-btn:hover { border-color: var(--anatomy-strong); } }
+
+/* keyboard help is for keyboards: touch screens get the buttons and the tap hint instead */
+@media (hover: none) { .opt-keys { display: none; } }
+
+@media (max-width: 560px) {
+  .ar-head h1 { font-size: clamp(30px, 9.4vw, 34px); }
+  /* the title label drops under OPTIMAL HEALTH · BARRIE instead of colliding with it */
+  .iso-plate { padding-top: 64px; }
+  .iso-plate-corner[data-corner="title"] { top: 18px; left: 0; right: auto; }
+  /* a long hint wraps inside the plate instead of running past its edge */
+  .iso-plate-corner[data-corner="hint"] { right: 0; white-space: normal; }
+  .ar-controls { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ar-btn { padding: 10px 8px; }
+  .ar-controls > :first-child:nth-last-child(odd) { grid-column: 1 / -1; }
+}

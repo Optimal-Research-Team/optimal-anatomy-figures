@@ -33,7 +33,7 @@ for (const width of [390, 360, 320]) {
     scroll: document.documentElement.scrollWidth,
     inner: window.innerWidth,
     hint: [...document.querySelectorAll("[data-corner=hint] span")].filter((s) => getComputedStyle(s).display !== "none").map((s) => s.textContent).join(""),
-    heights: [...document.querySelectorAll(".opt-btn")].map((b) => Math.round(b.getBoundingClientRect().height)),
+    heights: [...document.querySelectorAll(".ar-btn")].map((b) => Math.round(b.getBoundingClientRect().height)),
   }));
   check(env.hoverNone, `${tag}: (hover: none) matches`);
   check(env.scroll <= env.inner, `${tag}: no horizontal scroll (${env.scroll} <= ${env.inner})`);
@@ -117,8 +117,8 @@ for (const theme of ["light", "dark"]) {
     scroll: document.documentElement.scrollWidth,
     inner: innerWidth,
     hint: [...document.querySelectorAll("[data-corner=hint] span")].filter((s) => getComputedStyle(s).display !== "none").map((s) => s.textContent).join(""),
-    heights: [...document.querySelectorAll(".opt-btn")].map((b) => Math.round(b.getBoundingClientRect().height)),
-    rowTops: [...new Set([...document.querySelectorAll(".opt-btn")].map((b) => Math.round(b.getBoundingClientRect().top)))].length,
+    heights: [...document.querySelectorAll(".ar-btn")].map((b) => Math.round(b.getBoundingClientRect().height)),
+    rowTops: [...new Set([...document.querySelectorAll(".ar-btn")].map((b) => Math.round(b.getBoundingClientRect().top)))].length,
   }));
   check(env.hover && env.scroll <= env.inner, `${tag}: hover device, no horizontal scroll`);
   check(env.hint.startsWith("Drag to turn · hover to take apart"), `${tag}: hint reads "${env.hint}"`);
