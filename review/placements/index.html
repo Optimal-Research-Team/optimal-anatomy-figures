@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Figure placements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Castoro:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root { --bg:#FBF8F3; --fg:#1F2A1C; --body:#3E3D39; --muted:#6F6C66; --line:#E3DCCF; --accent:#2C4E25; --shot:#F1ECE3; color-scheme:light }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0E1A0B; --fg:#E8EBE1; --body:#C9CDBF; --muted:#8E9884; --line:#22331D; --accent:#A9D49C; --shot:#152511; color-scheme:dark } }
+:root[data-theme="dark"] { --bg:#0E1A0B; --fg:#E8EBE1; --body:#C9CDBF; --muted:#8E9884; --line:#22331D; --accent:#A9D49C; --shot:#152511; color-scheme:dark }
+* { box-sizing:border-box }
+body { background:var(--bg); color:var(--body); font:15.5px/1.6 Inter, system-ui, -apple-system, sans-serif; font-feature-settings:"ss01","cv11"; margin:0 }
+.wrap { max-width:1180px; margin:0 auto; padding-inline:20px; padding-block:48px 96px }
+.eyebrow { font-size:11px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--muted) }
+h1 { font:400 clamp(34px,5vw,52px)/1.05 Castoro, Georgia, serif; letter-spacing:-.02em; color:var(--fg); margin:10px 0 18px; text-wrap:balance }
+h1 em, h2 em { color:var(--accent) }
+.lede { max-width:68ch; font-size:17px; margin:0 0 14px }
+.lede strong { color:var(--fg); font-weight:600 }
+.answer { max-width:68ch; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding-block:18px; margin:26px 0 8px; display:grid; gap:10px }
+.answer p { margin:0 }
+.answer ol { margin:0; padding-left:20px; display:grid; gap:6px }
+.tally { display:flex; flex-wrap:wrap; gap:6px 26px; font-size:14px; color:var(--muted); margin:22px 0 0; font-variant-numeric:tabular-nums }
+.tally b { color:var(--fg); font-weight:600 }
+nav.toc { display:flex; flex-wrap:wrap; gap:4px 18px; margin:18px 0 0; font-size:14px }
+nav.toc a { color:var(--accent); text-underline-offset:3px }
+.page { margin-top:64px }
+.page-head { display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px; border-bottom:1px solid var(--line); padding-bottom:12px }
+.page-head h2 { font:400 30px/1.15 Castoro, Georgia, serif; letter-spacing:-.015em; color:var(--fg); margin:0 }
+code { font:13px/1.4 "JetBrains Mono", ui-monospace, monospace; color:var(--muted) }
+.page-note { margin:12px 0 0; color:var(--muted); font-size:14.5px; max-width:70ch }
+.spot { padding-block:28px; border-bottom:1px solid var(--line) }
+.spot-head { display:flex; align-items:baseline; gap:14px }
+.num { font:400 28px/1 Castoro, Georgia, serif; color:var(--accent); min-width:1.6em; font-variant-numeric:tabular-nums }
+.spot h3 { margin:0; font:600 18px/1.3 Inter, sans-serif; color:var(--fg); letter-spacing:-.01em }
+.fig { font-weight:500; color:var(--muted); margin-right:4px }
+.where { margin:6px 0 16px calc(1.6em * 28 / 15.5 + 14px); max-width:72ch }
+.where .new { color:var(--accent); font-weight:600; white-space:nowrap }
+.where .in { color:var(--muted); white-space:nowrap }
+.where .new::before, .where .in::before { content:"· "; color:var(--muted); font-weight:400 }
+.shots { display:grid; grid-template-columns:minmax(0,3.2fr) minmax(0,1fr); gap:20px; align-items:start }
+.shots figure { margin:0; min-width:0 }
+.shots img { display:block; width:100%; height:auto; max-width:100%; border:1px solid var(--line); border-radius:10px; background:var(--shot) }
+.shots figcaption { font-size:12.5px; color:var(--muted); margin-top:6px }
+.later { margin-top:72px; max-width:72ch }
+.later h2 { font:400 26px/1.2 Castoro, Georgia, serif; color:var(--fg); margin:0 0 8px }
+.later ul { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:0 }
+.later li { padding:10px 0; border-top:1px solid var(--line) }
+.method { margin-top:56px; font-size:13.5px; color:var(--muted); max-width:78ch }
+@media (max-width: 720px) {
+  .shots { grid-template-columns:minmax(0,1fr); gap:16px }
+  .shots .phone { max-width:300px }
+  .where { margin-left:0 }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">beoptimal.ca · anatomy figures · review before the handoff</div>
+  <h1>Where every figure and film <em>goes</em></h1>
+  <p class="lede">These are screenshots of the real site, not mockups. I built a local copy of the site (main, <code>0c0473c</code>), applied the handoff patch and added the new spots. Then I photographed each spot on desktop and on a phone. Tap any screenshot for full size.</p>
+  <div class="answer">
+    <p><strong>Were the spots updated for the new visualizers?</strong> Not until now. The Oct 12 figures all have spots in the patch. But the four equipment films (E1–E4) only had a one-line note in the handoff doc. They weren’t in the placement map, the patch or the zip. The three IV-iron figures were also waiting for an IV iron page, which now exists.</p>
+    <p>So the spots marked <strong>New</strong> below are what I’m proposing. Once you’re happy:</p>
+    <ol><li>I’ll add them to the placement map and the site patch.</li><li>I’ll re-check the patch against the site.</li><li>I’ll rebuild the zip. Nothing goes to Jeremy before that.</li></ol>
+    <p>To change one, reply with its number, for example “move 8 below 9” or “drop 3”. Worth a look: films sit directly above figures at 3, 8 and 19–20, and two figures sit back to back at 13–14 and 16–17.</p>
+  </div>
+  <div class="tally"><span><b>21</b> spots on 7 pages</span><span><b>14</b> already in the handoff patch</span><span><b>7</b> new</span></div>
+  <nav class="toc"><a href="#p0">VO₂ max testing</a><a href="#p1">InBody 580</a><a href="#p2">Creator 600 gait analysis</a><a href="#p3">Longevity Protocol</a><a href="#p4">Journal: VO₂ max and longevity</a><a href="#p5">Menopause Protocol</a><a href="#p6">IV iron</a></nav>
+  <section class="page" id="p0">
+  <div class="page-head"><h2>VO₂ max testing</h2><code>beoptimal.ca/services/vo2-max-testing</code></div>
+  
+  <article class="spot" id="spot-1">
+  <header class="spot-head"><span class="num">1</span><h3><span class="fig">A4</span> The beating heart</h3></header>
+  <p class="where">Its own block after “Why measure it”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/vo2-heart-desktop.jpg" target="_blank" rel="noopener"><img src="shots/vo2-heart-desktop.jpg" width="1280" height="1803" loading="lazy" alt="A4 The beating heart on the VO₂ max testing page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/vo2-heart-phone.jpg" target="_blank" rel="noopener"><img src="shots/vo2-heart-phone.jpg" width="780" height="3197" loading="lazy" alt="A4 The beating heart on the VO₂ max testing page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-2">
+  <header class="spot-head"><span class="num">2</span><h3><span class="fig">Fig 6</span> The treadmill ramp</h3></header>
+  <p class="where">In “01 — The test”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/vo2-treadmill-desktop.jpg" target="_blank" rel="noopener"><img src="shots/vo2-treadmill-desktop.jpg" width="1280" height="1618" loading="lazy" alt="Fig 6 The treadmill ramp on the VO₂ max testing page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/vo2-treadmill-phone.jpg" target="_blank" rel="noopener"><img src="shots/vo2-treadmill-phone.jpg" width="780" height="2889" loading="lazy" alt="Fig 6 The treadmill ramp on the VO₂ max testing page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-3">
+  <header class="spot-head"><span class="num">3</span><h3><span class="fig">E3</span> The KICKR Bike, taken apart</h3></header>
+  <p class="where">In “02 — Equipment”, under the three equipment cards and directly above Fig 5. <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/vo2-kickr-desktop.jpg" target="_blank" rel="noopener"><img src="shots/vo2-kickr-desktop.jpg" width="1280" height="795" loading="lazy" alt="E3 The KICKR Bike, taken apart on the VO₂ max testing page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/vo2-kickr-phone.jpg" target="_blank" rel="noopener"><img src="shots/vo2-kickr-phone.jpg" width="780" height="1996" loading="lazy" alt="E3 The KICKR Bike, taken apart on the VO₂ max testing page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-4">
+  <header class="spot-head"><span class="num">4</span><h3><span class="fig">Fig 5</span> The ramp and the mask</h3></header>
+  <p class="where">At the end of “02 — Equipment”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/vo2-bike-desktop.jpg" target="_blank" rel="noopener"><img src="shots/vo2-bike-desktop.jpg" width="1280" height="1555" loading="lazy" alt="Fig 5 The ramp and the mask on the VO₂ max testing page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/vo2-bike-phone.jpg" target="_blank" rel="noopener"><img src="shots/vo2-bike-phone.jpg" width="780" height="2853" loading="lazy" alt="Fig 5 The ramp and the mask on the VO₂ max testing page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section><section class="page" id="p1">
+  <div class="page-head"><h2>InBody 580</h2><code>beoptimal.ca/services/inbody-580</code></div>
+  
+  <article class="spot" id="spot-5">
+  <header class="spot-head"><span class="num">5</span><h3><span class="fig">E1</span> The InBody 580, taken apart</h3></header>
+  <p class="where">Its own block just before “Beyond the scale”. <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/inbody-film-desktop.jpg" target="_blank" rel="noopener"><img src="shots/inbody-film-desktop.jpg" width="1280" height="795" loading="lazy" alt="E1 The InBody 580, taken apart on the InBody 580 page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/inbody-film-phone.jpg" target="_blank" rel="noopener"><img src="shots/inbody-film-phone.jpg" width="780" height="2053" loading="lazy" alt="E1 The InBody 580, taken apart on the InBody 580 page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-6">
+  <header class="spot-head"><span class="num">6</span><h3><span class="fig">Fig 2</span> Five cylinders on a bridge</h3></header>
+  <p class="where">Right after “Beyond the scale”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/inbody-fig-desktop.jpg" target="_blank" rel="noopener"><img src="shots/inbody-fig-desktop.jpg" width="1280" height="1430" loading="lazy" alt="Fig 2 Five cylinders on a bridge on the InBody 580 page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/inbody-fig-phone.jpg" target="_blank" rel="noopener"><img src="shots/inbody-fig-phone.jpg" width="780" height="2657" loading="lazy" alt="Fig 2 Five cylinders on a bridge on the InBody 580 page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-7">
+  <header class="spot-head"><span class="num">7</span><h3><span class="fig">A8</span> Water in and around the fibres</h3></header>
+  <p class="where">After the result sheet. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/inbody-water-desktop.jpg" target="_blank" rel="noopener"><img src="shots/inbody-water-desktop.jpg" width="1280" height="1359" loading="lazy" alt="A8 Water in and around the fibres on the InBody 580 page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/inbody-water-phone.jpg" target="_blank" rel="noopener"><img src="shots/inbody-water-phone.jpg" width="780" height="2710" loading="lazy" alt="A8 Water in and around the fibres on the InBody 580 page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section><section class="page" id="p2">
+  <div class="page-head"><h2>Creator 600 gait analysis</h2><code>beoptimal.ca/services/creator-600</code></div>
+  
+  <article class="spot" id="spot-8">
+  <header class="spot-head"><span class="num">8</span><h3><span class="fig">E2</span> The Creator 600, taken apart</h3></header>
+  <p class="where">Its own block after “Six measures, one run”, directly above Fig 4. <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/gait-film-desktop.jpg" target="_blank" rel="noopener"><img src="shots/gait-film-desktop.jpg" width="1280" height="795" loading="lazy" alt="E2 The Creator 600, taken apart on the Creator 600 gait analysis page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/gait-film-phone.jpg" target="_blank" rel="noopener"><img src="shots/gait-film-phone.jpg" width="780" height="2053" loading="lazy" alt="E2 The Creator 600, taken apart on the Creator 600 gait analysis page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-9">
+  <header class="spot-head"><span class="num">9</span><h3><span class="fig">Fig 4</span> The runner rig</h3></header>
+  <p class="where">After “Six measures, one run”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/gait-fig-desktop.jpg" target="_blank" rel="noopener"><img src="shots/gait-fig-desktop.jpg" width="1280" height="1591" loading="lazy" alt="Fig 4 The runner rig on the Creator 600 gait analysis page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/gait-fig-phone.jpg" target="_blank" rel="noopener"><img src="shots/gait-fig-phone.jpg" width="780" height="2814" loading="lazy" alt="Fig 4 The runner rig on the Creator 600 gait analysis page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-10">
+  <header class="spot-head"><span class="num">10</span><h3><span class="fig">A7</span> The kneecap’s load</h3></header>
+  <p class="where">In “After the run” (your report). <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/gait-knee-desktop.jpg" target="_blank" rel="noopener"><img src="shots/gait-knee-desktop.jpg" width="1280" height="1664" loading="lazy" alt="A7 The kneecap’s load on the Creator 600 gait analysis page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/gait-knee-phone.jpg" target="_blank" rel="noopener"><img src="shots/gait-knee-phone.jpg" width="780" height="2671" loading="lazy" alt="A7 The kneecap’s load on the Creator 600 gait analysis page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section><section class="page" id="p3">
+  <div class="page-head"><h2>Longevity Protocol</h2><code>beoptimal.ca/optimal-longevity-protocol</code></div>
+  
+  <article class="spot" id="spot-11">
+  <header class="spot-head"><span class="num">11</span><h3><span class="fig">E4</span> The hand dynamometer, taken apart</h3></header>
+  <p class="where">§1.3 Strength, under the grip-strength targets table. The handoff calls this one optional. <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/olp-grip-desktop.jpg" target="_blank" rel="noopener"><img src="shots/olp-grip-desktop.jpg" width="1280" height="793" loading="lazy" alt="E4 The hand dynamometer, taken apart on the Longevity Protocol page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/olp-grip-phone.jpg" target="_blank" rel="noopener"><img src="shots/olp-grip-phone.jpg" width="780" height="2026" loading="lazy" alt="E4 The hand dynamometer, taken apart on the Longevity Protocol page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-12">
+  <header class="spot-head"><span class="num">12</span><h3><span class="fig">A6</span> The red cell’s 120 days</h3></header>
+  <p class="where">§20 Women’s nutrition, beside “check ferritin, not just hemoglobin”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/olp-redcell-desktop.jpg" target="_blank" rel="noopener"><img src="shots/olp-redcell-desktop.jpg" width="1280" height="1524" loading="lazy" alt="A6 The red cell’s 120 days on the Longevity Protocol page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/olp-redcell-phone.jpg" target="_blank" rel="noopener"><img src="shots/olp-redcell-phone.jpg" width="780" height="2733" loading="lazy" alt="A6 The red cell’s 120 days on the Longevity Protocol page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section><section class="page" id="p4">
+  <div class="page-head"><h2>Journal: VO₂ max and longevity</h2><code>beoptimal.ca/journal/vo2max-and-longevity</code></div>
+  
+  <article class="spot" id="spot-13">
+  <header class="spot-head"><span class="num">13</span><h3><span class="fig">A4</span> The beating heart</h3></header>
+  <p class="where">After “the fitter you are, the lower your risk of dying”. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/journal-heart-desktop.jpg" target="_blank" rel="noopener"><img src="shots/journal-heart-desktop.jpg" width="1280" height="1691" loading="lazy" alt="A4 The beating heart on the Journal: VO₂ max and longevity page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/journal-heart-phone.jpg" target="_blank" rel="noopener"><img src="shots/journal-heart-phone.jpg" width="780" height="3192" loading="lazy" alt="A4 The beating heart on the Journal: VO₂ max and longevity page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-14">
+  <header class="spot-head"><span class="num">14</span><h3><span class="fig">A5</span> The air sac and the red cell</h3></header>
+  <p class="where">Directly after the heart. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/journal-alveolus-desktop.jpg" target="_blank" rel="noopener"><img src="shots/journal-alveolus-desktop.jpg" width="1280" height="1470" loading="lazy" alt="A5 The air sac and the red cell on the Journal: VO₂ max and longevity page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/journal-alveolus-phone.jpg" target="_blank" rel="noopener"><img src="shots/journal-alveolus-phone.jpg" width="780" height="2761" loading="lazy" alt="A5 The air sac and the red cell on the Journal: VO₂ max and longevity page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section><section class="page" id="p5">
+  <div class="page-head"><h2>Menopause Protocol</h2><code>beoptimal.ca/optimal-menopause-protocol</code></div>
+  
+  <article class="spot" id="spot-15">
+  <header class="spot-head"><span class="num">15</span><h3><span class="fig">A9</span> Digging and filling</h3></header>
+  <p class="where">§3 Why bone and heart are part of the conversation, after the bone figure. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/meno-bone-desktop.jpg" target="_blank" rel="noopener"><img src="shots/meno-bone-desktop.jpg" width="1280" height="1279" loading="lazy" alt="A9 Digging and filling on the Menopause Protocol page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/meno-bone-phone.jpg" target="_blank" rel="noopener"><img src="shots/meno-bone-phone.jpg" width="780" height="2449" loading="lazy" alt="A9 Digging and filling on the Menopause Protocol page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-16">
+  <header class="spot-head"><span class="num">16</span><h3><span class="fig">Fig 1</span> The narrowing thermostat</h3></header>
+  <p class="where">§5 Hot flashes and night sweats, after the opening paragraph. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/meno-thermostat-desktop.jpg" target="_blank" rel="noopener"><img src="shots/meno-thermostat-desktop.jpg" width="1280" height="1406" loading="lazy" alt="Fig 1 The narrowing thermostat on the Menopause Protocol page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/meno-thermostat-phone.jpg" target="_blank" rel="noopener"><img src="shots/meno-thermostat-phone.jpg" width="780" height="2610" loading="lazy" alt="Fig 1 The narrowing thermostat on the Menopause Protocol page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-17">
+  <header class="spot-head"><span class="num">17</span><h3><span class="fig">A3</span> The finger’s heat valves</h3></header>
+  <p class="where">§5, directly after Fig 1. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/meno-finger-desktop.jpg" target="_blank" rel="noopener"><img src="shots/meno-finger-desktop.jpg" width="1280" height="1468" loading="lazy" alt="A3 The finger’s heat valves on the Menopause Protocol page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/meno-finger-phone.jpg" target="_blank" rel="noopener"><img src="shots/meno-finger-phone.jpg" width="780" height="2518" loading="lazy" alt="A3 The finger’s heat valves on the Menopause Protocol page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-18">
+  <header class="spot-head"><span class="num">18</span><h3><span class="fig">A2</span> The hot-flash switch</h3></header>
+  <p class="where">§14 Options we discuss, after the options table. <span class="in">In the handoff patch</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/meno-hypothalamus-desktop.jpg" target="_blank" rel="noopener"><img src="shots/meno-hypothalamus-desktop.jpg" width="1280" height="1546" loading="lazy" alt="A2 The hot-flash switch on the Menopause Protocol page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/meno-hypothalamus-phone.jpg" target="_blank" rel="noopener"><img src="shots/meno-hypothalamus-phone.jpg" width="780" height="2985" loading="lazy" alt="A2 The hot-flash switch on the Menopause Protocol page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section><section class="page" id="p6">
+  <div class="page-head"><h2>IV iron</h2><code>beoptimal.ca/services/iron</code></div>
+  <p class="page-note">The page itself is still a review build (noindex). These three were waiting for it; it went live on Oct 20.</p>
+  <article class="spot" id="spot-19">
+  <header class="spot-head"><span class="num">19</span><h3><span class="fig">Fig 3</span> The depot with a gate</h3></header>
+  <p class="where">Its own block after “Why IV”. <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/iron-depot-desktop.jpg" target="_blank" rel="noopener"><img src="shots/iron-depot-desktop.jpg" width="1280" height="1260" loading="lazy" alt="Fig 3 The depot with a gate on the IV iron page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/iron-depot-phone.jpg" target="_blank" rel="noopener"><img src="shots/iron-depot-phone.jpg" width="780" height="2475" loading="lazy" alt="Fig 3 The depot with a gate on the IV iron page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-20">
+  <header class="spot-head"><span class="num">20</span><h3><span class="fig">A1</span> The gut cell’s gate</h3></header>
+  <p class="where">Directly after Fig 3. <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/iron-gut-desktop.jpg" target="_blank" rel="noopener"><img src="shots/iron-gut-desktop.jpg" width="1280" height="1527" loading="lazy" alt="A1 The gut cell’s gate on the IV iron page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/iron-gut-phone.jpg" target="_blank" rel="noopener"><img src="shots/iron-gut-phone.jpg" width="780" height="2529" loading="lazy" alt="A1 The gut cell’s gate on the IV iron page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article><article class="spot" id="spot-21">
+  <header class="spot-head"><span class="num">21</span><h3><span class="fig">A6</span> The red cell’s 120 days</h3></header>
+  <p class="where">Its own block after “How it works”. A6 also sits on the Longevity Protocol (12). <span class="new">New: not in the handoff yet</span></p>
+  <div class="shots">
+    <figure class="desk"><a href="shots/iron-redcell-desktop.jpg" target="_blank" rel="noopener"><img src="shots/iron-redcell-desktop.jpg" width="1280" height="1533" loading="lazy" alt="A6 The red cell’s 120 days on the IV iron page, desktop"></a><figcaption>Desktop, 1280 px</figcaption></figure>
+    <figure class="phone"><a href="shots/iron-redcell-phone.jpg" target="_blank" rel="noopener"><img src="shots/iron-redcell-phone.jpg" width="780" height="2697" loading="lazy" alt="A6 The red cell’s 120 days on the IV iron page, phone"></a><figcaption>Phone, 390 px</figcaption></figure>
+  </div>
+</article>
+</section>
+  <section class="later"><h2>Optional, for later</h2><p>These are in the handoff as secondary spots, not part of this first ship. I didn’t photograph them. Say if you want any of them in now.</p><ul><li><span class="fig">Fig 1</span> Menopause care service page, in the symptoms list under “Hot flashes”</li><li><span class="fig">Fig 2</span> Longevity Protocol §10, in place of the InBody photo</li><li><span class="fig">Fig 5</span> Longevity Protocol §1.2, in place of the stock photo of a mask on a bike</li><li><span class="fig">A3</span> Menopause Protocol §2, at the “Temperature” bullet (instead of §5)</li><li><span class="fig">A5</span> VO₂ max testing FAQ, “How is this different from my watch’s estimate?”</li><li><span class="fig">A8</span> Longevity Protocol §10</li><li><span class="fig">A9</span> Longevity Protocol §10</li></ul></section>
+  <p class="method">How these were made: a production build (<code>yarn build</code>) of beoptimal-landing at <code>0c0473c</code> with <code>optimal-anatomy-figures-site-patch</code> applied, the Oct 21 embeds, and the proposed film and iron-page spots added. Shots were taken in Chrome at 1280 px (desktop) and 390 px as a touch phone, with the sticky navigation hidden so it doesn’t cover the figure. Figures show their first state, and films show whatever frame was playing. Oct 21, 2026.</p>
+</div>
+</body>
+</html>

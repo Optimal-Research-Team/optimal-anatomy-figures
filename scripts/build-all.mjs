@@ -38,6 +38,8 @@ const PLAN = [
 
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
+// The placement review for Peter (where each figure and film goes on beoptimal.ca), copied as it is.
+if (existsSync(join(root, "review", "placements"))) cpSync(join(root, "review", "placements"), join(dist, "review", "placements"), { recursive: true });
 if (existsSync(join(root, "shared"))) cpSync(join(root, "shared"), join(dist, "shared"), { recursive: true });
 
 const dirs = existsSync(figuresDir) ? readdirSync(figuresDir).filter((d) => existsSync(join(figuresDir, d, "build.mjs"))).sort() : [];
