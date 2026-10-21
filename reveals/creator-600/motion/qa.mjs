@@ -9,7 +9,8 @@
 //   2. corner-label clearance: no scene pixel inside either corner label's box grown by 24 px, while visible;
 //   3. hero in frame: in the first and last shots the whole machine sits inside the hairline frame, 24 px clear of it;
 //      in 9:16 also below the header block and above y = 1248, 24 px clear of both;
-//   4. 9:16 safe area: every visible label and caption sits inside x 65…1015, y 269…1248.
+//   4. 9:16 safe area: every visible label and caption sits inside x 65…1015, y 269…1248;
+//   5. forward-only camera: zoom never decreases except at a hard cut on an exact frame start (a single-frame jump).
 // Samples run at --rate per second (60 by default), so the motion-blur shutter between frames is covered too.
 import { launch } from "../scripts/browser.mjs";
 import { decodePng } from "../scripts/png.mjs";
@@ -125,6 +126,28 @@ if (searchArg) {
   await browser.close();
   process.exit(0);
 }
+// 5. forward-only camera: zoom never decreases between consecutive samples (240/s) except at a hard cut, and each
+//    cut sits on an exact frame start and completes in one frame (the frame before is all the old framing).
+const zoomCheck = await page.evaluate(() => {
+  const cuts = window.CUTS ?? [];
+  const N = Math.round(window.DURATION * 240);
+  const drops = [];
+  let prev = window.at(0).zoom;
+  for (let k = 1; k <= N; k++) {
+    const t = k / 240;
+    const z = window.at(t).zoom;
+    if (z < prev * (1 - 1e-9) && !cuts.some((c) => c > (k - 1) / 240 + 1e-12 && c <= t + 1e-12)) drops.push(t.toFixed(4));
+    prev = z;
+  }
+  const report = cuts.map((c) => {
+    const n = Math.round(c * 30);
+    const lastSub = window.at((n - 1 / 40) / 30).zoom; // the latest sub-frame the renderer takes before the cut
+    const before = window.at(c - 1e-6).zoom;
+    const after = window.at(c).zoom;
+    return { t: +c.toFixed(4), frame: n, onFrameStart: Math.abs(c * 30 - n) < 1e-9, zoom: [+before.toFixed(3), +after.toFixed(3)], singleFrame: Math.abs(lastSub - before) < 1e-6 };
+  });
+  return { drops, report };
+});
 const rate = Number(opt("rate", 60));
 const duration = await page.evaluate(() => window.DURATION);
 const heroSpans = (opt("hero", "") || "").split(",").filter(Boolean).map((s) => s.split("-").map(Number));
@@ -151,5 +174,12 @@ lines.push(
     ["caption", "fig", "title"].map((k) => `${k} ${closest[k] === undefined || !Number.isFinite(closest[k]) ? "> 100" : Math.round(closest[k] * OUT)}`).join(" · ") +
     ` · tightest hero room ${Number.isFinite(heroMin) ? heroMin : "n/a"} px`,
 );
+lines.push(
+  zoomCheck.drops.length
+    ? `zoom decreases outside a cut at ${zoomCheck.drops.slice(0, 12).join(", ")}${zoomCheck.drops.length > 12 ? " …" : ""}`
+    : `forward-only camera: zoom never decreases except at the ${zoomCheck.report.length} cuts`,
+);
+for (const c of zoomCheck.report) lines.push(`  cut at ${c.t.toFixed(3)} s (frame ${c.frame}): zoom ${c.zoom[0]} → ${c.zoom[1]}, ${c.onFrameStart ? "on a frame start" : "NOT ON A FRAME START"}, ${c.singleFrame ? "single-frame jump" : "NOT A SINGLE-FRAME JUMP"}`);
+if (zoomCheck.drops.length || zoomCheck.report.some((c) => !c.onFrameStart || !c.singleFrame)) lines.push("forward-only check FAILS");
 console.log(lines.join("\n"));
 await browser.close();

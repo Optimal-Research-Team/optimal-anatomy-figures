@@ -69,7 +69,9 @@ const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
   const a = at(t);
-  const b = at(t + dt);
+  // a frame that ends on a cut only moves until the cut: measure up to just before it
+  const cut = CUTS.find((c) => c > t + 1e-9 && c <= t + dt + 1e-9);
+  const b = at(cut !== undefined ? cut - 1e-6 : t + dt);
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -107,6 +109,8 @@ function applyState(s) {
   return stats;
 }
 window.frame = frame;
+window.at = at;
+window.CUTS = CUTS;
 window.fitZoom = typeof fitZoom === "function" ? fitZoom : (z) => z;
 window.pose = pose;
 window.speed = speed;

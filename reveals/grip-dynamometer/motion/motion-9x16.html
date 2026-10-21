@@ -4038,6 +4038,8 @@ const FEATURE_KEYS = [
 
 // Page-only behaviour: the peak needle never sits below the main needle, and the idle tour squeezes, holds, then resets.
 function LATCH(target, drawn) {
+  // The main needle only pushes the peak needle while it rises; a reset during the fall must stick.
+  if (target.grip < drawn.grip - 1e-6) return;
   if (drawn.grip > drawn.peak) drawn.peak = drawn.grip;
   if (target.peak < drawn.grip) target.peak = drawn.grip;
 }
@@ -4079,57 +4081,67 @@ const EASE = {
   so: (x) => 1 - Math.pow(1 - x, 2),
   si: (x) => x * x,
   back: (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2),
+  // A hard cut: the previous value holds right up to the key, which takes effect exactly at its time.
+  cut: (x) => (x >= 1 ? 1 : 0),
 };
+// Cuts sit on frame starts: render.mjs averages frame n over [n/30, (n+1)/30), so a cut at N/30 never blends two framings.
+const F = (n) => n / 30;
 // Written on a 12 s base: the brief's length. `wide` overrides a key in 16:9 (the TV cut).
 const BASE_DURATION = 12;
 const RATIO_NOW = typeof DATA !== "undefined" && DATA.ratio ? DATA.ratio : "9:16";
 const BASE_KEYS = [
-  // Framing rules (QA): no part of the object within 40 output px of any label, and the tumble and hero shots sit
-  // wholly inside the hairline frame. 9:16 values are the base (labels form a header block at the top-left);
-  // `wide` overrides them for 16:9 (labels in the corners, caption bottom-left, so close-ups are weighted right).
-  // Tumble in from behind and above, righting into a three-quarter front view.
+  // Framing rules (QA): no part of the object within 40 output px of any label; the tumble and hero shots sit wholly
+  // inside the hairline frame (and, in 9:16, above y = 1248). 9:16 values are the base; `wide` overrides for 16:9.
+  // Camera rule (series): the camera only moves forward. Within a shot the framing holds or tightens (zoom never
+  // falls); every move to a wider framing is a hard cut ("cut") on a frame start.
+  // Shot 1: tumble in from behind and above, righting into a three-quarter front view, creeping in.
   { t: 0, yaw: 152, pitch: 26, roll: -28, zoom: 1.32, focus: "body", panX: 0, panY: 78, apart: 0, grip: 0, peak: 0, position: 2, glow: [0.8, 1.02, 0.62], wide: { zoom: 1.95, panX: -40, panY: -10 } },
   { t: 0.62, yaw: 110, pitch: 22, roll: -18, zoom: 1.36, panX: 0, panY: 78, ease: "si", wide: { zoom: 2.05, panX: -40, panY: -10 } },
   { t: 1.26, yaw: 2, pitch: 14, roll: -5, zoom: 1.4, panX: 0, panY: 78, ease: "lin", wide: { zoom: 2.2, panX: -40, panY: -6 } },
   { t: 1.72, yaw: -32, pitch: 13, roll: 0, zoom: 1.44, panX: 0, panY: 78, ease: "so", glow: [0.55, 0.44, 0.62], wide: { zoom: 2.3, panX: -40, panY: 0 } },
   { t: 1.82, yaw: -35, pitch: 13.5, roll: 0, zoom: 1.45, focus: "body", panX: 0, panY: 78, ease: "lin", wide: { zoom: 2.33, panX: -40, panY: 0 } },
-  // Whip 1: the dual-scale dial, a slow drift across the numerals.
+  // Whip in to the dual-scale dial (tighter, so a whip), then a slow push across the numerals.
   { t: 2.06, yaw: -12, pitch: 5, roll: 3, zoom: 5.4, focus: "gauge", panX: 0, panY: -45, ease: "whip", glow: [0.5, 0.42, 0.6], wide: { zoom: 4.6, panX: -170, panY: -62 } },
-  { t: 2.96, yaw: -24, pitch: 10, roll: 1, zoom: 5.8, focus: "gauge", panX: 0, panY: -78, ease: "lin", wide: { zoom: 4.8, panX: -150, panY: -72 } },
-  // Whip 2: the notched forks under the gauge, positions 1-5.
-  { t: 3.2, yaw: -25, pitch: 10, roll: -3, zoom: 4.4, focus: "forks", panX: 0, panY: -200, ease: "whip", wide: { zoom: 4.1, panX: -150, panY: -200 } },
-  { t: 4.06, yaw: -17, pitch: 7, roll: -1, zoom: 4.6, focus: "forks", panX: 0, panY: -212, ease: "lin", wide: { zoom: 4.3, panX: -140, panY: -212 } },
-  // Whip 3: gauge and handle together; the handle squeezes in, both needles sweep up, the grip releases.
-  { t: 4.3, yaw: -22, pitch: 9, roll: 0, zoom: 3.3, focus: "squeeze", panX: 0, panY: -90, grip: 0, peak: 0, ease: "whip", wide: { zoom: 3.4, panX: -150, panY: -62 } },
-  { t: 4.46, grip: 0, peak: 0, ease: "lin" },
+  { t: 2.99, yaw: -24, pitch: 10, roll: 1, zoom: 5.8, focus: "gauge", panX: 0, panY: -78, ease: "lin", wide: { zoom: 4.8, panX: -150, panY: -72 } },
+  // CUT at frame 90 (3.000 s) to the notched forks under the gauge (wider than the dial), then a push in.
+  { t: F(90), yaw: -25, pitch: 10, roll: -3, zoom: 4.4, focus: "forks", panX: 0, panY: -200, ease: "cut", wide: { zoom: 4.1, panX: -150, panY: -200 } },
+  { t: 4.09, yaw: -17, pitch: 7, roll: -1, zoom: 4.6, focus: "forks", panX: 0, panY: -212, ease: "lin", wide: { zoom: 4.3, panX: -140, panY: -212 } },
+  // CUT at frame 123 (4.100 s) to gauge and handle together; the handle squeezes in, both needles sweep up, the
+  // grip releases, while the camera pushes in toward the gauge.
+  { t: F(123), yaw: -22, pitch: 9, roll: 0, zoom: 3.3, focus: "squeeze", panX: 0, panY: -90, grip: 0, peak: 0, ease: "cut", wide: { zoom: 3.4, panX: -150, panY: -62 } },
+  { t: 4.26, grip: 0, peak: 0, ease: "lin" },
   { t: 5.46, yaw: -19, pitch: 8, zoom: 3.55, focus: "squeeze", panX: 0, panY: -100, grip: 42, peak: 42, ease: "io", wide: { zoom: 3.65, panX: -150, panY: -66 } },
   { t: 6.16, yaw: -15, pitch: 6, zoom: 4.3, focus: "gauge", panX: 0, panY: -40, grip: 0, peak: 42, ease: "io", wide: { zoom: 4.2, panX: -170, panY: -30 } },
-  // Whip 4: the reset knob on the crystal turns the peak needle back to zero.
+  // Whip in to the reset knob (tighter); it turns the peak needle back to zero.
   { t: 6.4, yaw: -38, pitch: 14, roll: -4, zoom: 6.4, focus: "knob", panX: 0, panY: -110, peak: 42, ease: "whip", wide: { zoom: 4.6, panX: -160, panY: -48 } },
-  { t: 6.52, peak: 42, ease: "lin" },
-  { t: 7.36, yaw: -31, pitch: 11, roll: -3, zoom: 6.8, focus: "knob", panX: 0, panY: -120, peak: 0, ease: "io", wide: { zoom: 4.9, panX: -170, panY: -62 } },
-  // Pull out, explode, drift apart, implode while turning to face, hero.
-  { t: 7.86, yaw: -40, pitch: 20, roll: 0, zoom: 2.1, focus: "body", panX: 0, panY: -70, ease: "io", glow: [0.52, 0.5, 0.72], wide: { zoom: 2.3, panX: -40, panY: 0 } },
-  { t: 7.94, apart: 0, ease: "lin" },
-  { t: 8.38, yaw: -35, pitch: 20, roll: -2, zoom: 1.75, panX: 0, panY: -80, apart: 1, ease: "o", wide: { zoom: 1.95, panX: -40, panY: -10 } },
-  { t: 9.7, yaw: -48, pitch: 22, roll: -3, zoom: 1.7, panX: 0, panY: -80, apart: 1, ease: "lin", wide: { zoom: 1.88, panX: -40, panY: -10 } },
+  { t: 6.5, peak: 42, ease: "lin" },
+  { t: 7.3, peak: 0, ease: "io" },
+  { t: 7.39, yaw: -31, pitch: 11, roll: -3, zoom: 6.8, focus: "knob", panX: 0, panY: -120, ease: "lin", wide: { zoom: 4.9, panX: -170, panY: -62 } },
+  // CUT at frame 222 (7.400 s) to the wide shot: the parts drift apart while the camera creeps in, then come back
+  // together into the hero, which keeps pushing in to the end.
+  { t: F(222), yaw: -38, pitch: 20, roll: -2, zoom: 1.26, focus: "body", panX: 0, panY: 20, apart: 0, ease: "cut", glow: [0.52, 0.5, 0.72], wide: { zoom: 1.84, panX: -40, panY: -10 } },
+  { t: 7.5, apart: 0, ease: "lin" },
+  { t: 7.95, yaw: -42, pitch: 21, roll: -2, zoom: 1.28, panX: 0, panY: 20, apart: 1, ease: "o", wide: { zoom: 1.87, panX: -40, panY: -10 } },
+  { t: 9.6, yaw: -50, pitch: 22, roll: -3, zoom: 1.32, panX: 0, panY: 20, apart: 1, ease: "lin", wide: { zoom: 1.95, panX: -40, panY: -10 } },
   { t: 10.42, yaw: -24, pitch: 10, roll: 0, zoom: 1.42, panX: 0, panY: 78, apart: 0, ease: "io", glow: [0.52, 0.45, 0.75], wide: { zoom: 2.2, panX: -40, panY: 2 } },
   { t: 12, yaw: -28, pitch: 8, roll: 0, zoom: 1.46, panX: 0, panY: 78, ease: "o", wide: { zoom: 2.25, panX: -40, panY: 2 } },
 ].map((k) => ({ ...k, ...(RATIO_NOW === "16:9" && k.wide ? k.wide : {}), wide: undefined }));
 // Captions fade in after a whip lands and are gone before the next whip starts (until), as in the series spec.
+// Captions fade in after a whip or cut lands and are gone before the next whip or cut (until), per the series spec.
 const BASE_LABELS = [
   { t: 0, until: 1.78, hint: "Hand dynamometer", readout: "Grip strength · hydraulic" },
-  { t: 2.06, until: 2.92, hint: "Dual scale", readout: "0–90 kg outside · 0–200 lb inside" },
-  { t: 3.2, until: 4.02, hint: "Five handle positions", readout: "35 to 86 mm · ½-inch steps" },
-  { t: 4.3, until: 5.42, hint: "Sealed hydraulic system", readout: "Handle squeezes in · needle sweeps up" },
+  { t: 2.06, until: 2.94, hint: "Dual scale", readout: "0–90 kg outside · 0–200 lb inside" },
+  { t: 3.0, until: 4.04, hint: "Five handle positions", readout: "35 to 86 mm · ½-inch steps" },
+  { t: 4.1, until: 5.42, hint: "Sealed hydraulic system", readout: "Handle squeezes in · needle sweeps up" },
   { t: 5.48, until: 6.12, hint: "Peak-hold needle", readout: "Keeps the highest reading" },
-  { t: 6.4, until: 7.4, hint: "Reset knob", readout: "Turns the peak needle back to zero" },
-  { t: 7.94, until: 8.9, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
-  { t: 8.96, until: 9.7, hint: "Bourdon tube · two pistons", readout: "The sealed hydraulic path" },
+  { t: 6.4, until: 7.34, hint: "Reset knob", readout: "Turns the peak needle back to zero" },
+  { t: 7.5, until: 8.62, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
+  { t: 8.68, until: 9.56, hint: "Bourdon tube · two pistons", readout: "The sealed hydraulic path" },
   { t: 10.42, until: 99, hint: "Hand dynamometer", readout: "Measured in clinic · best of either hand" },
 ];
 const REQUESTED = typeof DATA !== "undefined" && DATA.duration ? DATA.duration : BASE_DURATION;
 function retimer(keys, duration) {
+  if (Math.abs(duration - BASE_DURATION) < 1e-9) return (t) => t; // exact, so cuts stay on their frames
   const segments = [];
   let fixed = 0;
   for (let i = 1; i < keys.length; i++) {
@@ -4150,7 +4162,8 @@ function retimer(keys, duration) {
 }
 const RETIME = retimer(BASE_KEYS, REQUESTED);
 const DURATION = RETIME(BASE_DURATION);
-const KEYS = BASE_KEYS.map((k) => ({ ...k, t: RETIME(k.t) }));
+const KEYS = BASE_KEYS.map((k) => ({ ...k, t: k.ease === "cut" ? Math.round(RETIME(k.t) * 30) / 30 : RETIME(k.t) }));
+const CUTS = KEYS.filter((k) => k.ease === "cut").map((k) => k.t);
 const LABELS = BASE_LABELS.map((l) => ({ ...l, t: RETIME(l.t), until: l.until > BASE_DURATION ? 1e9 : RETIME(l.until) }));
 const CHANNELS = ["yaw", "pitch", "roll", "zoom", "panX", "panY", "apart", ...Object.keys(FEATURE_DEFAULTS)];
 const DEFAULTS = { yaw: 0, pitch: 0, roll: 0, zoom: 1, panX: 0, panY: 0, apart: 0, ...FEATURE_DEFAULTS };
@@ -4237,7 +4250,9 @@ const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
   const a = at(t);
-  const b = at(t + dt);
+  // a frame that ends on a cut only moves until the cut: measure up to just before it
+  const cut = CUTS.find((c) => c > t + 1e-9 && c <= t + dt + 1e-9);
+  const b = at(cut !== undefined ? cut - 1e-6 : t + dt);
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -4275,6 +4290,8 @@ function applyState(s) {
   return stats;
 }
 window.frame = frame;
+window.at = at;
+window.CUTS = CUTS;
 window.fitZoom = typeof fitZoom === "function" ? fitZoom : (z) => z;
 window.pose = pose;
 window.speed = speed;

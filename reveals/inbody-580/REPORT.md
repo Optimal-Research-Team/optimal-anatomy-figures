@@ -24,7 +24,7 @@ Project folder: `optimal-equipment-reveals/inbody-580/`
 **Films:** H.264, yuv420p, 30 fps, 360 frames, exactly 12.000 s, no sound.
 - 16:9 is 1920×1080 and 8.4 MB.
 - 9:16 is 1080×1920 and 8.3 MB.
-- Both were re-rendered for the Oct 19 polish round, then again to conform to the shared `../SERIES-SPEC.md`.
+- Both were re-rendered for the Oct 19 polish round, again to conform to `../SERIES-SPEC.md`, and again for the forward-only camera.
 
 **Figure pages:** each is one self-contained 945 KB file, phone-first for the public anatomy gallery, with no hover-only behaviour.
 - **Drag** to turn the machine. On phones a horizontal drag turns it and vertical swipes still scroll the page.
@@ -43,14 +43,19 @@ Project folder: `optimal-equipment-reveals/inbody-580/`
   - hover, clicks and key A on desktop.
   - Screenshots are in `out/qa-figure/`.
 
-**Film sequence:**
-1. The machine tumbles in.
-2. Close-up of the touchscreen and keypad, with the screen off.
-3. Close-up of the heel and forefoot electrodes.
-4. The grips swing up off their rest and the screen comes on. The current path lights in leaf: first the grip cables, then the palm and forefoot electrodes (current), then the thumb and heel electrodes (voltage).
-5. Close-up of the lit grips.
-6. The screen steps through 5, 50, 250 and 500 kHz while a 20-cell grid fills.
-7. The machine comes apart, goes back together, and holds on a hero shot with the screen reading "Complete".
+**Film sequence.** The camera only moves forward; every change to a wider framing is a hard cut.
+1. **0–2.05 s:** the machine tumbles in. Zoom only rises.
+2. **Whip in (2.05–2.29 s):** close-up of the touchscreen and keypad, screen off, drifting in to 3.1 s.
+3. **Cut at 3.1 s:** close-up of the heel and forefoot electrodes, creeping in. On 9:16 this is an overhead plan view.
+4. **Cut at 4.1 s:** the whole machine, with a slow push-in.
+   - The grips swing up off their rest and the screen comes on.
+   - The current path lights in leaf: first the grip cables, then the palm and forefoot electrodes (current), then the thumb and heel electrodes (voltage).
+5. **Whip in (5.9–6.14 s):** close-up of the lit grips, pushing in.
+6. **Cut at 7.0 s:** the screen steps through 5, 50, 250 and 500 kHz while a 20-cell grid fills, ending on "Complete".
+7. **Cut at 8.0 s:** a wide framing that already holds the whole explode.
+   - The grips go back to rest and the machine comes apart (8.4–8.8 s).
+   - The parts drift while the camera holds and creeps in.
+8. **9.8–10.5 s:** the machine goes back together while the camera pushes in to the hero, which keeps creeping in to 12 s.
 
 **On-screen labels** are Public Sans spaced caps: "OPTIMAL HEALTH · BARRIE" and "INBODY 580 · BODY COMPOSITION".
 - **16:9:** top-left and top-right inside the hairline frame.
@@ -123,15 +128,36 @@ No internal frame or hinge bracket is modelled; the hinge cover is solid.
 - Explode sweep from 5 views (−35/15, 0/5, 140/20, 90/−20, −20/70): 0 forced picks and no pairs passing through each other.
 - Film scan on every frame of both the 16:9 and 9:16 builds: every frame clean.
 - **Layout check (series QA)**, `motion/check-frame.mjs` on both builds: every sample clear.
-  - **Sampling covers the blur shutter.** It checks every sub-frame time the renderer averages (`--step 4 --most 40`) plus the middle of each frame's shutter: 2,273 samples on 16:9 and 2,365 on 9:16.
+  - **Sampling covers the blur shutter.** It checks every sub-frame time the renderer averages (`--step 4 --most 40`) plus the middle of each frame's shutter: 1,559 samples on 16:9 and 1,601 on 9:16.
   - **Method.** Each sample is rendered with the paper, vignette and plate hidden on a transparent background, and the opaque scene pixels are counted, so the test is exact rather than a bounding-box estimate.
   - **Units.** Margins are CSS px of the 540-wide page; 1 CSS px = 2 output px.
   - The rules it asserts:
     - **Caption zone:** while a caption is visible, no scene pixel may fall inside the caption box grown by 40 px.
     - **Corner labels:** while a label is visible, no scene pixel may fall inside its box grown by 24 px.
     - **Hero shots** (first and last): the whole machine sits inside the hairline frame, at least 24 output px clear. On 9:16 it must also sit above y = 1248 with the same room. Tightest: 70 output px on 16:9, 28 on 9:16.
-    - **Wide shots** (feature, pull-out and explode): inside the hairline frame by at least 16 CSS px. Tightest: 22 on 16:9, 72 on 9:16.
+    - **Wide shots** (feature, explode and implode): inside the hairline frame by at least 16 CSS px. Tightest: 20 on 16:9, 81 on 9:16.
     - **9:16 only:** every visible label and caption sits inside the Instagram safe area. The Reels UI covers the top 269, the bottom 672 and 65 px on each side of the 1080 × 1920 output.
+    - **Forward-only camera.** Zoom is sampled at 600 Hz and must never fall between consecutive samples except across a declared hard cut. Each cut must sit exactly on a frame boundary, with no motion-blur sub-frame inside its 0.1 ms switch window. Result: 4 cuts, all single-frame jumps on frame boundaries, and no other zoom decrease in either ratio.
+
+## Forward-only camera (Oct 19)
+Peter's note on the films: "the camera zooms in then zooms out, that's a weird thing to do." The series rule is now that the camera only moves forward.
+- **Allowed moves** hold or tighten the framing: the tumble-in, the whips into close-ups, slow push-ins and drifts, the implode push and the hero creep.
+- **Hard cuts.** Every change to a wider framing is now a hard cut, at **3.1 s, 4.1 s, 7.0 s and 8.0 s** (frames 93, 123, 210 and 240).
+
+| Cut | From | To | Zoom, 16:9 | Zoom, 9:16 |
+|---|---|---|---|---|
+| 3.1 s | keypad close-up | foot electrodes | 5.90 → 3.15 | 5.90 → 2.55 |
+| 4.1 s | foot electrodes | whole machine (grips, screen, current) | 4.40 → 1.38 | 2.68 → 1.80 |
+| 7.0 s | grip close-up | screen close-up | 7.40 → 5.60 | 7.40 → 5.60 |
+| 8.0 s | screen close-up | explode wide | 6.00 → 1.07 | 6.00 → 1.20 |
+
+- **How a cut works.** Each cut is two keys 0.1 ms apart, the second exactly on the frame boundary.
+  - The renderer's last sub-frame of a frame sits at least 1/1200 s before the next frame. So no sub-frame lands inside the switch, and the two framings are never averaged.
+  - The blur planner (`speed()` in `motion/build.mjs`) stops measuring at the cut, so the frame before a cut isn't given phantom motion blur.
+- **The old pull-out before the explode is gone.** The cut at 8.0 s lands on a framing wide enough for the fully exploded machine. The parts drift apart while the camera holds or creeps in, then they come back together while the camera pushes in to the hero.
+  - **9:16:** the hero zoom (1.28) caps the explode framing at 1.20–1.23, so the implode is still a push-in.
+- **Captions and corner labels are re-timed so none spans a cut.** Each caption is gone by the cut and the next fades in 0.04 s after it. The corner labels for the grip-lift shot fade in after the 4.1 s cut.
+- **Feature beats are unchanged:** grips 4.3–5.0 s, screen 5.1–5.3 s, measurement 5.2–8.0 s. The two shots after the 3.1 s and 7.0 s cuts are 0.24 s longer because the old outward whips are gone.
 
 ## Series spec (`../SERIES-SPEC.md`)
 The four equipment films now share one spec. For InBody that meant:

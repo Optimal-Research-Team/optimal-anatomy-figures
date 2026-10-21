@@ -9,6 +9,9 @@
 //     24 output px, and on 9:16 the whole object above y = 1248 (output px) with room to breathe;
 //  5. 9:16 only: every visible label and caption sits inside the Instagram safe area
 //     (1080 × 1920 output: top 269, bottom 672, sides 65 px covered by the Reels UI).
+//  6. the camera only moves forward: zoom never decreases between consecutive samples (600 Hz) except across
+//     a declared hard cut; every cut sits exactly on a frame boundary and no motion-blur sub-frame falls inside
+//     its switch window, so a frame never averages the two framings.
 // Sampling covers the blur shutter: by default every sub-frame time the renderer will average
 // (render.mjs blur --step 4 --most 40) plus the middle of each frame's shutter; --hz N samples a fixed rate instead.
 // All margins below are CSS px of the 540-wide film page (1 CSS px = 2 output px).
@@ -47,6 +50,37 @@ await page.addStyleTag({
 const duration = await page.evaluate(() => window.DURATION);
 const from = opt("from", 0);
 const to = opt("to", duration);
+// 6. forward-only camera
+const cam = await page.evaluate((duration) => {
+  const out = { decreases: [], cuts: [], straddles: [], offFrame: [] };
+  const N = Math.round(duration * 600);
+  let prev = window.at(0).zoom;
+  for (let i = 1; i <= N; i++) {
+    const t0 = (i - 1) / 600;
+    const t1 = i / 600;
+    const z = window.at(t1).zoom;
+    if (z < prev - 1e-9 && !window.CUTS.some((c) => c > t0 - 1e-9 && c <= t1 + 1e-9)) out.decreases.push([t0, t1, prev, z]);
+    prev = z;
+  }
+  for (const c of window.CUTS) {
+    const n = Math.round(c * 30);
+    if (Math.abs(c * 30 - n) > 1e-6) out.offFrame.push(c);
+    out.cuts.push({ c, frame: n, before: window.at(c - 1 / 30).zoom, last: window.at(c - window.CUT_WINDOW * 1.5).zoom, after: window.at(c).zoom });
+    // the renderer's sub-frames for the frame that ends at the cut
+    const subs = Math.max(1, Math.min(40, Math.ceil(window.speed((n - 1) / 30, 1 / 30) / 4)));
+    for (let j = 0; j < subs; j++) {
+      const t = (n - 1 + j / subs) / 30;
+      if (t > c - window.CUT_WINDOW - 1e-9 && t < c) out.straddles.push([c, t]);
+    }
+  }
+  return out;
+}, duration);
+const camBad = [];
+for (const [t0, t1, a, b] of cam.decreases) camBad.push(`zoom falls ${a.toFixed(4)} → ${b.toFixed(4)} between ${t0.toFixed(4)} and ${t1.toFixed(4)} s with no cut`);
+for (const c of cam.offFrame) camBad.push(`cut at ${c} s is not on a frame boundary`);
+for (const [c, t] of cam.straddles) camBad.push(`sub-frame at ${t.toFixed(5)} s falls inside the switch window of the cut at ${c} s`);
+console.log(`camera: zoom checked at 600 Hz · ${cam.cuts.length} hard cuts: ${cam.cuts.map((x) => `${x.c.toFixed(3)} s (frame ${x.frame}, zoom ${x.last.toFixed(2)} → ${x.after.toFixed(2)})`).join(", ")}`);
+console.log(camBad.length ? `camera FAILS:\n${camBad.join("\n")}` : "camera only moves forward: zoom never decreases except at the hard cuts, each a single-frame jump on a frame boundary with no sub-frame straddling it");
 let times = [];
 if (HZ) for (let n = Math.round(from * HZ); n <= Math.round(to * HZ); n++) times.push(Math.min(duration, n / HZ));
 else
@@ -186,4 +220,4 @@ for (const t of times) {
 console.log(`${size.ratio}: ${times.length} samples (${HZ ? `${HZ} Hz` : "every blur sub-frame + mid-shutter"}), ${checked} rendered · caption margin ${MARGIN} px · corner-label margin ${CORNER} px · wide-shot room ≥ ${ROOM} px (tightest ${worstRoom}) · hero room ≥ ${HERO_ROOM} px = ${HERO_ROOM * 2} output px (tightest ${worstHero})${size.ratio === "9:16" ? " · labels and captions inside the Reels safe area" : ""} [CSS px; 1 = 2 output px]`);
 console.log(bad.length ? `${bad.length} samples fail:\n${bad.join("\n")}` : "every sample clear: caption and corner-label zones empty, wide and hero shots inside the frame" + (size.ratio === "9:16" ? ", all text in the safe area" : ""));
 await browser.close();
-process.exit(bad.length ? 1 : 0);
+process.exit(bad.length || camBad.length ? 1 : 0);

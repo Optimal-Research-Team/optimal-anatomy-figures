@@ -28,7 +28,7 @@ The clinic's four testing machines are rebuilt part by part from their published
 - **A 12 s silent film**, in 16:9 for the reception TV and desktop and 9:16 for Reels and phones.
 - **An interactive take-apart page**: drag to turn, tap or press a button to take it apart. It's phone-first, with real 44 px buttons and no hover-only behaviour.
 
-These are **round 1, for Peter's review. They are not yet approved for the site.** Peter records approvals on the internal content library page. Build the component now, but ship a machine only once its film is approved.
+**Approved for the site by Peter on Oct 19, 2026** ("push everything"). On Oct 20 the films were re-cut so the camera only moves forward: any change to a wider framing is now a hard cut, because Peter found zooming in and back out read as a mistake. The take-apart pages also got a consistency pass: one header, one corner-label style, equal-width button rows and AA contrast. Use the files in `assets/` as they are now; any copy taken before Oct 21 is stale.
 
 | Fig | Machine | Film (gallery) | Take-apart page | Goes on | Where |
 |---|---|---|---|---|---|

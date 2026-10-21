@@ -32,6 +32,9 @@ The four films (InBody 580, Creator 600, Wahoo KICKR Bike, hand dynamometer) air
 - **Nothing that must be read sits below y = 1248.**
 - The object sits below the header block. In the tumble-in and hero shots, the whole object stays inside the hairline frame and above y ≈ 1248, with room to breathe.
 
+## Camera: forward only (Peter, Oct 19)
+The camera only moves forward. Holds, push-ins, drifts and the hero's final creep are fine. Any change to a wider framing is a hard cut, never a continuous pull-out or a whip that lands wider: a camera that zooms in and then back out reads as a mistake. Cuts sit on a frame boundary, with no motion-blur sub-frame straddling them. The explode cuts to its wide framing, and the camera then holds or creeps in while the parts drift. QA asserts that zoom never decreases between consecutive frames except at a cut.
+
 ## Hero shots
 In the first and last shots of both ratios, the whole object sits inside the hairline frame, at least 24 px clear of it.
 

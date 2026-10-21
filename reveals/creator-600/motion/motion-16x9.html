@@ -4002,15 +4002,15 @@ const FIGURE = {
     { mark: "edge", label: "Handrails: side panels, console pods, handlebar, touch console" },
   ],
   caption:
-    "{parts} convex parts, re-projected and re-shaded every frame. Press R to run the belt: the screen draws the skeleton the camera tracks, joint by joint. Published by Visbody: 2564 × 1024 × 2290 mm, 580 × 1620 mm running area, 0.5–20 km/h, 0–18 % incline. Internals are simplified and placed by estimate.",
+    "{parts} convex parts, re-projected and re-shaded every frame. Run the belt (the button, or R) and the screen draws the skeleton the camera tracks, joint by joint. Published by Visbody: 2564 × 1024 × 2290 mm, 580 × 1620 mm running area, 0.5–20 km/h, 0–18 % incline. Internals are simplified and placed by estimate.",
 };
 
 // run: the figure page's belt switch · belt: belt travel in mm · track: the screen's skeleton lock (0…1) · press: the "+" key · cam: the camera's status light
 const FEATURE_DEFAULTS = { run: 0, belt: 0, track: 1, press: 0, cam: 1 };
 
 const FEATURE_KEYS = [
-  { key: "r", channel: "run", name: "belt", unit: "", values: [0, 1], ease: 0.6, verb: "runs the belt", tour: [0.08, 0.38] },
-  { key: "p", channel: "press", name: "speed key", unit: "", values: [0, 1], ease: 0.08, verb: "presses the speed key" },
+  { key: "r", channel: "run", name: "belt", unit: "", values: [0, 1], ease: 0.6, verb: "runs the belt", tour: [0.08, 0.38], button: "Run belt", buttonOn: "Stop belt" },
+  { key: "p", channel: "press", name: "speed key", unit: "", values: [0, 1], ease: 0.08, verb: "presses the speed key", button: "Press speed key", momentary: 0.22 },
 ];
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -4029,7 +4029,7 @@ function featureTravel(a, b) {
 // figure page readout
 function featureReadout(d) {
   if (d.apart > 0.02) return null;
-  return d.run > 0.05 ? `belt running · ${(8 * d.run).toFixed(1)} km/h · tracking` : "belt stopped · press R to run";
+  return d.run > 0.05 ? `belt running · ${(8 * d.run).toFixed(1)} km/h · tracking` : "belt stopped";
 }
 
 // figure page: the belt runs while "run" is on
@@ -4195,12 +4195,21 @@ const EASE = {
   so: (x) => 1 - Math.pow(1 - x, 2),
   si: (x) => x * x,
   back: (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2),
+  // a hard cut: the previous framing holds right up to the key, which lands on a frame start
+  cut: (x) => (x >= 1 ? 1 : 0),
 };
 const BASE_DURATION = 12;
 // Keys are framed for 9:16 (Reels: header block at the top, the object below it); a key's "w" block gives the 16:9
 // framing (TV: labels at the top, caption bottom-left, close-ups weighted right). Every framing was chosen with
 // motion/qa.mjs --search and the whole film is checked frame by frame with motion/qa.mjs.
 const RATIO = typeof DATA !== "undefined" && DATA.ratio ? DATA.ratio : "9:16";
+// The camera only ever moves forward: every eased move and whip holds or tightens the framing. A change to a wider
+// framing is a hard cut ("cut"), keyed on an exact frame start (F(n) = n / 30) so no motion-blur sub-frame averages
+// the two framings; the shot before it holds until 1 ms before the cut.
+const F = (n) => n / 30;
+const CUT1 = F(138); // 4.600 s: console close-up → touch console
+const CUT2 = F(168); // 5.600 s: touch console → the running machine, wide
+const CUT3 = F(237); // 7.900 s: screen close-up → wide for the explode
 const RAW_KEYS = [
   // tumble in: from behind the tower, rolled, round to a three-quarter view of the deck and the screen
   { t: 0, yaw: 152, pitch: 26, roll: -24, zoom: 1.12, focus: "hero", panX: 0, panY: 30, apart: 0, corner: 1, run: 0, belt: 0, track: 0, press: 0, cam: 0, glow: [0.8, 1.06, 0.62], w: { zoom: 1.25, panY: 0 } },
@@ -4211,53 +4220,56 @@ const RAW_KEYS = [
   // labels step aside for the close-ups
   { t: 1.84, corner: 1, ease: "lin" },
   { t: 2.14, corner: 0, ease: "io" },
-  // whip 1: the depth camera under the screen; its light comes on
+  // whip 1 (tightening): the depth camera under the screen; its light comes on
   { t: 2.26, yaw: -11, pitch: 8, roll: 0, zoom: 7.5, focus: "camera", panX: -190, panY: -60, cam: 0, ease: "whip", glow: [0.6, 0.45, 0.6], w: { yaw: 10, pitch: 8, zoom: 9, panX: -240, panY: -30 } },
   { t: 2.6, cam: 0, ease: "lin" },
   { t: 2.95, cam: 1, ease: "io" },
   { t: 3.3, yaw: -8, pitch: 9.5, roll: 0, zoom: 7.9, focus: "camera", panX: -200, panY: -60, ease: "lin", w: { yaw: 16, pitch: 9, zoom: 9.4, panX: -240, panY: -30 } },
-  // whip 2: the left console pod; the speed key goes down and back
+  // whip 2 (tightening): the left console pod; the speed key goes down and back
   { t: 3.54, yaw: 60, pitch: 36, roll: -2, zoom: 12, focus: "button.L", panX: -150, panY: -60, press: 0, ease: "whip", w: { yaw: 30, pitch: 30, zoom: 11, panX: -240, panY: 0 } },
   { t: 3.8, press: 0, ease: "lin" },
   { t: 3.93, press: 1, ease: "io" },
   { t: 4.16, press: 0, ease: "io" },
-  { t: 4.5, yaw: 65, pitch: 34, roll: -3, zoom: 12.5, focus: "button.L", panX: -150, panY: -60, ease: "lin", w: { yaw: 28, pitch: 29, zoom: 11.6, panX: -260, panY: 0 } },
-  // whip 3: the touch console on its post
-  { t: 4.74, yaw: -42, pitch: 22, roll: 2, zoom: 9, focus: "tablet", panX: -170, panY: -60, ease: "whip", w: { yaw: -55, pitch: 10, zoom: 8, panX: -300, panY: -60 } },
-  { t: 5.5, yaw: -40, pitch: 20, roll: 1, zoom: 9.4, focus: "tablet", panX: -170, panY: -60, ease: "lin", w: { yaw: -57, pitch: 10, zoom: 8.4, panX: -320, panY: -60 } },
-  // whip 4: the feature. the belt starts, the camera locks on joint by joint, and we push into the screen
-  { t: 5.74, yaw: -44, pitch: 12, roll: 0, zoom: 1.5, focus: "hero", panX: -20, panY: 30, belt: 0, track: 0, ease: "whip", glow: [0.5, 0.5, 0.7], w: { yaw: 20, pitch: 12, zoom: 2.1, panX: -140, panY: 20 } },
-  { t: 5.74, corner: 0, ease: "lin" },
-  { t: 6.04, corner: 1, ease: "io" },
-  { t: 6.3, belt: 320, ease: "si" },
-  { t: 6.05, track: 0, ease: "lin" },
-  { t: 7.0, track: 1, ease: "io" },
+  { t: CUT1 - 0.001, yaw: 65, pitch: 34, roll: -3, zoom: 12.5, focus: "button.L", panX: -150, panY: -60, ease: "lin", w: { yaw: 28, pitch: 29, zoom: 11.6, panX: -260, panY: 0 } },
+  // cut 1: the touch console on its post (a wider framing, so a cut, not a whip)
+  { t: CUT1, yaw: -42, pitch: 22, roll: 2, zoom: 9, focus: "tablet", panX: -170, panY: -60, ease: "cut", w: { yaw: -55, pitch: 10, zoom: 8, panX: -300, panY: -60 } },
+  { t: CUT2 - 0.001, yaw: -40, pitch: 20, roll: 1, zoom: 9.4, focus: "tablet", panX: -170, panY: -60, ease: "lin", w: { yaw: -57, pitch: 10, zoom: 8.4, panX: -320, panY: -60 } },
+  // cut 2: the whole machine. the belt starts, the camera locks on joint by joint, and we push into the screen
+  { t: CUT2, yaw: -44, pitch: 12, roll: 0, zoom: 1.5, focus: "hero", panX: -20, panY: 30, ease: "cut", glow: [0.5, 0.5, 0.7], w: { yaw: 20, pitch: 12, zoom: 2.1, panX: -140, panY: 20 } },
+  { t: CUT2, corner: 0, ease: "lin" },
+  { t: CUT2 + 0.3, corner: 1, ease: "io" },
+  { t: 6.2, belt: 320, ease: "si" },
+  { t: 5.95, track: 0, ease: "lin" },
+  { t: 6.9, track: 1, ease: "io" },
   { t: 6.55, yaw: -40, pitch: 12, roll: 0, zoom: 1.55, focus: "hero", panX: -20, panY: 30, ease: "lin", w: { yaw: 24, pitch: 12, zoom: 2.2, panX: -150, panY: 20 } },
   { t: 6.6, corner: 1, ease: "lin" },
   { t: 6.9, corner: 0, ease: "io" },
   { t: 7.6, yaw: 15, pitch: 6, roll: 0, zoom: 6, focus: "screenSkel", panX: -110, panY: -110, ease: "io", w: { yaw: 15, pitch: 4, zoom: 6, panX: -240, panY: -30 } },
-  // pull out, come apart, drift, back together
-  { t: 8.1, yaw: -44, pitch: 14, roll: 0, zoom: 1.45, focus: "hero", panX: 0, panY: 30, ease: "io", glow: [0.52, 0.5, 0.72], w: { yaw: -46, pitch: 14, zoom: 1.62, panX: 0, panY: 0 } },
-  { t: 8.0, corner: 0, ease: "lin" },
-  { t: 8.3, corner: 1, ease: "io" },
-  { t: 8.18, apart: 0, ease: "lin" },
-  { t: 8.62, yaw: -40, pitch: 22, roll: -2, zoom: 1.1, apart: 1, panX: 0, panY: 30, ease: "o", w: { yaw: -40, pitch: 20, zoom: 1.4, panX: 40, panY: -10 } },
-  { t: 9.7, yaw: -54, pitch: 20, roll: -3, zoom: 1.06, apart: 1, panX: 0, panY: 30, ease: "lin", w: { yaw: -52, pitch: 20, zoom: 1.4, panX: 40, panY: -10 } },
-  // hero: three-quarter from the deck, belt still running, the screen tracking
+  { t: CUT3 - 0.001, yaw: 17, pitch: 6, roll: 0, zoom: 6.06, focus: "screenSkel", panX: -110, panY: -110, ease: "lin", w: { yaw: 17, pitch: 4, zoom: 6.06, panX: -240, panY: -30 } },
+  // cut 3: wide, still assembled; the parts drift apart while the camera creeps in, then close into the hero
+  { t: CUT3, yaw: -40, pitch: 22, roll: -2, zoom: 1.06, focus: "hero", panX: 0, panY: 30, ease: "cut", glow: [0.52, 0.5, 0.72], w: { yaw: -40, pitch: 20, zoom: 1.34, panX: 40, panY: -10 } },
+  { t: CUT3, corner: 0, ease: "lin" },
+  { t: CUT3 + 0.3, corner: 1, ease: "io" },
+  { t: CUT3 + 0.06, apart: 0, ease: "lin" },
+  { t: 8.56, yaw: -46, pitch: 22, roll: -2, zoom: 1.09, apart: 1, focus: "hero", panX: 0, panY: 30, ease: "o", w: { yaw: -46, pitch: 20, zoom: 1.37, panX: 40, panY: -10 } },
+  { t: 9.7, yaw: -56, pitch: 20, roll: -3, zoom: 1.12, apart: 1, focus: "hero", panX: 0, panY: 30, ease: "lin", w: { yaw: -54, pitch: 20, zoom: 1.4, panX: 40, panY: -10 } },
+  // hero: three-quarter from the deck, belt still running, the screen tracking; it only pushes in
   { t: 10.45, yaw: -40, pitch: 9, roll: 0, zoom: 1.42, focus: "hero", apart: 0, panX: 0, panY: 30, ease: "io", glow: [0.52, 0.45, 0.75], w: { yaw: -46, pitch: 9, zoom: 1.62, panX: 0, panY: -10 } },
   { t: 12, yaw: -44, pitch: 8, roll: 0, zoom: 1.5, focus: "hero", panX: 0, panY: 30, ease: "o", w: { yaw: -50, pitch: 8, zoom: 1.72, panX: 0, panY: -12 } },
-  { t: 12, belt: 320 + (12 - 6.3) * 2222, ease: "lin" },
+  { t: CUT2, belt: 0, ease: "lin" },
+  { t: 12, belt: 320 + (12 - 6.2) * 2222, ease: "lin" },
 ];
 const BASE_KEYS = RAW_KEYS.map(({ w, ...k }) => (RATIO === "16:9" && w ? { ...k, ...w } : k)).sort((a, b) => a.t - b.t);
-// Captions: a Castoro title line in sentence case and one spaced-caps sub-line, device facts only.
+// Captions: a Castoro title line in sentence case and one spaced-caps sub-line, device facts only. Each one fades in
+// after a whip or cut lands and is gone before the next whip or cut.
 const BASE_LABELS = [
   { t: 0, hint: "Creator 600", readout: "2564 × 1024 × 2290 mm" },
   { t: 2.14, hint: "Depth camera", readout: "under the 50″ display" },
   { t: 3.42, hint: "Handrail console", readout: "speed and incline keys" },
-  { t: 4.62, hint: "13.3″ touch console", readout: "1080p touchscreen" },
-  { t: 5.62, hint: "Belt running", readout: "camera tracking · 0.5–20 km/h" },
+  { t: CUT1, hint: "13.3″ touch console", readout: "1080p touchscreen" },
+  { t: CUT2, hint: "Belt running", readout: "camera tracking · 0.5–20 km/h" },
   { t: 7.1, hint: "50″ portrait display", readout: "live skeleton, joint by joint" },
-  { t: 7.92, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
+  { t: CUT3, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
   { t: 10.3, hint: "Creator 600", readout: "50″ display · depth camera" },
 ];
 const REQUESTED = typeof DATA !== "undefined" && DATA.duration ? DATA.duration : BASE_DURATION;
@@ -4280,10 +4292,12 @@ function retimer(keys, duration) {
     return out + Math.max(0, t - BASE_DURATION) * scale;
   };
 }
-const RETIME = retimer(BASE_KEYS, REQUESTED);
+const RETIME = REQUESTED === BASE_DURATION ? (t) => t : retimer(BASE_KEYS, REQUESTED);
 const DURATION = RETIME(BASE_DURATION);
 const KEYS = BASE_KEYS.map((k) => ({ ...k, t: RETIME(k.t) }));
 const LABELS = BASE_LABELS.map((l) => ({ ...l, t: RETIME(l.t) }));
+// every hard cut, snapped to its frame start
+const CUTS = [...new Set(KEYS.filter((k) => k.ease === "cut" && k.yaw !== undefined).map((k) => Math.round(k.t * 30) / 30))];
 const CHANNELS = ["yaw", "pitch", "roll", "zoom", "panX", "panY", "apart", "corner", ...Object.keys(FEATURE_DEFAULTS)];
 const DEFAULTS = { yaw: 0, pitch: 0, roll: 0, zoom: 1, panX: 0, panY: 0, apart: 0, corner: 1, ...FEATURE_DEFAULTS };
 function track(name) {
@@ -4310,6 +4324,7 @@ const QUIET = (() => {
   const spans = [];
   const yawKeys = TRACKS.yaw;
   for (let i = 1; i < yawKeys.length; i++) if (yawKeys[i].ease === "whip") spans.push([yawKeys[i - 1].t, yawKeys[i].t]);
+  for (const c of CUTS) spans.push([c - 0.06, c + 0.06]);
   for (const l of LABELS.slice(1)) if (!spans.some(([a, b]) => l.t >= a && l.t <= b)) spans.push([l.t - 0.12, l.t + 0.12]);
   return spans;
 })();
@@ -4377,8 +4392,10 @@ function viewOf(s) {
 const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
+  // a cut at the next frame start is not motion: measure this frame's own interval only
+  const cut = CUTS.find((c) => c > t + 1e-9 && c <= t + dt + 1e-9);
   const a = at(t);
-  const b = at(t + dt);
+  const b = at(cut === undefined ? t + dt : cut - 1e-5);
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -4419,6 +4436,8 @@ function applyState(s) {
 window.frame = frame;
 window.pose = pose;
 window.speed = speed;
+window.at = at;
+window.CUTS = CUTS;
 window.DURATION = DURATION;
 window.SIZE = { W: DATA.W, H: DATA.H, ratio: DATA.ratio };
 window.TURN = TURN;

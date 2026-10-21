@@ -101,6 +101,43 @@ for (let n = 0; n <= Math.round(duration * rate); n++) {
   if (r.caption || r.labels || r.frame || safe)
     bad.push(`t=${t.toFixed(3)} speed ${sp.toFixed(0)}  caption ${r.caption}  labels ${r.labels}${isHero ? `  frame ${r.frame}` : ""}${tall ? `  safe ${safe}` : ""}`);
 }
+// camera only moves forward: zoom never drops between consecutive samples except across a cut, every cut sits
+// on a frame boundary, and no motion-blur sub-frame (as render.mjs schedules them: step 4, at most 40) straddles one
+const cam = await page.evaluate(
+  ({ rate, step, most }) => {
+    const out = { drops: [], cuts: [], straddles: [] };
+    const D = window.DURATION;
+    const cuts = window.CUTS || [];
+    let prev = null;
+    for (let n = 0; n <= Math.round(D * rate); n++) {
+      const t = Math.min(D, n / rate);
+      const z = window.stateAt(t).zoom;
+      if (prev && z < prev.z - 1e-9 && !cuts.some((c) => c > prev.t && c <= t + 1e-12)) out.drops.push(`${t.toFixed(3)} ${prev.z.toFixed(4)}→${z.toFixed(4)}`);
+      prev = { t, z };
+    }
+    for (const c of cuts) {
+      const f = c * 30;
+      const onBoundary = Math.abs(f - Math.round(f)) < 1e-6;
+      const n = Math.round(f);
+      // the frame before the cut and the frame that starts on it, sub-frame by sub-frame
+      const check = (k) => {
+        const subs = Math.max(1, Math.min(most, Math.ceil(window.speed(k / 30, 1 / 30) / step)));
+        const z0 = window.stateAt(k / 30).zoom;
+        let worst = 0;
+        for (let j = 0; j < subs; j++) worst = Math.max(worst, Math.abs(Math.log(window.stateAt((k + j / subs) / 30).zoom / z0)));
+        return { subs, worst };
+      };
+      const before = check(n - 1);
+      const after = check(n);
+      out.cuts.push(`frame ${n} (${c.toFixed(4)} s) ${onBoundary ? "on a frame boundary" : "OFF BOUNDARY"} · frame ${n - 1}: ${before.subs} subs · frame ${n}: ${after.subs} subs`);
+      if (!onBoundary || before.worst > 0.05 || after.worst > 0.05) out.straddles.push(`cut at ${c.toFixed(4)} s`);
+    }
+    return out;
+  },
+  { rate, step: 4, most: 40 },
+);
+console.log(`camera: zoom drops outside cuts: ${cam.drops.length ? cam.drops.join(" | ") : "none"} · sub-frames straddling a cut: ${cam.straddles.length ? cam.straddles.join(", ") : "none"}`);
+for (const c of cam.cuts) console.log(`  cut ${c}`);
 console.log(`${size.ratio}: ${samples} samples at ${rate}/s · ${bad.length} with a violation (caption +${margin}px, labels +${lmargin}px, hero room ${room}px${tall ? ", Reels safe area, nothing below y 1248 in hero shots" : ""})`);
 if (bad.length) console.log(bad.join("\n"));
 await browser.close();

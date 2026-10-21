@@ -4040,9 +4040,9 @@ const FIGURE = {
 const FEATURE_DEFAULTS = { grip: 0, screen: 0, scan: 0 };
 
 const FEATURE_KEYS = [
-  { key: "h", channel: "grip", name: "grips", unit: "", values: [0, 1], ease: 0.35, verb: "lifts the hand electrodes", tour: [0.04, 0.38] },
-  { key: "s", channel: "screen", name: "screen", unit: "", values: [0, 1], ease: 0.2, verb: "turns the screen on", tour: [0.08, 0.38] },
-  { key: "m", channel: "scan", name: "measure", unit: "", values: [0, 1], run: 3.2, verb: "runs a measurement", tour: [0.12, 0.38] },
+  { key: "h", channel: "grip", name: "grips", unit: "", values: [0, 1], ease: 0.35, verb: "lifts the hand electrodes", button: "Lift grips", tour: [0.04, 0.38] },
+  { key: "s", channel: "screen", name: "screen", unit: "", values: [0, 1], ease: 0.2, verb: "turns the screen on", button: "Screen on", tour: [0.08, 0.38] },
+  { key: "m", channel: "scan", name: "measure", unit: "", values: [0, 1], run: 3.2, verb: "runs a measurement", button: "Measure", tour: [0.12, 0.38] },
 ];
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
@@ -4105,62 +4105,71 @@ const EASE = {
   back: (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2),
 };
 const BASE_DURATION = 12;
+// The camera only moves forward: every move holds or tightens the framing. A change to a wider framing is a
+// hard cut: two keys CUT_EPS apart, the second exactly on a frame boundary (n / 30 s). The renderer's last
+// motion-blur sub-frame of a frame sits at least 1/1200 s before the next frame, so no sub-frame ever falls
+// inside the CUT_EPS window and the two framings are never averaged together.
+const CUT_EPS = 1e-4;
+const BASE_CUTS = [3.1, 4.1, 7.0, 8.0];
 // keys are written for 9:16; a key may carry per-ratio overrides, e.g. "16:9": { panY: -20 }
 const BASE_KEYS = [
-  // tumble in: from behind and above, rolled, into a three-quarter front view (inside the hairline frame throughout)
+  // 1 · tumble in: from behind and above, rolled, into a three-quarter front view (zoom only rises)
   { t: 0, yaw: 150, pitch: 24, roll: -24, zoom: 2.02, focus: "body", panX: -62, panY: 10, apart: 0, grip: 0, screen: 0, scan: 0, glow: [0.78, 1.04, 0.62], "9:16": { zoom: 1.05, panY: 45 } },
   { t: 0.7, yaw: 112, pitch: 22, roll: -16, zoom: 2.1, panX: -44, ease: "si", "9:16": { zoom: 1.08, panY: 44 } },
   { t: 1.4, yaw: 8, pitch: 15, roll: -4, zoom: 2.24, panX: -14, ease: "lin", panY: 26, "9:16": { zoom: 1.15, panY: 40 } },
   { t: 1.95, yaw: -34, pitch: 14, roll: 0, zoom: 2.36, panX: -10, ease: "so", panY: 34, glow: [0.55, 0.5, 0.62], "9:16": { zoom: 1.22, panY: 37 } },
   { t: 2.05, yaw: -37, pitch: 15, roll: 0, zoom: 2.4, focus: "body", panX: -10, panY: 35, ease: "lin", "9:16": { zoom: 1.24, panY: 36 } },
-  // whip 1: the tilted touchscreen (off), slide down to the keypad
+  // 2 · whip in to the tilted touchscreen (off), drift down to the keypad
   { t: 2.29, yaw: -16, pitch: 36, roll: -3, zoom: 5.4, focus: "screen", panX: 0, panY: -40, ease: "whip", glow: [0.5, 0.42, 0.6], "16:9": { panY: 0 } },
-  { t: 3.1, yaw: -4, pitch: 32, roll: -5, zoom: 5.9, focus: "keypad", panX: 0, panY: -40, ease: "lin", "16:9": { panY: 0 } },
-  // whip 2: heel and forefoot electrodes on the footplate
-  { t: 3.34, yaw: -22, pitch: 44, roll: -3, zoom: 4.2, focus: "pads", panX: 0, panY: 0, ease: "whip", glow: [0.5, 0.55, 0.6], "9:16": { yaw: -6, pitch: 82, roll: -2, zoom: 2.55, focus: "plate", panY: -140 } },
-  { t: 4.1, yaw: -8, pitch: 48, roll: -4, zoom: 4.6, focus: "pads", panX: 0, panY: 0, ease: "lin", "9:16": { yaw: 4, pitch: 85, roll: -3, zoom: 2.68, focus: "plate", panY: -140 } },
-  // whip 3: the whole machine; the grips swing up, the screen comes on, the current path lights
-  { t: 4.34, yaw: -40, pitch: 16, roll: 1, zoom: 2.3, focus: "body", panX: -12, panY: 34, grip: 0, screen: 0, ease: "whip", glow: [0.5, 0.45, 0.66], "9:16": { zoom: 1.8, panY: -34 } },
+  { t: 3.1 - CUT_EPS, yaw: -4, pitch: 32, roll: -5, zoom: 5.9, focus: "keypad", panX: 0, panY: -40, ease: "lin", glow: [0.5, 0.42, 0.6], "16:9": { panY: 0 } },
+  // CUT 3.1 · 3 · heel and forefoot electrodes on the footplate (9:16: overhead plan view)
+  { t: 3.1, yaw: -22, pitch: 44, roll: -3, zoom: 4.2, focus: "pads", panX: 0, panY: 0, ease: "lin", glow: [0.5, 0.55, 0.6], "9:16": { yaw: -6, pitch: 82, roll: -2, zoom: 2.55, focus: "plate", panY: -140 } },
+  { t: 4.1 - CUT_EPS, yaw: -8, pitch: 48, roll: -4, zoom: 4.6, focus: "pads", panX: 0, panY: 0, ease: "lin", glow: [0.5, 0.55, 0.6], "9:16": { yaw: 4, pitch: 85, roll: -3, zoom: 2.68, focus: "plate", panY: -140 } },
+  // CUT 4.1 · 4 · the whole machine: the grips swing up, the screen comes on, the current path lights (slow push-in)
+  { t: 4.1, yaw: -40, pitch: 16, roll: 1, zoom: 2.3, focus: "body", panX: -12, panY: 34, ease: "lin", glow: [0.5, 0.45, 0.66], "9:16": { zoom: 1.8, panY: -34 } },
+  { t: 4.3, grip: 0, ease: "lin" },
   { t: 5.0, yaw: -36, pitch: 15, roll: 1, zoom: 2.35, grip: 1, ease: "io", "9:16": { zoom: 1.82, panY: -34 } },
   { t: 5.1, screen: 0, ease: "lin" },
   { t: 5.2, scan: 0, ease: "lin" },
   { t: 5.3, screen: 1, ease: "io" },
   { t: 5.9, yaw: -32, pitch: 14, roll: 0, zoom: 2.39, focus: "body", panX: -12, panY: 36, ease: "lin", "9:16": { zoom: 1.85, panY: -32 } },
-  // whip 4: the held grip, thumb and palm electrodes lit
-  { t: 6.14, yaw: -62, pitch: 34, roll: -4, zoom: 6.9, focus: "thumb.L.held", panX: 0, panY: 0, ease: "whip", "16:9": { panX: 70, panY: -30 } },
-  { t: 7.0, yaw: -48, pitch: 30, roll: -6, zoom: 7.4, focus: "palm.L.held", panX: 0, panY: 0, ease: "lin", "16:9": { panX: 70, panY: -30 } },
-  // whip 5: the screen, stepping through the four frequencies
-  { t: 7.24, yaw: -8, pitch: 34, roll: 3, zoom: 5.6, focus: "screen", panX: 0, panY: -40, ease: "whip", "16:9": { panY: 0 } },
-  { t: 8.0, yaw: 2, pitch: 31, roll: 4, zoom: 6.0, focus: "screen", panX: 0, panY: -40, scan: 1, grip: 1, ease: "lin", "16:9": { panY: 0 } },
-  // pull out, grips back to rest, then apart
-  { t: 8.5, yaw: -48, pitch: 22, roll: 0, zoom: 2.36, focus: "body", panX: -14, panY: 30, grip: 0, ease: "io", glow: [0.52, 0.5, 0.72], "9:16": { zoom: 1.85, panY: -40 } },
-  { t: 8.56, apart: 0, ease: "lin" },
-  { t: 8.96, yaw: -56, pitch: 24, roll: -2, zoom: 1.94, apart: 1, panX: -24, panY: 4, ease: "o", "16:9": { panY: -26, zoom: 1.84 }, "9:16": { zoom: 1.56, panY: -75 } },
-  { t: 9.9, yaw: -72, pitch: 22, roll: -3, zoom: 1.9, apart: 1, panX: -24, panY: 4, ease: "lin", "16:9": { panY: -26, zoom: 1.8 }, "9:16": { zoom: 1.53, panY: -75 } },
-  { t: 10.6, yaw: -24, pitch: 10, roll: 0, zoom: 2.44, apart: 0, panX: -12, panY: 24, ease: "io", glow: [0.52, 0.45, 0.75], "16:9": { panY: -20 }, "9:16": { zoom: 1.28, panY: 35 } },
+  // 5 · whip in to the held grip, thumb and palm electrodes lit
+  { t: 6.14, yaw: -62, pitch: 34, roll: -4, zoom: 6.9, focus: "thumb.L.held", panX: 0, panY: 0, ease: "whip", glow: [0.5, 0.45, 0.66], "16:9": { panX: 70, panY: -30 } },
+  { t: 7.0 - CUT_EPS, yaw: -48, pitch: 30, roll: -6, zoom: 7.4, focus: "palm.L.held", panX: 0, panY: 0, ease: "lin", glow: [0.5, 0.45, 0.66], "16:9": { panX: 70, panY: -30 } },
+  // CUT 7.0 · 6 · the screen stepping through the four frequencies to "Complete"
+  { t: 7.0, yaw: -8, pitch: 34, roll: 3, zoom: 5.6, focus: "screen", panX: 0, panY: -40, ease: "lin", glow: [0.5, 0.42, 0.6], "16:9": { panY: 0 } },
+  { t: 8.0 - CUT_EPS, yaw: 2, pitch: 31, roll: 4, zoom: 6.0, focus: "screen", panX: 0, panY: -40, scan: 1, grip: 1, ease: "lin", glow: [0.5, 0.42, 0.6], "16:9": { panY: 0 } },
+  // CUT 8.0 · 7 · wide framing that already holds the whole explode; the camera only creeps in from here
+  { t: 8.0, yaw: -50, pitch: 23, roll: 0, zoom: 1.88, focus: "body", panX: -24, panY: 4, grip: 1, apart: 0, ease: "lin", glow: [0.52, 0.5, 0.72], "16:9": { panY: -26, zoom: 1.78 }, "9:16": { zoom: 1.2, panY: 0 } },
+  { t: 8.35, grip: 0, ease: "io" },
+  { t: 8.4, apart: 0, ease: "lin" },
+  { t: 8.8, yaw: -58, pitch: 24, roll: -2, zoom: 1.9, apart: 1, ease: "o", "16:9": { zoom: 1.8 }, "9:16": { zoom: 1.21 } },
+  { t: 9.8, yaw: -72, pitch: 22, roll: -3, zoom: 1.93, apart: 1, panX: -24, panY: 4, ease: "lin", "16:9": { panY: -26, zoom: 1.82 }, "9:16": { zoom: 1.23, panY: 0 } },
+  // 8 · back together while the camera pushes in to the hero, which keeps creeping in to the end
+  { t: 10.5, yaw: -24, pitch: 10, roll: 0, zoom: 2.44, apart: 0, panX: -12, panY: 24, ease: "io", glow: [0.52, 0.45, 0.75], "16:9": { panY: -20 }, "9:16": { zoom: 1.28, panY: 35 } },
   { t: 12, yaw: -28, pitch: 8, roll: 0, zoom: 2.52, panX: -12, panY: 38, ease: "o", "16:9": { panY: 2 }, "9:16": { zoom: 1.3, panY: 37 } },
 ];
-// captions fade in after a whip lands and are gone before the next whip starts (until)
+// captions fade in after a whip or cut lands and are gone before the next whip starts or cut happens (until)
 const BASE_LABELS = [
   { t: 0, until: 2.05, hint: "InBody 580", readout: "Body composition analyser" },
   { t: 2.29, until: 3.1, hint: "10.1-inch touchscreen and keypad", readout: "1280 × 800 colour display" },
-  { t: 3.34, until: 4.1, hint: "Heel and forefoot electrodes", readout: "Left and right, on the footplate" },
-  { t: 4.34, until: 5.9, hint: "8-point tactile electrodes", readout: "Two for each hand, two for each foot" },
+  { t: 3.14, until: 4.1, hint: "Heel and forefoot electrodes", readout: "Left and right, on the footplate" },
+  { t: 4.14, until: 5.9, hint: "8-point tactile electrodes", readout: "Two for each hand, two for each foot" },
   { t: 6.14, until: 7.0, hint: "Thumb and palm electrodes", readout: "One grip for each hand" },
-  { t: 7.24, until: 8.0, hint: "4 frequencies: 5, 50, 250, 500 kHz", readout: "20 impedance readings" },
-  { t: 8.56, until: 9.9, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
-  { t: 10.6, until: 99, hint: "InBody 580", readout: "501.9 × 892.4 × 1124.4 mm" },
+  { t: 7.04, until: 8.0, hint: "4 frequencies: 5, 50, 250, 500 kHz", readout: "20 impedance readings" },
+  { t: 8.42, until: 9.8, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
+  { t: 10.5, until: 99, hint: "InBody 580", readout: "501.9 × 892.4 × 1124.4 mm" },
 ];
 // first and last shots (series hero rule: whole object inside the hairline frame; on 9:16 also above y = 1248)
 const BASE_HERO = [
   [0, 2.05],
-  [10.6, 12],
+  [10.5, 12],
 ];
 // shots where the whole machine must sit inside the hairline frame (the frame check reads these)
 const BASE_WIDE = [
   [0, 2.05],
-  [4.34, 5.9],
-  [8.5, 12],
+  [4.1, 5.9],
+  [8.0, 12],
 ];
 const REQUESTED = typeof DATA !== "undefined" && DATA.duration ? DATA.duration : BASE_DURATION;
 function retimer(keys, duration) {
@@ -4199,13 +4208,15 @@ const KEYS = BASE_KEYS.map((k) => ({ ...forRatio(k), t: RETIME(k.t) }));
 const LABELS = BASE_LABELS.map((l) => ({ ...l, t: RETIME(l.t), until: RETIME(Math.min(l.until, BASE_DURATION)) + (l.until > BASE_DURATION ? 1 : 0) }));
 const WIDE = BASE_WIDE.map(([a, b]) => [RETIME(a), RETIME(b)]);
 const HERO = BASE_HERO.map(([a, b]) => [RETIME(a), RETIME(b)]);
+const CUTS = BASE_CUTS.map((c) => RETIME(c));
+const CUT_WINDOW = CUT_EPS;
 // corner labels (top left / top right) show only in the wide shots that leave them clear: the tumble-in, the
 // feature and the hero (the exploded head rises into the top-right label, so they stay off through the
-// take-apart). They fade in over CORNER_FADE once a shot lands and are gone by CORNER_LEAD into the next whip.
+// take-apart). They fade in over CORNER_FADE once a shot lands (cut or whip) and are gone by CORNER_LEAD into the next whip.
 const BASE_CORNERS = [
   [0, 2.05],
-  [4.34, 5.9],
-  [10.42, 12],
+  [4.1, 5.9],
+  [10.45, 12],
 ];
 const CORNERS = BASE_CORNERS.map(([a, b]) => [RETIME(a), RETIME(b)]);
 const CORNER_FADE = 0.3;
@@ -4305,8 +4316,10 @@ function viewOf(s) {
 const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
+  // a hard cut inside this frame interval is not motion: measure up to the moment before it
+  const cut = CUTS.find((c) => c > t + 1e-9 && c <= t + dt + 1e-9);
   const a = at(t);
-  const b = at(t + dt);
+  const b = at(cut !== undefined ? cut - 2 * CUT_WINDOW : t + dt);
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -4349,6 +4362,8 @@ window.frame = frame;
 window.at = at;
 window.WIDE = WIDE;
 window.HERO = HERO;
+window.CUTS = CUTS;
+window.CUT_WINDOW = CUT_WINDOW;
 window.pose = pose;
 window.speed = speed;
 window.DURATION = DURATION;

@@ -1,5 +1,5 @@
 import { launch } from "../scripts/browser.mjs";
-import { mkdirSync } from "node:fs";
+import { closeSync, mkdirSync, openSync, readSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -60,17 +60,38 @@ if (mode === "poses") {
   );
   const total = plan.reduce((x, y) => x + y, 0);
   console.log(`${plan.length} frames · ${total} sub-frames · up to ${Math.max(...plan)} per frame`);
+  // Resumable: the plan above depends only on the page, so a restart writes the same file names. A sub-frame
+  // whose PNG already exists, is non-empty and ends in the PNG IEND chunk is kept; a missing or truncated one is redrawn.
+  const complete = (path) => {
+    try {
+      const size = statSync(path).size;
+      if (size < 12) return false;
+      const fd = openSync(path, "r");
+      const tail = Buffer.alloc(8);
+      readSync(fd, tail, 0, 8, size - 8);
+      closeSync(fd);
+      return tail.toString("latin1", 0, 4) === "IEND";
+    } catch {
+      return false;
+    }
+  };
+  // the plan is written next to the frames so a resumed run can be compared against it
+  writeFileSync(join(a, "plan.json"), JSON.stringify({ page: page_, step, most, n0, n1, total, plan }));
   const t0 = Date.now();
   let done = 0;
+  let kept = 0;
   for (let n = n0; n < n1; n++) {
     const subs = plan[n - n0];
     for (let j = 0; j < subs; j++) {
-      await shoot((n + j / subs) / fps, join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`));
+      const path = join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`);
+      if (complete(path)) kept++;
+      else await shoot((n + j / subs) / fps, path);
       done++;
     }
     if ((n - n0) % 15 === 0)
-      console.log(`frame ${n} · ${subs} subs · ${done}/${total} · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
+      console.log(`frame ${n} · ${subs} subs · ${done}/${total} (${kept} kept from an earlier run) · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
   }
+  console.log(`done · ${total} sub-frames · ${kept} kept · ${total - kept} drawn`);
 } else {
   console.log(
     "usage: node motion/render.mjs stills <t,t,…> <dir> | poses <json> <dir> | blur <dir> [--step 4] [--most 40]",

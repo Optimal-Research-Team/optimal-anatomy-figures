@@ -8,7 +8,7 @@
     "figure": "node object/build.mjs && node object/build.mjs --light",
     "film": "node motion/build.mjs --duration 12 --ratio 16:9 --out motion-16x9.html && node motion/build.mjs --duration 12 --ratio 9:16 --out motion-9x16.html",
     "check": "node object/scan-apart.mjs -35 15 && node object/scan-apart.mjs 0 5 && node object/scan-apart.mjs 140 20 && node object/scan-apart.mjs 90 -20 && node object/scan-apart.mjs -20 70 && node motion/scan.mjs motion/motion-16x9.html && node motion/scan.mjs motion/motion-9x16.html",
-    "qa": "node scripts/caption-check.mjs motion/motion-16x9.html out/qa16 fine && python3 scripts/caption-check.py out/qa16 0-1.82,10.42-12 && node scripts/caption-check.mjs motion/motion-9x16.html out/qa9 fine && python3 scripts/caption-check.py out/qa9 0-1.82,10.42-12",
+    "qa": "node scripts/camera-check.mjs motion/motion-16x9.html motion/motion-9x16.html && node scripts/caption-check.mjs motion/motion-16x9.html out/qa16 fine && python3 scripts/caption-check.py out/qa16 0-1.82,10.42-12 && node scripts/caption-check.mjs motion/motion-9x16.html out/qa9 fine && python3 scripts/caption-check.py out/qa9 0-1.82,10.42-12",
     "render:16x9": "node motion/render.mjs blur out/blur-16x9 --step 4 --most 40 --page motion/motion-16x9.html",
     "encode:16x9": "MAGICK=magick-mean node motion/encode.mjs out/blur-16x9 out/grip-dynamometer-16x9.mp4",
     "render:9x16": "node motion/render.mjs blur out/blur-9x16 --step 4 --most 40 --page motion/motion-9x16.html",

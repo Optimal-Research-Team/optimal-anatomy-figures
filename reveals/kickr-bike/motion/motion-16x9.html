@@ -4014,52 +4014,70 @@ const EASE = {
   so: (x) => 1 - Math.pow(1 - x, 2),
   si: (x) => x * x,
   back: (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2),
+  cut: (x) => (x >= 1 - 1e-9 ? 1 : 0),
 };
-const BASE_DURATION = 10;
+// Keys are written in real time for the 12 s film. The camera only ever moves forward: holds, drifts and whips
+// keep or tighten the framing, and every change to a wider framing is a hard cut on a frame boundary (n / 30 s).
+// A cut is a pair of keys: the outgoing shot's last state 0.1 ms before the boundary, then the new shot's state
+// exactly on it with ease "cut", so every motion-blur sub-frame ((n + j/subs) / 30) lands on one side or the other.
+const BASE_DURATION = 12;
+const F = (n) => n / 30;
+const PRE = 1e-4;
 // Every hold is framed by motion/frame-search.mjs so that nothing crosses the caption block (+40 px at
 // 1080p) or the corner labels, and the first and last shots sit inside the hairline frame.
+const CUT1 = F(100); // crank close-up (zoom 5.4) to the seatpost (3.5)
+const CUT2 = F(176); // paddle (5.6) to the flywheel (2.4)
+const CUT3 = F(231); // flywheel (2.5) to the wide shot the bike comes apart in
 const BASE_KEYS = [
-  { t: 0, yaw: 120, pitch: 24, roll: -26, zoom: 1.41, focus: "body", panX: 0, panY: 0, apart: 0, cadence: 180, cover: 0, saddle: 0, shift: 0, glow: [0.8, 1.0, 0.62], tall: { zoom: 1.06, panX: 0, panY: 0 } },
-  { t: 0.6, yaw: 80, pitch: 20, roll: -16, zoom: 1.46, ease: "si", tall: { zoom: 0.97, panY: 10 } },
-  { t: 1.2, yaw: -10, pitch: 14, roll: -5, zoom: 1.52, ease: "lin", tall: { zoom: 1.1, panY: 20 } },
-  { t: 1.62, yaw: -60, pitch: 13, roll: 0, zoom: 1.58, panX: -20, panY: 0, ease: "so", tall: { zoom: 1.14, panX: 0, panY: 0 }, glow: [0.5, 0.52, 0.66] },
-  { t: 1.72, yaw: -62, pitch: 13, roll: 0, zoom: 1.56, focus: "body", panX: -20, panY: 0, ease: "lin", tall: { zoom: 1.14, panX: 0, panY: 0 } },
-  // the left crank's claw, sliding across to its five-bolt disc
-  { t: 1.96, yaw: -70, pitch: -6, roll: 0, zoom: 5.0, focus: "claw.L", panX: 0, panY: -60, ease: "whip", tall: { panX: -80, panY: 0 }, glow: [0.6, 0.5, 0.6] },
-  { t: 2.76, yaw: -90, pitch: -2, roll: -6, zoom: 5.4, focus: "disc.L", panX: 0, panY: -60, ease: "lin", tall: { yaw: -76, pitch: -5, roll: -2, zoom: 5.3, focus: "claw.L", panX: -80, panY: 0 } },
-  // fit: the saddle rises on its numbered post
-  { t: 3.0, yaw: -150, pitch: 12, roll: 0, zoom: 3.5, focus: "seatpost", panX: -30, panY: 0, saddle: 0, ease: "whip", tall: { yaw: -165, pitch: 14, roll: 8, zoom: 3.4, panX: -120, panY: 0 } },
-  { t: 3.12, saddle: 0, ease: "lin" },
-  { t: 3.82, saddle: 1, ease: "io" },
-  { t: 4.0, yaw: -160, pitch: 12, roll: 0, zoom: 3.6, focus: "seatpost", panX: 0, panY: 0, saddle: 1, ease: "lin", tall: { yaw: -168, pitch: 14, roll: 8, zoom: 3.5, panX: -120, panY: 0 } },
-  // virtual shifting: the right paddle clicks twice
-  { t: 4.24, yaw: -210, pitch: 18, roll: 0, zoom: 5.4, focus: "paddle", panX: 90, panY: 90, shift: 0, ease: "whip", tall: { panX: 0, panY: 0 } },
-  { t: 4.36, shift: 0, ease: "lin" },
-  { t: 4.46, shift: 1, ease: "o" },
-  { t: 4.6, shift: 0, ease: "io" },
-  { t: 4.7, shift: 1, ease: "o" },
-  { t: 4.84, shift: 0, ease: "io" },
-  { t: 4.92, yaw: -210, pitch: 19, roll: 0, zoom: 5.6, focus: "paddle", panX: 60, panY: 100, cadence: 180, cover: 0, ease: "lin", tall: { panX: 0, panY: 0 } },
-  // the feature: the cover lifts off and the cranks turn the flywheel through the belt
-  { t: 5.16, yaw: -130, pitch: 14, roll: -4, zoom: 2.4, focus: "flywheel", panX: 0, panY: 0, cadence: 180, cover: 0, ease: "whip", tall: { zoom: 1.75, roll: 2, panX: 20, panY: -60 }, glow: [0.55, 0.5, 0.62] },
-  { t: 5.45, cover: 1, ease: "o" },
-  { t: 5.5, cadence: 180, ease: "lin" },
-  { t: 6.4, yaw: -120, pitch: 14, roll: -2, zoom: 2.5, focus: "flywheel", panX: -40, panY: 20, cadence: 810, cover: 1, ease: "io", tall: { zoom: 1.8, roll: -4, panX: 20, panY: -72 } },
-  { t: 6.85, yaw: -164, pitch: 24, roll: 0, zoom: 1.46, focus: "body", panX: 0, panY: 0, cover: 0, ease: "io", glow: [0.52, 0.5, 0.72] },
-  { t: 6.93, apart: 0, ease: "lin" },
-  { t: 7.33, yaw: -194, pitch: 26, roll: -2, zoom: 1.36, apart: 1, panY: -6, ease: "o", tall: { panY: 10 } },
-  { t: 8.25, yaw: -216, pitch: 24, roll: -3, zoom: 1.32, apart: 1, panY: -6, saddle: 1, ease: "lin", tall: { panX: -10, panY: 0 } },
-  { t: 8.9, yaw: -298, pitch: 11, roll: 0, zoom: 1.54, apart: 0, panX: 0, panY: 10, saddle: 0, cadence: 1080, ease: "io", tall: { zoom: 1.26, panX: 0, panY: 5 }, glow: [0.52, 0.48, 0.75] },
-  { t: 10, yaw: -302, pitch: 10, roll: 0, zoom: 1.58, panX: 0, panY: 10, cadence: 1440, ease: "o", tall: { zoom: 1.3, panX: 0, panY: 10 } },
+  // 1 · tumble in (corner labels on), the framing only tightens
+  { t: 0, yaw: 120, pitch: 24, roll: -26, zoom: 1.41, focus: "body", panX: 0, panY: 0, apart: 0, cadence: 180, cover: 0, saddle: 0, shift: 0, glow: [0.8, 1.0, 0.62], tall: { zoom: 0.96, panX: 0, panY: 0 } },
+  { t: 0.73, yaw: 80, pitch: 20, roll: -16, zoom: 1.46, ease: "si", tall: { zoom: 0.98, panY: 10 } },
+  { t: 1.47, yaw: -10, pitch: 14, roll: -5, zoom: 1.52, ease: "lin", tall: { zoom: 1.1, panY: 20 } },
+  { t: 1.98, yaw: -60, pitch: 13, roll: 0, zoom: 1.58, panX: -20, panY: 0, ease: "so", tall: { zoom: 1.14, panX: 0, panY: 0 }, glow: [0.5, 0.52, 0.66] },
+  { t: 2.1, yaw: -62, pitch: 13, roll: 0, zoom: 1.585, focus: "body", panX: -20, panY: 0, ease: "lin", tall: { zoom: 1.145, panX: 0, panY: 0 } },
+  // 2 · whip in (tighter) to the left crank's claw, drifting across to its five-bolt disc
+  { t: 2.34, yaw: -70, pitch: -6, roll: 0, zoom: 5.0, focus: "claw.L", panX: 0, panY: -60, ease: "whip", tall: { panX: -80, panY: 0 }, glow: [0.6, 0.5, 0.6] },
+  { t: CUT1 - PRE, yaw: -90, pitch: -2, roll: -6, zoom: 5.4, focus: "disc.L", panX: 0, panY: -60, ease: "lin", tall: { yaw: -76, pitch: -5, roll: -2, zoom: 5.3, focus: "claw.L", panX: -80, panY: 0 } },
+  // cut 1 · fit: the saddle rises on its numbered post
+  { t: CUT1, yaw: -150, pitch: 12, roll: 0, zoom: 3.5, focus: "seatpost", panX: -30, panY: 0, ease: "cut", tall: { yaw: -165, pitch: 14, roll: 8, zoom: 3.4, panX: -120, panY: 0 } },
+  { t: 3.55, saddle: 0, ease: "lin" },
+  { t: 4.45, saddle: 1, ease: "io" },
+  { t: 4.78, yaw: -160, pitch: 12, roll: 0, zoom: 3.62, focus: "seatpost", panX: 0, panY: 0, saddle: 1, ease: "lin", tall: { yaw: -168, pitch: 14, roll: 8, zoom: 3.5, panX: -120, panY: 0 } },
+  // 3 · whip in (tighter) to the cockpit: the right paddle clicks twice
+  { t: 5.02, yaw: -210, pitch: 18, roll: 0, zoom: 5.4, focus: "paddle", panX: 90, panY: 90, shift: 0, ease: "whip", tall: { panX: 0, panY: 0 } },
+  { t: 5.17, shift: 0, ease: "lin" },
+  { t: 5.29, shift: 1, ease: "o" },
+  { t: 5.46, shift: 0, ease: "io" },
+  { t: 5.58, shift: 1, ease: "o" },
+  { t: 5.75, shift: 0, ease: "io" },
+  { t: CUT2 - PRE, yaw: -210, pitch: 19, roll: 0, zoom: 5.6, focus: "paddle", panX: 60, panY: 100, cadence: 180, cover: 0, ease: "lin", tall: { panX: 0, panY: 0 } },
+  // cut 2 · the feature: the cover lifts off, the cranks turn the flywheel through the belt, the cover goes back
+  { t: CUT2, yaw: -130, pitch: 14, roll: -4, zoom: 2.4, focus: "flywheel", panX: 0, panY: 0, ease: "cut", tall: { zoom: 1.75, roll: 2, panX: 20, panY: -60 }, glow: [0.55, 0.5, 0.62] },
+  { t: 5.93, cover: 0, ease: "lin" },
+  { t: 6.22, cover: 1, ease: "o" },
+  { t: 6.27, cadence: 180, ease: "lin" },
+  { t: 7.17, cadence: 810, ease: "io" },
+  { t: 7.2, cover: 1, ease: "lin" },
+  { t: 7.6, cover: 0, ease: "io" },
+  { t: CUT3 - PRE, yaw: -120, pitch: 14, roll: -2, zoom: 2.5, focus: "flywheel", panX: -40, panY: 20, ease: "lin", tall: { zoom: 1.8, roll: -4, panX: 20, panY: -72 } },
+  // cut 3 · the wide shot: the bike comes apart while the camera holds and creeps in, then goes back together
+  // as the camera pushes in to the hero
+  { t: CUT3, yaw: -194, pitch: 26, roll: -2, zoom: 1.14, focus: "body", panX: 0, panY: -6, apart: 0, ease: "cut", tall: { zoom: 1.08, panY: 10 }, glow: [0.52, 0.5, 0.72] },
+  { t: 7.85, apart: 0, ease: "lin" },
+  { t: 8.35, apart: 1, ease: "o" },
+  { t: 9.5, yaw: -216, pitch: 24, roll: -3, zoom: 1.19, panX: 0, panY: -6, apart: 1, saddle: 1, ease: "lin", tall: { zoom: 1.12, panX: -10, panY: 0 } },
+  { t: 10.4, yaw: -298, pitch: 11, roll: 0, zoom: 1.54, apart: 0, panX: 0, panY: 10, saddle: 0, cadence: 1080, ease: "io", tall: { zoom: 1.26, panX: 0, panY: 5 }, glow: [0.52, 0.48, 0.75] },
+  { t: 12, yaw: -302, pitch: 10, roll: 0, zoom: 1.58, panX: 0, panY: 10, cadence: 1440, ease: "o", tall: { zoom: 1.3, panX: 0, panY: 10 } },
 ];
+// label text changes while the caption is hidden: mid-whip, on a cut, or during the implode
 const BASE_LABELS = [
   { t: 0, hint: "Smart indoor bike", readout: "belt drive · electronic brake" },
-  { t: 1.85, hint: "Crank length", readout: "165–175 mm · five pedal holes" },
-  { t: 2.9, hint: "Five-point fit", readout: "saddle · stack · reach · setback · frame" },
-  { t: 4.15, hint: "Virtual shifting", readout: "Shimano, SRAM or Campagnolo modes" },
-  { t: 5.08, hint: "Belt drive · electronic brake", readout: "up to 2,200 W · ±1% power accuracy" },
-  { t: 6.8, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
-  { t: 8.7, hint: "KICKR BIKE SHIFT", readout: "up to 20% simulated grade" },
+  { t: 2.22, hint: "Crank length", readout: "165–175 mm · five pedal holes" },
+  { t: CUT1, hint: "Five-point fit", readout: "saddle · stack · reach · setback · frame" },
+  { t: 4.9, hint: "Virtual shifting", readout: "Shimano, SRAM or Campagnolo modes" },
+  { t: CUT2, hint: "Belt drive · electronic brake", readout: "up to 2,200 W · ±1% power accuracy" },
+  { t: CUT3, hint: "Taken apart", readout: "{parts} parts · {assemblies} assemblies" },
+  { t: 10.0, hint: "KICKR BIKE SHIFT", readout: "up to 20% simulated grade" },
 ];
 const REQUESTED = typeof DATA !== "undefined" && DATA.duration ? DATA.duration : BASE_DURATION;
 function retimer(keys, duration) {
@@ -4084,9 +4102,11 @@ function retimer(keys, duration) {
 const RETIME = retimer(BASE_KEYS, REQUESTED);
 // keys may carry overrides for a portrait frame (Reels), where a macro needs a different pan
 const TALL = typeof DATA !== "undefined" && DATA.H > DATA.W * 1.5;
-const DURATION = RETIME(BASE_DURATION);
-const KEYS = BASE_KEYS.map(({ tall, ...k }) => ({ ...k, ...(TALL && tall ? tall : {}), t: RETIME(k.t) }));
-const LABELS = BASE_LABELS.map((l) => ({ ...l, t: RETIME(l.t) }));
+const DURATION = Math.abs(REQUESTED - BASE_DURATION) < 1e-9 ? BASE_DURATION : RETIME(BASE_DURATION);
+const SAME = Math.abs(REQUESTED - BASE_DURATION) < 1e-9;
+const KEYS = BASE_KEYS.map(({ tall, ...k }) => ({ ...k, ...(TALL && tall ? tall : {}), t: SAME ? k.t : RETIME(k.t) }));
+const LABELS = BASE_LABELS.map((l) => ({ ...l, t: SAME ? l.t : RETIME(l.t) }));
+const CUTS = KEYS.filter((k) => k.ease === "cut").map((k) => k.t);
 const CHANNELS = ["yaw", "pitch", "roll", "zoom", "panX", "panY", "apart", ...Object.keys(FEATURE_DEFAULTS)];
 const DEFAULTS = { yaw: 0, pitch: 0, roll: 0, zoom: 1, panX: 0, panY: 0, apart: 0, ...FEATURE_DEFAULTS };
 function track(name) {
@@ -4128,7 +4148,7 @@ const WHIPS = [];
     const k = KEYS[i];
     const newFocus = k.focus !== undefined && k.focus !== focus;
     const newApart = k.apart !== undefined && k.apart !== apart;
-    if (k.ease === "whip" || (newFocus && k.ease !== "lin") || newApart) {
+    if (k.ease === "whip" || k.ease === "cut" || (newFocus && k.ease !== "lin") || newApart) {
       const last = WHIPS[WHIPS.length - 1];
       if (last && KEYS[i - 1].t - last[1] < 0.35) last[1] = k.t;
       else WHIPS.push([KEYS[i - 1].t, k.t]);
@@ -4146,7 +4166,7 @@ function captionAlpha(t) {
   };
   let a = 1;
   for (const [a0, a1] of WHIPS) {
-    if (t >= a0 - 0.08 && t <= a1 + 0.2) a = Math.min(a, ss(t < a0 ? (a0 - t) / 0.08 : t > a1 ? (t - a1) / 0.2 : 0));
+    if (t >= a0 - 0.15 && t <= a1 + 0.2) a = Math.min(a, ss(t < a0 ? (a0 - t) / 0.15 : t > a1 ? (t - a1) / 0.2 : 0));
   }
   for (const c of CHANGES) a = Math.min(a, ss(t < c ? (c - 0.12 - t) / 0.5 : (t - c - 0.05) / 0.25));
   return a;
@@ -4176,8 +4196,6 @@ function at(t) {
     out[c] = c === "zoom" ? Math.exp(mix(Math.log(a), Math.log(b), e)) : mix(a, b, e);
   }
   out.zoom = fitZoom(out.zoom);
-  // a landscape frame is short: give the taken-apart bike more room top to bottom
-  if (FRAME[0] > FRAME[1]) out.zoom *= 1 - 0.15 * out.apart;
 
   const f = sample(FOCUS, t);
   out.focus = { a: f.a, b: f.b, e: f.e };
@@ -4222,8 +4240,11 @@ function viewOf(s) {
 const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
+  // blur is measured inside the shot: a cut at the next frame boundary never counts as motion
+  let t1 = t + dt;
+  for (const c of CUTS) if (c > t + 1e-9 && c <= t1 + 1e-9) t1 = c - 2e-4;
   const a = at(t);
-  const b = at(t + dt);
+  const b = at(Math.max(t, t1));
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -4263,6 +4284,11 @@ function applyState(s) {
 window.frame = frame;
 window.pose = pose;
 window.speed = speed;
+window.CUTS = CUTS;
+window.stateAt = (t) => {
+  const s = at(t);
+  return { zoom: s.zoom, cap: s.cap, corner: s.corner, apart: s.apart };
+};
 window.DURATION = DURATION;
 window.SIZE = { W: DATA.W, H: DATA.H, ratio: DATA.ratio };
 window.TURN = TURN;

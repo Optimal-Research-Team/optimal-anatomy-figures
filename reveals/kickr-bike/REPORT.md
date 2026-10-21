@@ -100,31 +100,47 @@ Sources:
 | Cranks | 8 |
 
 ## The film (12 s)
-| t (s) | Beat | Caption |
-|---|---|---|
-| 0–2.1 | Tumbles in from rear-right to front-left; corner labels on | Smart indoor bike · BELT DRIVE · ELECTRONIC BRAKE |
-| 2.3–3.3 | The left crank's claw, drifting to its five-bolt disc (a slow push in 9:16) | Crank length · 165–175 MM · FIVE PEDAL HOLES |
-| 3.6–4.8 | Seatpost from rear-left; the saddle rises 60 mm | Five-point fit · SADDLE · STACK · REACH · SETBACK · FRAME |
-| 5.0–5.9 | Cockpit from behind; the right paddle clicks twice | Virtual shifting · SHIMANO, SRAM OR CAMPAGNOLO MODES |
-| 6.1–7.6 | From rear-left, the flywheel cover lifts off and the cranks turn the flywheel through the belt | Belt drive · electronic brake · UP TO 2,200 W · ±1% POWER ACCURACY |
-| 7.6–9.9 | Pulls out, explodes from rear-right, holds | Taken apart · 149 PARTS · 54 ASSEMBLIES |
-| 9.9–12 | Comes back together into the front-right hero; the cranks turn and settle; corner labels return | KICKR BIKE SHIFT · UP TO 20% SIMULATED GRADE |
+**The camera only moves forward.** Holds, drifts, whips and the hero only keep or tighten the framing. Every change to a wider framing is a hard cut, placed on a frame boundary.
+
+| t (s) | Beat | Move into the shot | Caption |
+|---|---|---|---|
+| 0–2.10 | Tumbles in from the rear-right to the front-left; corner labels on | opening (zoom only tightens) | Smart indoor bike · BELT DRIVE · ELECTRONIC BRAKE |
+| 2.10–3.33 | The left crank's claw, drifting to its five-bolt disc (a slow push in 9:16) | whip in (tighter) | Crank length · 165–175 MM · FIVE PEDAL HOLES |
+| 3.33–4.78 | The seatpost from the rear-left; the saddle rises 60 mm | **cut 1: frame 100, 3.333 s** | Five-point fit · SADDLE · STACK · REACH · SETBACK · FRAME |
+| 4.78–5.87 | The cockpit from behind; the right paddle clicks twice | whip in (tighter) | Virtual shifting · SHIMANO, SRAM OR CAMPAGNOLO MODES |
+| 5.87–7.70 | From the rear-left: the cover lifts off, the cranks turn the flywheel through the belt, and the cover goes back on | **cut 2: frame 176, 5.867 s** | Belt drive · electronic brake · UP TO 2,200 W · ±1% POWER ACCURACY |
+| 7.70–10.40 | A wide shot from the rear-right: the bike comes apart while the camera holds and creeps in, then goes back together as the camera pushes in | **cut 3: frame 231, 7.700 s** | Taken apart · 149 PARTS · 54 ASSEMBLIES |
+| 10.40–12 | Hero, front-right three-quarter; still pushing in, the cranks make a turn and settle; corner labels return | continuous with the implode | KICKR BIKE SHIFT · UP TO 20% SIMULATED GRADE |
+
+**Cuts:**
+- Each cut is a pair of keys: the outgoing shot's last state, 0.1 ms before the boundary, then the new shot exactly on `n / 30`, using a step ease.
+- `render.mjs` samples each frame's shutter at `(n + j/subs) / 30`. So every blur sub-frame lands wholly in one shot, and the two framings never average together.
+- `speed()` stops measuring at a cut, so the frame before a cut isn't flooded with sub-frames.
+
+The old 7.6–9.9 s pull-out is gone. The cover now closes inside the flywheel shot, and the film then cuts straight to the wide shot.
 
 **Layout, per `SERIES-SPEC.md`:**
 - **Corner labels:** "OPTIMAL HEALTH · BARRIE" and "KICKR BIKE · VO₂ MAX TESTING", in Public Sans spaced caps.
 - **Captions:** a Castoro title over a spaced-caps sub-line. No italic, no dash, no halo.
 - **16:9:** InBody's inset, with the caption bottom-left and close-ups weighted to the right.
 - **9:16:** the grip film's header block, starting at y ≥ 269 inside the safe area, with the bike below it.
-- **Caption timing:** each caption fades in after its whip lands and is gone before the next whip starts.
+- **Caption timing:**
+  - each caption fades in after its whip or cut lands (0.2 s), and is gone before the next whip or cut (0.15 s);
+  - captions are also hidden while the bike comes apart and goes back together;
+  - so no caption spans a cut, and the text only changes while it's hidden.
 - **Corner label timing:** the labels fade out over 0.3 s before the first close-up and return as the hero settles, so no part ever runs under them.
 
 ## Checks
 - **Explode sweep**, from five views (front, back, top, below, side): 0 forced picks and no pass-throughs.
+- **Camera check**, in `motion/check-frame.mjs`. For both ratios:
+  - zoom never decreases between consecutive samples except across a cut;
+  - every cut sits on a frame boundary (frames 100, 176, 231);
+  - no blur sub-frame, as `render.mjs` schedules it, straddles a cut.
 - **Paint-order scan:** clean for both films.
 - **Per-frame check:** 60 samples per second, 721 per film, with the bike rendered alone on a transparent background. Zero violations in both ratios for:
   - caption box + 40 px;
   - corner labels + 48 px;
-  - opening and hero inside the hairline frame with at least 32 px clear;
+  - opening (0–2.1 s) and hero (10.4–12 s) inside the hairline frame, with at least 32 px clear;
   - 9:16 only: labels and captions inside the safe area, and the bike above y = 1248 in the opening and hero.
 - **MP4 frames:** extracted and laid out on the contact sheets.
 - **Figure pages:** tested under touch emulation at 390, 360 and 320 px in both themes:
@@ -149,7 +165,7 @@ Sources:
 ```sh
 export PATH="$HOME/.nvm/versions/node/v22.22.0/bin:$HOME/.local/bin:$PATH"
 node object/build.mjs && node object/build.mjs --light
-node motion/build.mjs --duration 12 --ratio 16:9 && node motion/scan.mjs && node motion/check-frame.mjs --hero 0-2.1,10.6-12
+node motion/build.mjs --duration 12 --ratio 16:9 && node motion/scan.mjs && node motion/check-frame.mjs --hero 0-2.1,10.4-12
 node motion/render.mjs blur out/blur16 --step 4 --most 40 && MAGICK=magick-mean node motion/encode.mjs out/blur16 out/kickr-bike-16x9.mp4
 # then the same with --ratio 9:16 → out/kickr-bike-9x16.mp4
 ```

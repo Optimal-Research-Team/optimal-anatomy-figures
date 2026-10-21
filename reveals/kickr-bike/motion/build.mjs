@@ -74,8 +74,11 @@ function viewOf(s) {
 const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
+  // blur is measured inside the shot: a cut at the next frame boundary never counts as motion
+  let t1 = t + dt;
+  for (const c of CUTS) if (c > t + 1e-9 && c <= t1 + 1e-9) t1 = c - 2e-4;
   const a = at(t);
-  const b = at(t + dt);
+  const b = at(Math.max(t, t1));
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -115,6 +118,11 @@ function applyState(s) {
 window.frame = frame;
 window.pose = pose;
 window.speed = speed;
+window.CUTS = CUTS;
+window.stateAt = (t) => {
+  const s = at(t);
+  return { zoom: s.zoom, cap: s.cap, corner: s.corner, apart: s.apart };
+};
 window.DURATION = DURATION;
 window.SIZE = { W: DATA.W, H: DATA.H, ratio: DATA.ratio };
 window.TURN = TURN;

@@ -1,5 +1,5 @@
 import { launch } from "../scripts/browser.mjs";
-import { mkdirSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -60,16 +60,43 @@ if (mode === "poses") {
   );
   const total = plan.reduce((x, y) => x + y, 0);
   console.log(`${plan.length} frames · ${total} sub-frames · up to ${Math.max(...plan)} per frame`);
+  // Resumable: the plan is deterministic for a given page, so a restart writes the same file names. A sub-frame
+  // whose PNG already exists, is non-empty and ends in an IEND chunk (not cut off mid-write) is skipped. The plan
+  // is recorded in plan.json; if a later run plans differently (the page changed), stop instead of mixing frames.
+  const planFile = join(a, "plan.json");
+  const planKey = JSON.stringify({ n0, n1, step, most, total, plan });
+  if (existsSync(planFile) && readFileSync(planFile, "utf8") !== planKey) {
+    console.log(`${planFile} records a different sub-frame plan: this page changed since those frames were rendered. Use a new folder or delete that one.`);
+    await browser.close();
+    process.exit(1);
+  }
+  writeFileSync(planFile, planKey);
+  const complete = (path) => {
+    try {
+      const size = statSync(path).size;
+      if (size < 12) return false;
+      const tail = Buffer.alloc(12);
+      const fd = openSync(path, "r");
+      readSync(fd, tail, 0, 12, size - 12);
+      closeSync(fd);
+      return tail.includes("IEND");
+    } catch {
+      return false;
+    }
+  };
   const t0 = Date.now();
   let done = 0;
+  let skipped = 0;
   for (let n = n0; n < n1; n++) {
     const subs = plan[n - n0];
     for (let j = 0; j < subs; j++) {
-      await shoot((n + j / subs) / fps, join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`));
+      const path = join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`);
+      if (complete(path)) skipped++;
+      else await shoot((n + j / subs) / fps, path);
       done++;
     }
     if ((n - n0) % 15 === 0)
-      console.log(`frame ${n} · ${subs} subs · ${done}/${total} · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
+      console.log(`frame ${n} · ${subs} subs · ${done}/${total} (${skipped} already rendered) · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
   }
 } else {
   console.log(

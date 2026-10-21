@@ -17,16 +17,18 @@ This is the Visbody Creator 600 running gait analysis treadmill (Visbody-A600 / 
 **Films:**
 - 12.000 s, 30 fps, 360 frames, H.264 yuv420p, silent, with adaptive motion blur.
 - Each ratio is its own build (`motion/motion-9x16.html`, `motion/motion-16x9.html`), kept so the checks can be re-run.
-- The contact sheets show 8 frames from the encoded MP4s, at 0.5, 2.8, 4.2, 5.2, 6.4, 7.6, 9.2 and 11.9 s.
+- The contact sheets show 8 frames from the encoded MP4s, at 0.5, 2.8, 4.2, 5.1, 6.4, 7.7, 9.2 and 11.9 s.
 
-**Shot order:**
-1. The machine tumbles in.
-2. Close-up of the depth camera; its status light comes on.
-3. The handrail console; the + key presses.
-4. The 13.3″ touch console.
-5. The belt runs at 8 km/h while the screen locks on and tracks a skeleton joint by joint; the camera pushes into the screen.
-6. The machine comes apart and goes back together.
-7. Hero shot, with the belt still running.
+**Shot order (the camera only ever moves forward):**
+1. The machine tumbles in (0–2.02 s), tightening all the way.
+2. Whip in to the depth camera (2.26 s); its status light comes on.
+3. Whip in to the handrail console (3.54 s); the + key presses.
+4. **Cut** at 4.600 s (frame 138) to the 13.3″ touch console.
+5. **Cut** at 5.600 s (frame 168) to the whole machine. The belt starts at 8 km/h, the screen locks on and tracks a skeleton joint by joint, and the camera pushes into the screen (6.55–7.6 s).
+6. **Cut** at 7.900 s (frame 237) to a wide shot of the machine, still assembled. The parts drift apart while the camera creeps in, then close back together into the hero (9.7–10.45 s).
+7. The hero pushes in to the end, with the belt still running.
+
+**Forward-only rule:** every whip and eased move holds or tightens the framing. Each change to a wider framing is a hard cut keyed on an exact frame start. `motion/render.mjs` samples frame n's shutter at (n + j/subs)/30, so frame n−1 is wholly the old framing and frame n wholly the new one; no sub-frame averages the two. The shot before each cut holds until 1 ms before it. The blur planner measures only the frame's own interval at a cut, so a cut isn't mistaken for motion.
 
 ## Series spec conformance
 **Plate:** CSS identical to the InBody and dynamometer films.
@@ -35,18 +37,22 @@ This is the Visbody Creator 600 running gait analysis treadmill (Visbody-A600 / 
 
 **Type and fades:**
 - Captions are a Castoro sentence-case title over one spaced-caps sub-line, with no dash.
-- Captions fade in after a whip lands and are gone before the next one.
-- Labels fade out over 0.3 s for close-ups and return for the wide shots.
+- Captions fade in after a whip or cut lands and are gone before the next whip or cut. They are at zero for 0.06 s either side of every cut, so none spans one.
+- Labels fade out over 0.3 s for close-ups and return for the wide shots, starting on the cut frame after cuts 2 and 3.
 
-**QA:** `motion/qa.mjs` renders the machine alone on a transparent background at 60 samples a second, which covers the blur shutter. It measures in film pixels and has a framing-search mode, which was used to choose every shot.
+**QA:** `motion/qa.mjs` renders the machine alone on a transparent background at 60 samples a second, which covers the blur shutter. It measures in film pixels and has a framing-search mode, which was used to choose every shot. A fifth check samples the camera's zoom 240 times a second. It asserts that zoom never decreases except at a cut, and that each cut sits on an exact frame start and is a single-frame jump (the renderer's last sub-frame before the cut still shows the old framing).
 
 | Check | 9:16 | 16:9 |
 |---|---|---|
 | Samples (60/s) | 721/721 pass | 721/721 pass |
-| Caption clearance (needs 40 px) | closest 45 px | closest 48 px |
-| Corner-label clearance (needs 24 px while visible) | over 100 px | 48 px |
-| Hero room, first and last shots (needs 24 px) | 32 px; below the header and above y = 1248 | 78 px |
+| Caption clearance (needs 40 px) | closest 45 px | closest 46 px |
+| Corner-label clearance (needs 24 px while visible) | closest 106 px | closest 46 px |
+| Hero room, first and last shots (needs 24 px) | 32 px; below the header and above y = 1248 | 74 px |
 | Text inside the Reels safe area (x 65–1015, y 269–1248) | pass | n/a |
+| Forward-only camera | zoom never decreases except at the 3 cuts | zoom never decreases except at the 3 cuts |
+| Cut 1, 4.600 s (frame 138) | zoom 12.5 → 9, frame start, single-frame jump | 11.6 → 8, frame start, single-frame jump |
+| Cut 2, 5.600 s (frame 168) | 9.4 → 1.5, frame start, single-frame jump | 8.4 → 2.1, frame start, single-frame jump |
+| Cut 3, 7.900 s (frame 237) | 6.06 → 1.06, frame start, single-frame jump | 6.06 → 1.34, frame start, single-frame jump |
 
 The paint-order scan was clean on every frame in both ratios. The five-view explode sweep found 0 forced picks and no parts passing through each other.
 

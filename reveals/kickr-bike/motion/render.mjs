@@ -1,5 +1,5 @@
 import { launch } from "../scripts/browser.mjs";
-import { mkdirSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -58,18 +58,46 @@ if (mode === "poses") {
     step,
     most,
   );
+  // Resumable: the plan is saved beside the sub-frames on the first run and reused on a restart, so the same
+  // file names are written; a restart against a changed page (a different plan) is refused. A sub-frame whose
+  // PNG already exists, is non-empty and ends with a complete IEND chunk is skipped.
+  const planFile = join(a, `plan-${n0}-${n1}.json`);
+  if (existsSync(planFile)) {
+    const saved = JSON.parse(readFileSync(planFile, "utf8"));
+    if (saved.page !== page_ || saved.step !== step || saved.most !== most || JSON.stringify(saved.plan) !== JSON.stringify(plan)) {
+      console.log(`refusing to resume: ${planFile} was made for a different page or plan; move the folder aside or delete it to start over`);
+      await browser.close();
+      process.exit(2);
+    }
+  } else writeFileSync(planFile, JSON.stringify({ page: page_, step, most, from: n0, to: n1, plan }));
+  const complete = (path) => {
+    try {
+      const size = statSync(path).size;
+      if (size < 64) return false;
+      const fd = openSync(path, "r");
+      const tail = Buffer.alloc(12);
+      readSync(fd, tail, 0, 12, size - 12);
+      closeSync(fd);
+      return tail.toString("latin1", 4, 8) === "IEND";
+    } catch {
+      return false;
+    }
+  };
   const total = plan.reduce((x, y) => x + y, 0);
   console.log(`${plan.length} frames · ${total} sub-frames · up to ${Math.max(...plan)} per frame`);
   const t0 = Date.now();
   let done = 0;
+  let skipped = 0;
   for (let n = n0; n < n1; n++) {
     const subs = plan[n - n0];
     for (let j = 0; j < subs; j++) {
-      await shoot((n + j / subs) / fps, join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`));
+      const path = join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`);
+      if (complete(path)) skipped++;
+      else await shoot((n + j / subs) / fps, path);
       done++;
     }
     if ((n - n0) % 15 === 0)
-      console.log(`frame ${n} · ${subs} subs · ${done}/${total} · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
+      console.log(`frame ${n} · ${subs} subs · ${done}/${total} (${skipped} already on disk) · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
   }
 } else {
   console.log(

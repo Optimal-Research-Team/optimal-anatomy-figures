@@ -12,10 +12,10 @@ Interactive isometric explainer figures for **Optimal Health** (Barrie, ON) serv
 | 4 | The runner rig | Creator 600 gait: cadence, foot strike, joint load | Hero | Round 1 · for review |
 | 5 | The ramp and the mask | VO2max ramp on a bike: wireless mask, assessor with a tablet | Hero + WebGL | Round 2 · for review |
 | 6 | The treadmill ramp | VO2max ramp on the Creator 600: wireless mask, assessor with a tablet | Figure | Round 1 · for review |
-| E1 | The InBody 580, taken apart | 114 parts from the published dimensions; 12 s film (16:9 + 9:16) and a take-apart page | Film + page | Round 1 · for review |
-| E2 | The Creator 600, taken apart | Depth camera under a 50″ portrait screen; film and take-apart page | Film + page | Round 1 · for review |
-| E3 | The KICKR Bike, taken apart | Belt drive, electronic brake, five-point fit (no tilt: grade is simulated); film and page | Film + page | Round 1 · for review |
-| E4 | The hand dynamometer, taken apart | Sealed hydraulic path from handle to dial, peak-hold needle; film and page | Film + page | Round 1 · for review |
+| E1 | The InBody 580, taken apart | 114 parts from the published dimensions; 12 s film (16:9 + 9:16) and a take-apart page | Film + page | Approved (Oct 19) |
+| E2 | The Creator 600, taken apart | Depth camera under a 50″ portrait screen; film and take-apart page | Film + page | Approved (Oct 19) |
+| E3 | The KICKR Bike, taken apart | Belt drive, electronic brake, five-point fit (no tilt: grade is simulated); film and page | Film + page | Approved (Oct 19) |
+| E4 | The hand dynamometer, taken apart | Sealed hydraulic path from handle to dial, peak-hold needle; film and page | Film + page | Approved (Oct 19) |
 
 ## Handing this to a Claude cloud session
 

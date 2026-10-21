@@ -105,22 +105,34 @@ On the figure pages (phone-first, nothing hover-only):
 
 ### The film (12 s, silent)
 
-| t (s) | Beat | Caption (title · sub-line), on screen |
-|---|---|---|
-| 0–1.82 | Tumbles in from behind and rights itself to three-quarter | Hand dynamometer · Grip strength · hydraulic (0–1.78) |
-| 1.82–2.06 | Whip to the dial | none |
-| 2.06–2.96 | Dial; slow drift | Dual scale · 0–90 kg outside · 0–200 lb inside (2.06–2.92) |
-| 2.96–3.20 | Whip to the forks | none |
-| 3.20–4.06 | Notched forks under the gauge (medium close-up) | Five handle positions · 35 to 86 mm · ½-inch steps (3.20–4.02) |
-| 4.06–4.30 | Whip to gauge and handle | none |
-| 4.30–5.46 | The handle squeezes in; both needles sweep to 42 kg | Sealed hydraulic system · Handle squeezes in · needle sweeps up (4.30–5.42) |
-| 5.46–6.16 | Grip released: the main needle returns, the peak needle holds | Peak-hold needle · Keeps the highest reading (5.48–6.12) |
-| 6.16–6.40 | Whip to the knob | none |
-| 6.40–7.36 | The knob turns and the peak needle returns to zero | Reset knob · Turns the peak needle back to zero (6.40–7.40) |
-| 7.36–10.42 | Pull out, explode, drift apart, then come back together | Taken apart · 102 parts · 18 assemblies (7.94–8.90); Bourdon tube · two pistons · The sealed hydraulic path (8.96–9.70) |
-| 10.42–12 | Hero at three-quarter front, easing to stillness | Hand dynamometer · Measured in clinic · best of either hand (10.42–12) |
+**Camera rule (series):** the camera only moves forward. Within a shot the framing holds or tightens, so zoom never falls. Every change to a wider framing is a hard cut on a frame start. There are two whips, and both tighten. There are three cuts, all to a wider framing:
 
-Each caption fades in over 0.16 s once its shot lands (0.4 s for the first), rising 5 px, and is gone 0.1 s before the next whip, as in the InBody film.
+| Cut | Time | From → to | Zoom, 16:9 | Zoom, 9:16 |
+|---|---|---|---|---|
+| 1 | 3.000 s (frame 90) | Dial close-up → forks medium close-up | 4.80 → 3.89 | 5.80 → 4.40 |
+| 2 | 4.100 s (frame 123) | Forks → gauge and handle | 4.21 → 2.72 | 4.60 → 3.30 |
+| 3 | 7.400 s (frame 222) | Knob close-up → wide shot for the explode | 4.90 → 1.31 | 6.80 → 1.26 |
+
+Each cut is a step key placed exactly at frame N's start, N/30 s. `render.mjs` averages frame n over sub-frames at (n + j/subs)/30. So frame N−1 is wholly the old framing and frame N wholly the new one, and no blur sub-frame straddles a cut. Retiming is exact at 12 s, so the cuts stay on their frames. The blur planner measures a frame that ends on a cut only up to the cut.
+
+| t (s) | Shot | Camera | Caption (title · sub-line), on screen |
+|---|---|---|---|
+| 0–1.82 | Tumbles in from behind and rights itself to three-quarter | creeps in | Hand dynamometer · Grip strength · hydraulic (0–1.78) |
+| 1.82–2.06 | Whip in to the dial | tightens | none |
+| 2.06–3.00 | Dial | slow push in | Dual scale · 0–90 kg outside · 0–200 lb inside (2.06–2.94) |
+| **3.00** | **cut** | | |
+| 3.00–4.10 | Notched forks under the gauge (medium close-up) | push in | Five handle positions · 35 to 86 mm · ½-inch steps (3.00–4.04) |
+| **4.10** | **cut** | | |
+| 4.10–6.16 | Gauge and handle: the handle squeezes in and both needles sweep to 42 kg. Then the grip releases; the main needle returns, the peak needle holds. | push in toward the gauge | Sealed hydraulic system · Handle squeezes in · needle sweeps up (4.10–5.42); Peak-hold needle · Keeps the highest reading (5.48–6.12) |
+| 6.16–6.40 | Whip in to the knob | tightens | none |
+| 6.40–7.40 | The knob turns and the peak needle returns to zero | push in | Reset knob · Turns the peak needle back to zero (6.40–7.34) |
+| **7.40** | **cut** | | |
+| 7.40–10.42 | Wide: the parts drift apart, hold, then come back together | creeps in throughout | Taken apart · 102 parts · 18 assemblies (7.50–8.62); Bourdon tube · two pistons · The sealed hydraulic path (8.68–9.56) |
+| 10.42–12 | Hero at three-quarter front, easing to stillness | keeps pushing in | Hand dynamometer · Measured in clinic · best of either hand (10.42–12) |
+
+Each caption fades in over 0.16 s once its shot lands (0.4 s for the first), rising 5 px, as in the InBody film. It is gone 0.1 s before the next whip or cut, so no caption spans a cut.
+
+In 9:16 the explode is framed wider than in the earlier cut. The implode has to push into the hero, and the hero must fit above y = 1248, so the explode can't be framed tighter than the hero.
 
 Other details:
 - **Corner labels:** both in Public Sans spaced caps (the TV kit's eyebrow style): `OPTIMAL HEALTH · BARRIE` and `HAND DYNAMOMETER · GRIP STRENGTH`. No Castoro italic, no leading dashes. The object never crosses them, so they stay on for the whole film.
@@ -134,6 +146,12 @@ Other details:
 **Explode and paint order:**
 - Five-view explode sweeps (−35/15, 0/5, 140/20, 90/−20, −20/70; 201 steps each): no forced picks, no pairs passing through each other.
 - Per-frame paint-order scan, at 60 samples a second on both films: every frame clean.
+
+**Camera QA** (`scripts/camera-check.mjs`): samples the camera at every frame start and at 300 per second.
+- Zoom never falls except across the 3 cuts, each a single-frame jump.
+- Every cut sits on a frame start: frame N−1's last sub-frame is before it, frame N's first is on it.
+
+Both films pass: no zoom drop in 360 frames or 3,600 fine samples outside the cuts.
 
 **Framing QA** (`scripts/caption-check.mjs` + `.py`), per `SERIES-SPEC.md`. Each sample renders the object alone on a transparent background and measures every visible label box from the page. A label counts only while its opacity is above 0.01.
 
@@ -150,6 +168,7 @@ There were 0 failures in 720 samples per film (60 a second, which also covers th
 History:
 - **First renders:** failed the clearance rules. Every shot was reframed and both films re-rendered.
 - **Series-spec pass:** restyled the labels, added the caption fades, and lowered the 9:16 hero. Then QA was re-run and both films re-rendered, one at a time.
+- **Forward-only camera:** the zoom-outs became three hard cuts, captions were re-timed so none spans a cut, and the explode is now a wide shot that creeps in. All QA was re-run and both films re-rendered, one at a time.
 
 **MP4 frames:** every frame of both encoded films was extracted. A dozen from each film were viewed, and frames were inspected at full resolution.
 
@@ -185,7 +204,12 @@ Changes made to the skill template for this project only:
   - the 9:16 header block;
   - caption and label fades on `--cap-o` / `--corner-o`.
 - `motion/build.mjs`: added `--out`, `data-ratio`, `window.fitZoom` and the fade variables.
-- `motion/timeline.mjs`: a 12 s base, 9:16 base values and 16:9 overrides; caption windows (`t` to `until`).
+- `motion/timeline.mjs`:
+  - a 12 s base, 9:16 base values and 16:9 overrides;
+  - caption windows (`t` to `until`);
+  - the `cut` step ease, frame-snapped cut keys and `CUTS`, with retiming exact at the base length.
+- `motion/build.mjs` (speed): a frame that ends on a cut is measured only up to the cut. `window.at` and `window.CUTS` are exposed for the camera check.
+- `scripts/camera-check.mjs`: the forward-only camera check.
 - `scripts/caption-check.mjs` + `.py`: the framing QA, including the 9:16 safe-area and y = 1248 checks.
 - `scripts/sheet.py`: the contact sheets.
 - `object/geometry.mjs`: a debug-only `SKIP=<regex>`.

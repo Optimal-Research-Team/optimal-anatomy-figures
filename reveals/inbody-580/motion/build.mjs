@@ -69,8 +69,10 @@ function viewOf(s) {
 const PROBES = [...Object.values(DATA.anchors)];
 for (const x of FILM.bounds[0]) for (const y of FILM.bounds[1]) for (const z of FILM.bounds[2]) PROBES.push([x, y, z]);
 function speed(t, dt = 1 / 30) {
+  // a hard cut inside this frame interval is not motion: measure up to the moment before it
+  const cut = CUTS.find((c) => c > t + 1e-9 && c <= t + dt + 1e-9);
   const a = at(t);
-  const b = at(t + dt);
+  const b = at(cut !== undefined ? cut - 2 * CUT_WINDOW : t + dt);
   const va = viewOf(a);
   const vb = viewOf(b);
   const px = (v, p) => {
@@ -113,6 +115,8 @@ window.frame = frame;
 window.at = at;
 window.WIDE = WIDE;
 window.HERO = HERO;
+window.CUTS = CUTS;
+window.CUT_WINDOW = CUT_WINDOW;
 window.pose = pose;
 window.speed = speed;
 window.DURATION = DURATION;

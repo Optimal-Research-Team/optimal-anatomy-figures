@@ -1,5 +1,5 @@
 import { launch } from "../scripts/browser.mjs";
-import { mkdirSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -21,6 +21,19 @@ const size = await page.evaluate(() => window.SIZE);
 await page.setViewport({ width: size.W, height: size.H, deviceScaleFactor: DPR });
 await page.evaluate(() => document.fonts.ready);
 const root = await page.$(".mo");
+// resumable blur renders: a sub-frame counts as done when its PNG exists, is non-empty and ends with the
+// IEND chunk (so a file cut short by a killed run is rendered again)
+const IEND = Buffer.from([0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82]);
+const done_ = (path) => {
+  if (!existsSync(path)) return false;
+  const size = statSync(path).size;
+  if (size < 64) return false;
+  const fd = openSync(path, "r");
+  const tail = Buffer.alloc(8);
+  readSync(fd, tail, 0, 8, size - 8);
+  closeSync(fd);
+  return tail.equals(IEND);
+};
 const shoot = async (t, path) => {
   const stats = await page.evaluate((x) => window.frame(x), t);
   if (stats.forced || stats.unseparated)
@@ -62,14 +75,17 @@ if (mode === "poses") {
   console.log(`${plan.length} frames · ${total} sub-frames · up to ${Math.max(...plan)} per frame`);
   const t0 = Date.now();
   let done = 0;
+  let skipped = 0;
   for (let n = n0; n < n1; n++) {
     const subs = plan[n - n0];
     for (let j = 0; j < subs; j++) {
-      await shoot((n + j / subs) / fps, join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`));
+      const file = join(a, `b_${String(n).padStart(4, "0")}_${String(j).padStart(2, "0")}.png`);
+      if (done_(file)) skipped++;
+      else await shoot((n + j / subs) / fps, file);
       done++;
     }
     if ((n - n0) % 15 === 0)
-      console.log(`frame ${n} · ${subs} subs · ${done}/${total} · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
+      console.log(`frame ${n} · ${subs} subs · ${done}/${total}${skipped ? ` (${skipped} already on disk)` : ""} · ${((Date.now() - t0) / 1e3).toFixed(0)} s`);
   }
 } else {
   console.log(
