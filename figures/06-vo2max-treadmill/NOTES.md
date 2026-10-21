@@ -18,6 +18,13 @@
 
 It's a generic UI, not a copy of the Creator software. Audit passed and `lines.mjs` reports 0; all captures are retaken.
 
+**Round 3 (2026-10-21, visual-bug sweep):** the runner's mask and analyser covered the left third of the side panel's speed at some point in every stride, at every ceiling, so "15.6" read "5.6" and "5.7" read ".7".
+- The panel moved forward along the far handrail, from 8 to 2 units short of the rail end. Its stalk still sits on the rail's straight top.
+- The speed and its unit are now right-aligned, so the decimal point holds still when 9.9 becomes 10.0.
+- Measured by hit-testing the digits through the stride at each ceiling, at 1100 and 390 px:
+  - The first digit was up to 94 % covered; now nothing beyond the blank bezel is.
+- The stage viewBox is unchanged (600 × 713), so card reserves stand. `scripts/verify.mjs` passed: line ends 0 in both themes, fits at 390/360/320, console clean.
+
 ## Numbers
 
 All in `reference/truth-pack.md` §5, under "How Fig 6 uses these numbers".

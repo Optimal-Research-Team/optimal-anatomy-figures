@@ -131,7 +131,7 @@ for (const side of [-1, 1]) {
   });
 }
 // the side touch panel on a stalk off the far handrail, tilted toward the runner; its screen shows the belt speed
-const CONSOLE = { x: RAIL.x1 - 8, y: -RAIL.half };
+const CONSOLE = { x: RAIL.x1 - 2, y: -RAIL.half };
 const stalk = cyl("console.stalk", CONSOLE.x, CONSOLE.y, 1.4, RAIL.z + RAIL.h, 14.7, { tone: "lo" }, { steps: 16 });
 {
   const tilt = 22 * (Math.PI / 180);
@@ -141,7 +141,7 @@ const stalk = cyl("console.stalk", CONSOLE.x, CONSOLE.y, 1.4, RAIL.z + RAIL.h, 1
   const Ft = G.frameOf(G.add3(c, G.mul3(n, -1)), n, [0, 1, 0], up); // a: through the slab, u: across, v: up the face
   const corner = G.add3(G.add3(G.add3(c, G.mul3(n, 1.02)), [0, -12, 0]), G.mul3(up, 7.6));
   const m = planeMatrix(corner, [0, 1, 0], G.mul3(up, -1));
-  const face = `<g transform="${m}"><rect class="cr-screen" x="0.8" y="0.8" width="22.4" height="13.6" rx="0.8"/><text class="cr-digits" data-part="speed" x="12" y="10.4" font-size="8" text-anchor="middle">9.3</text><text class="cr-unit" x="12" y="13.4" font-size="2.2" text-anchor="middle">km/h</text></g>`;
+  const face = `<g transform="${m}"><rect class="cr-screen" x="0.8" y="0.8" width="22.4" height="13.6" rx="0.8"/><text class="cr-digits" data-part="speed" x="21.6" y="10.4" font-size="8" text-anchor="end">9.3</text><text class="cr-unit" x="21.6" y="13.4" font-size="2.2" text-anchor="end">km/h</text></g>`;
   prism("console", Ft, [[-12, -8.4], [12, -8.4], [12, 8.4], [-12, 8.4]], 0, 2, { tone: "mid" }, { extra: face, meta: { seated: true, cut: [stalk] } });
 }
 
