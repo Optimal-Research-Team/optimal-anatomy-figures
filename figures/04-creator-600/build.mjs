@@ -240,6 +240,7 @@ const CAPTION = [
   .join("");
 const presets = [["-10", "−10%"], ["0", "Your usual"], ["5", "+5%"], ["10", "+10%"]];
 const body = plate({
+  className: "cr-rig", // scopes Fig 4-only rules in figure.css, which Fig 6 also loads
   fig: "Fig 4",
   title: "The runner rig",
   hint: "Drag or tap to change step rate",

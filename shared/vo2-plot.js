@@ -2,7 +2,9 @@
 // Plots oxygen uptake (mL/kg/min) against the test's work (watts on a bike, km/h on a treadmill),
 // with a dashed guide for the shared slope, the live trace, the current point, the ceiling once
 // it shows, and the big VO₂ number with a breath marker.
-function vo2Plot(host, screen, { xMin = 0, xMax, yMax = 60, xTicks, yTicks = [20, 40, 60], guide, xLabel }) {
+// numberRight puts the big number at the right of the strip and the unit at the left, for a pose where the
+// assessor's arm crosses the tablet's left edge (Fig 6), so the arm hides the unit rather than the reading.
+function vo2Plot(host, screen, { xMin = 0, xMax, yMax = 60, xTicks, yTicks = [20, 40, 60], guide, xLabel, numberRight = false }) {
   const NS = "http://www.w3.org/2000/svg";
   const el = (tag, attrs) => {
     const n = document.createElementNS(NS, tag);
@@ -23,8 +25,10 @@ function vo2Plot(host, screen, { xMin = 0, xMax, yMax = 60, xTicks, yTicks = [20
   for (const x of xTicks) el("text", { class: "vp-tick", x: px(x).toFixed(2), y: (py(0) + 1.9).toFixed(2), "font-size": 1.5, "text-anchor": "middle" }).textContent = String(x);
   for (const v of yTicks) el("text", { class: "vp-tick", x: (px(xMin) - 0.5).toFixed(2), y: (py(v) + 0.5).toFixed(2), "font-size": 1.5, "text-anchor": "end" }).textContent = String(v);
   el("text", { class: "vp-unit", x: px(xMax).toFixed(2), y: (py(0) - 0.8).toFixed(2), "font-size": 1.5, "text-anchor": "end" }).textContent = xLabel;
-  const big = el("text", { class: "vp-big", x: 1.6, y: 4.3, "font-size": 3.6 });
-  el("text", { class: "vp-unit", x: 12.4, y: 4.3, "font-size": 1.6 }).textContent = "mL/kg/min VO₂";
+  const big = numberRight
+    ? el("text", { class: "vp-big", x: (screen.w - 4).toFixed(2), y: 4.3, "font-size": 3.6, "text-anchor": "end" })
+    : el("text", { class: "vp-big", x: 1.6, y: 4.3, "font-size": 3.6 });
+  el("text", { class: "vp-unit", x: numberRight ? 1.6 : 12.4, y: 4.3, "font-size": 1.6 }).textContent = "mL/kg/min VO₂";
   const breath = el("circle", { class: "vp-breath", cx: screen.w - 2.4, cy: 2.8, r: 0.8 });
   const ceil = el("path", { class: "vp-ceiling" });
   const trace = el("path", { class: "vp-trace" });

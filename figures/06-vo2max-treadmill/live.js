@@ -142,7 +142,7 @@ function mount(fig) {
   }
 
   // ---------------------------------------------------------------- the tablet: VO₂ against speed
-  const plot = vo2Plot(nodes.tablet, DATA.tablet, { xMin: 4, xMax: 18, xTicks: [6, 10, 14, 18], xLabel: "km/h", guide: [[4, costOf(4)], [18, costOf(18)]] });
+  const plot = vo2Plot(nodes.tablet, DATA.tablet, { xMin: 4, xMax: 18, xTicks: [6, 10, 14, 18], xLabel: "km/h", guide: [[4, costOf(4)], [18, costOf(18)]], numberRight: true });
   function plotDraw(now, pulse) {
     const pts = [];
     const step = Math.max(1, Math.round(0.1 / T.dt));
