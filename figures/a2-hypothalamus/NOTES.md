@@ -130,11 +130,11 @@ Peter: "for slide 3 update the clinic visualizer system anatomy page + handoff".
 | `tour="before,after"` / `tour="none"` | Which states the idle tour visits, in that order (default: all four). `none` (or one state) means the host drives it. |
 | `size-readout="word"` | The KNDy-size readout reads Small / Larger / Smaller / Larger instead of 100 % / 194 % / Smaller / 194 % (the 194 % rests on a LOW source). Stable selector: `[data-r="size"]` (and `[data-stat="size"]`). |
 | `gl="off"` | Keep the SVG drawing (never download the 3-D chunk). |
-| `gl-src="<url>"` | Load the 3-D chunk from somewhere other than next to the embed script. |
+| `gl-src="<url>"` | Load the 3-D chunk from somewhere other than next to the embed script. Element attribute only: the standalone pages ignore `?gl-src=` in the URL, because it loads a script (a crafted link could otherwise run code on the shared github.io origin). |
 | `.stage` (property) | The state shown now (`"before"`…); setting it sets the attribute. |
 | `stagechange` event | `detail: { stage, source: "tour" \| "user" \| "host" }`, bubbles, composed. |
 
-Taken off the page, the element stops (no animation frames, no listeners on the document); put back, it carries on with the same WebGL context, so a host that re-attaches one cached element never creates a second context, and a host that drops it lets it be collected. The standalone pages read the same names from the URL (`?stage=after&tour=none&size-readout=word&gl=off`).
+Taken off the page, the element stops (no animation frames, no listeners on the document); put back, it carries on with the same WebGL context, so a host that re-attaches one cached element never creates a second context, and a host that drops it lets it be collected. The standalone pages read the same names from the URL (`?stage=after&tour=none&size-readout=word&gl=off`), except `gl-src`.
 
 **Sizes.** `optimal-fig-hypothalamus.js` 256,119 bytes (75,090 gzip; +11.7 KB raw over round 3 for the loader and the host API); `hypothalamus-3d.js` 633,678 bytes (169,253 gzip), loaded only where the 3-D runs. Kept as a separate file so a page pays nothing for three.js until the figure is near and the device can run it; inlining it would make every A2 page load ~3.5× more script up front, including the phones that end up on the SVG. Cards are the same height as round 3 (re-measured at 358 and 760 px, desktop and touch at 3×: 1281 / 1306 px; reserves 1311 / 1306 unchanged).
 
