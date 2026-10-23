@@ -45,7 +45,7 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 
 **Host attributes** (the clinic TV uses them; the site doesn't need any): `stage="before|after|therapy|nonhormonal"`, `tour="before,after"` or `tour="none"`, `size-readout="word"` (Small / Larger instead of 100 % / 194 %), `gl="off"`, `gl-src="<url>"`, a `stage` property and a `stagechange` event. Taken off the page the element pauses; put back, it carries on with the same WebGL context. Details: `figures/a2-hypothalamus/NOTES.md`, "Round 4".
 
-**Approval.** Round 4 is **awaiting Peter's OK**. The round 3 SVG (approved Oct 12) is what ships if he holds it: either add `gl="off"` to the element (the `<OptimalFigure>` slot would need to pass it through) or simply don't copy `hypothalamus-3d.js` (the figure then stays on its SVG; QA reports `3-D FAILED: svg:load`, which is expected in that case).
+**Approval.** Peter **approved round 4 for the site on Oct 23**: ship `hypothalamus-3d.js`. (Before that, round 4 was held.) The round 3 SVG (approved Oct 12) is what ships if he holds it: either add `gl="off"` to the element (the `<OptimalFigure>` slot would need to pass it through) or simply don't copy `hypothalamus-3d.js` (the figure then stays on its SVG; QA reports `3-D FAILED: svg:load`, which is expected in that case).
 
 **QA.** `node handoff/qa/check-embeds.mjs <preview URL>` now also waits for A2's 3-D layer (`hypothalamus: ok (3-D on)`), then reloads the page with WebGL switched off and checks the SVG fallback (`hypothalamus: ok (SVG fallback)`, no chunk download, console clean). Run it on a machine with a GPU. By hand: on a phone, A2 should turn on a sideways drag while vertical swipes still scroll the page; with reduced motion on, it should be a still.
 
@@ -254,8 +254,8 @@ Manual pass before launch:
 ## Approvals and compliance
 
 - **Approved for the site by Peter (2026-10-12):** every figure except A4. His words: "the only thing that needs to be re-done is the heart".
-- **A2 round 4 (the real-time 3-D layer, Oct 21):** pending Peter's OK. The approved round 3 drawing is inside the same embed and is what shows without the chunk or with `gl="off"`.
-- **A4 (heart):** round 6 is pending Peter's OK. It can ship behind the others.
+- **A2 round 4 (the real-time 3-D layer, Oct 21):** approved by Peter on 2026-10-23. The round 3 drawing (approved Oct 12) is inside the same embed and is what shows without the chunk, with `gl="off"`, or on devices that can't run the 3-D.
+- **A4 (heart), round 6:** approved by Peter on 2026-10-23.
 - **Medical content:** every number in every figure is sourced in the figures repo (`reference/truth-pack.md`, each figure's `NOTES.md`). Peter owns the regulatory call. The Menopause Protocol is compliance-reviewed copy, so its reviewer should see A9, Fig 1, A3 and A2 in place.
 - The figures make no promises and show typical patterns, labelled as typical. Keep them that way: don't edit captions in the site repo. Request changes in the figures repo, and they come back as a rebuilt script.
 

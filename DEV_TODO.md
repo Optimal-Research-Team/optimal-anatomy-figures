@@ -4,11 +4,14 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 23, 2026: Peter approved A4 (the heart, round 6) and A2 (the hot-flash switch, round 4 with its real-time 3-D layer) for the site. Ship both.** Nothing is held back any more: copy `hypothalamus-3d.js` with the embeds, and keep the heart's placements (VO₂ max "Why", and the journal block).
+  - Use release `handoff-2026-10-23`, or re-run `scripts/export-embeds.mjs`. One embed changed since `handoff-2026-10-21b`: `optimal-fig-hypothalamus.js` (Oct 22, security). Its 3-D file is now read only from the element's own `gl-src` attribute, never from a link's query string. The site never sets `gl-src`, so nothing else changes. The other 14 embeds and `hypothalamus-3d.js` are byte-identical to `handoff-2026-10-21b`.
+  - No site code changes: placements, `FIGURE_RESERVE` and the private patch stay as they are.
 - **Oct 21, 2026 (b): A2 gets a real-time 3-D layer. Ship one more file: `hypothalamus-3d.js`, next to `optimal-fig-hypothalamus.js` in `public/figures/`.** (Release `handoff-2026-10-21b`, `embeds/`; or `scripts/export-embeds.mjs`, which now copies it.) See ENGINEERING_HANDOFF.md, "Added Oct 21 (b)".
   - Only `optimal-fig-hypothalamus.js` changed among the 15 embeds; the other 14 are byte-identical to the Oct 21 ones.
   - No site code changes: the placement, `FIGURE_RESERVE.hypothalamus` (1311 / 1306, re-measured) and the private patch stay as they are. Checked: the patch still applies to `main` (`0c0473c`), `yarn build` passes, and `check-embeds.mjs` passes on every page of the patched preview at 390 and 1280 px, with A2's 3-D layer on and, without WebGL, its SVG fallback.
   - The chunk is fetched as `hypothalamus-3d.js?v=<sha>`, so it's cache-busted on every build. Whatever caching you set for `/figures/*` (task 3) covers it.
-  - **Approval:** round 4 awaits Peter's OK. To hold it, don't copy `hypothalamus-3d.js` (A2 stays on its approved SVG), or pass `gl="off"` to the element.
+  - **Approval:** Peter approved round 4 for the site on Oct 23; ship `hypothalamus-3d.js`.
 - **Oct 21, 2026: seven card reserves raised; update `FIGURE_RESERVE` from `handoff/site/optimalFigures.ts` (the private patch carries the new values).** I re-measured every card at 358 and 760 px, in a desktop browser and as a phone (touch, 3× pixels). Seven cards came out taller than their reserves, so content below them would jump by 4–29 px when they mount.
   - Raised: Fig 5 1224 / 1315 (also its new pose, below); A2 phone 1311; A3 phone 1040; A4 desktop 1626; A5 phone 1186; A6 phone 1175; A9 998 / 1060.
   - The other eight already fit. `placements.json` matches.
@@ -49,8 +52,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 6. **Copy fixes on the Creator 600 page** (XS, owner: Peter to confirm wording)
    - "32″ upright display" should read 50″.
    - Soften the "180 spm benchmark" line. The evidence supports a 5–10 % change from your own rate.
-7. **A4 heart: wait for Peter's OK on round 6.** It can merge with the rest and be held back by removing the one `<OptimalFigure slug="heart" gutter />`, and the journal block, if needed.
-   **A2 round 4 (3-D):** also waits for Peter's OK; hold it by leaving out `hypothalamus-3d.js` (see the Oct 21 (b) note above).
+7. **A4 heart (round 6) and A2 round 4 (3-D): approved by Peter on Oct 23.** Ship them with the rest; nothing is held back.
 
 ## Later (secondary placements)
 

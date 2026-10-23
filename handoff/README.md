@@ -1,4 +1,4 @@
-# Optimal figures: engineering handoff, Oct 21 2026 (b) (replaces the Oct 21 and Oct 12 packages)
+# Optimal figures: engineering handoff, Oct 23 2026 (replaces the Oct 21 (b), Oct 21 and Oct 12 packages)
 
 **For:** Jeremy, and anyone integrating the anatomy figures into `BeOptimal/beoptimal-landing`.
 
@@ -6,13 +6,19 @@
 
 Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) and `DEV_TODO.md` (the task list, newest changes first).
 
-## What changed since the Oct 21 package (`handoff-2026-10-21`)
+## What changed since the Oct 21 (b) package (`handoff-2026-10-21b`)
+
+1. **Peter approved A4 (the heart, round 6) and A2 (round 4, with its real-time 3-D layer) for the site on Oct 23.** Nothing is held back now: ship `hypothalamus-3d.js` with the embeds, and keep the heart where the patch puts it.
+2. **One embed changed: `optimal-fig-hypothalamus.js` (Oct 22, security).** A2 now reads its 3-D file only from the element's own `gl-src` attribute, never from a link's query string. On the shared `optimal-research-team.github.io` origin, a crafted gallery link could otherwise have loaded someone else's script. The site never sets `gl-src`, so this is defensive only. The other 14 embeds and `hypothalamus-3d.js` are byte-identical to `handoff-2026-10-21b`.
+3. No site code changes: placements, `FIGURE_RESERVE` and the private patch are unchanged.
+
+## What changed in the Oct 21 (b) package (vs `handoff-2026-10-21`)
 
 1. **A2 (the hot-flash switch) has a real-time 3-D layer**, the 3-D hypothalamus from slide 3 of the Ongoing Care deck. See `ENGINEERING_HANDOFF.md`, "Added Oct 21 (b)".
    - **One more file to ship:** `hypothalamus-3d.js` (634 KB, 169 KB gzip) goes in `public/figures/` next to `optimal-fig-hypothalamus.js`, which loads it lazily from its own folder. It's in this release's `embeds/`, and `scripts/export-embeds.mjs` copies it.
    - `optimal-fig-hypothalamus.js` is new (256 KB, 75 KB gzip). **The other 14 embed scripts are byte-identical to the `handoff-2026-10-21` ones.**
    - No site code changes: placements, `FIGURE_RESERVE` (re-measured, still 1311 / 1306) and the private patch are unchanged.
-   - The SVG drawing (approved Oct 12) is still the first paint and the fallback; `gl="off"` on the element, or leaving out `hypothalamus-3d.js`, ships just that. Round 4 awaits Peter's OK.
+   - The SVG drawing (approved Oct 12) is still the first paint and the fallback; `gl="off"` on the element, or leaving out `hypothalamus-3d.js`, ships just that. (Approved by Peter on Oct 23; see above.)
 2. **QA:** `handoff/qa/check-embeds.mjs` now checks that A2's 3-D layer comes up and, in a second pass with WebGL off, that its SVG fallback works. New `--route /path` option for spot checks.
 3. **For the clinic TV** (not the site): A2 takes `stage`, `tour` and `size-readout` attributes and pauses while detached (A2 `NOTES.md`, "Round 4").
 
@@ -39,7 +45,7 @@ Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) 
      - the take-apart pages in Cream and Forest night.
    - Placement and the `<video>` recipe are in `ENGINEERING_HANDOFF.md`, under "Added Oct 19".
    - The films were re-cut on Oct 20–21 so the camera only moves forward. If you grabbed any assets before Oct 21, re-copy them.
-3. **A4 heart:** still round 6, awaiting Peter's OK. Ship it behind the others, as before.
+3. **A4 heart:** round 6 (approved by Peter on Oct 23).
 4. **Copy fix on the Creator 600 page:** the site still says "32-inch". The display is 50″.
 
 ## Where everything is
