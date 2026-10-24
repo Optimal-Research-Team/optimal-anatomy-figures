@@ -162,6 +162,8 @@ node ../../scripts/build-all.mjs                # gallery
 ```
 Use `drive.mjs` for interaction (`click`, `wait`, `eval`, `shot`). Put anything with quotes in an `--actions file.json`.
 
+- **The 3-D hypothalamus has one master copy:** A2's `gl/` and `model.mjs`. The Ongoing Care deck syncs it with `tools/sync-hypo3d.mjs`, and its build refuses edited copies. The TV gets the built file with `npm run figures`. After changing it, rebuild here, re-sync the TV, and re-sync and rebuild the deck. See A2 NOTES, "The master copy of the 3-D brain".
+
 ## 9. Gotchas learned the hard way
 
 - **Audit "support":** grounded parts must be named `stand.*` or carry `meta.ground`.

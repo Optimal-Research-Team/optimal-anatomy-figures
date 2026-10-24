@@ -4,6 +4,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 24, 2026 (optional): `hypothalamus-3d.js` was rebuilt with one new, unused option (`power`, the WebGL power preference, which the Ongoing Care deck now uses). Nothing changes on the site.** The `handoff-2026-10-23` release is still valid; re-export only if you want byte-identical files with the repo.
 - **Oct 23, 2026: Peter approved A4 (the heart, round 6) and A2 (the hot-flash switch, round 4 with its real-time 3-D layer) for the site. Ship both.** Nothing is held back any more: copy `hypothalamus-3d.js` with the embeds, and keep the heart's placements (VO₂ max "Why", and the journal block).
   - Use release `handoff-2026-10-23`, or re-run `scripts/export-embeds.mjs`. One embed changed since `handoff-2026-10-21b`: `optimal-fig-hypothalamus.js` (Oct 22, security). Its 3-D file is now read only from the element's own `gl-src` attribute, never from a link's query string. The site never sets `gl-src`, so nothing else changes. The other 14 embeds and `hypothalamus-3d.js` are byte-identical to `handoff-2026-10-21b`.
   - No site code changes: placements, `FIGURE_RESERVE` and the private patch stay as they are.

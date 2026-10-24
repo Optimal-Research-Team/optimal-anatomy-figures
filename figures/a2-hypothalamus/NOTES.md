@@ -155,3 +155,21 @@ Taken off the page, the element stops (no animation frames, no listeners on the 
 2. **Real phones:** the frame rate and heat on a mid-range Android and an older iPhone are unmeasured. The governor and the give-up should keep it smooth or fall back, but it needs a hand-held check.
 3. **Cream:** kept exactly as the deck. The left third of the block reads lighter because rays leave through its left end (thinner tissue); say if you'd like it denser on the cream page.
 4. **A2's flash cadence:** the deck's notes point out that `live.js` tips every ~6.5–8.6 s once settled, while round 1's notes say 10–20 s. The code (and so the 3-D) follows the code; a slower cadence is a change to `refractory` in `model.mjs`.
+
+## The master copy of the 3-D brain (2026-10-24)
+
+`gl/` (`hypo3d-model.js`, `hypo3d-anatomy.js`, `hypo3d-geo.js`, `hypo3d-scene.js`) and `model.mjs` are the **only** editable copy of the 3-D hypothalamus. Three places use it:
+
+| Where | How it gets the files | What it keeps of its own |
+|---|---|---|
+| This figure (gallery, beoptimal.ca, reception TV) | built in place by `gl/build-gl.sh` into `hypothalamus-3d.js` | `gl/a2-layer.js` |
+| The Ongoing Care deck, slide 3 (`optimal-presentations/menopause-foundation/graduation-ongoing-care`) | `node tools/sync-hypo3d.mjs` copies the five files into `src/a2/` and records their hashes and this repo's commit in `src/a2/SOURCE.json`; `tools/build-hypo3d.sh` refuses to build if a copy was edited there | `src/hypo3d.src.js` (the `<hypo-3d>` element: slide play/pause, tour, drag, print) and `src/hypo3d-stages.js` (its lab page's readouts) |
+
+**After any change here:**
+1. Run `bash gl/build-gl.sh`, then rebuild the figure.
+2. Push.
+3. Re-sync the TV: `npm run figures`, then `scripts/publish-site.sh`.
+4. In the deck, run `node tools/sync-hypo3d.mjs` and then `bash tools/build-hypo3d.sh`, and check slide 3.
+
+- **`HypoScene` options:** `theme` (`light` | `dark`), `lite` (the phone build) and, since Oct 24, `power` (the WebGL power preference). The figure leaves `power` at "default"; the deck passes "high-performance", as its own copy did before the merge.
+- **Merge check (Oct 24):** the deck now builds from these files. Its deterministic stills, four stages × two moments plus the flash still at 1920×1080, came out identical to the deck's previous build. 9 of 7.8 million pixels differ, by 1/255. The deck flow was unchanged too: the slide-1 warm-up, a worst frame of 16.8 ms on entering slide 3, 60 fps, print snapshots, and a clean console.

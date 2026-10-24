@@ -622,13 +622,16 @@ function neuronGeometry(r, nDend, rng, { stretch = [1.12, 0.92, 0.94], branches 
 
 // ---------------------------------------------------------------- the scene
 export class HypoScene {
-  /** theme: "light" (Cream) | "dark" (Forest night); lite: the lighter phone build (see LOD_LITE). */
-  constructor(canvas, { theme = "light", lite = false } = {}) {
+  /**
+   * theme: "light" (Cream) | "dark" (Forest night); lite: the lighter phone build (see LOD_LITE);
+   * power: the WebGL power preference. "default" for the figure (a figure on a web page shouldn't wake a
+   * laptop's discrete GPU); the Ongoing Care deck's <hypo-3d> passes "high-performance" (a full-screen slide).
+   */
+  constructor(canvas, { theme = "light", lite = false, power = "default" } = {}) {
     this.canvas = canvas;
     this.T = THEMES[theme] || CREAM;
     this.lod = lite ? LOD_LITE : LOD_FULL;
-    // "default" power preference: a figure on a web page shouldn't wake a laptop's discrete GPU
-    const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: "default", preserveDrawingBuffer: false });
+    const renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true, premultipliedAlpha: true, powerPreference: power, preserveDrawingBuffer: false });
     renderer.setClearColor(0x000000, 0);
     renderer.autoClear = false;
     renderer.toneMapping = NeutralToneMapping;

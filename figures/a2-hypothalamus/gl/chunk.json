@@ -4,10 +4,10 @@
   "esbuild": "0.25.10",
   "format": "iife",
   "global": "OptimalFigA2GL",
-  "bytes": 633678,
-  "gzipBytes": 169253,
-  "sha256": "b6c6733a89fc8088",
-  "sources": "17d8d45f6e32590b",
+  "bytes": 633688,
+  "gzipBytes": 169260,
+  "sha256": "fc457fa7fb64f88e",
+  "sources": "317db594909ffb40",
   "sourceFiles": [
     "a2-layer.js",
     "hypo3d-scene.js",
@@ -16,5 +16,5 @@
     "hypo3d-model.js",
     "../model.mjs"
   ],
-  "built": "2026-10-21T18:44:19.402Z"
+  "built": "2026-10-24T14:28:35.599Z"
 }
