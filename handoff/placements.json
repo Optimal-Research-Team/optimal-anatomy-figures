@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-12",
+  "version": "2026-10-24",
   "siteRepo": "BeOptimal/beoptimal-landing @ 0f36c00",
   "gallery": "https://optimal-research-team.github.io/optimal-anatomy-figures/",
   "figures": [
@@ -596,6 +596,111 @@
           "position": "Women's bone paragraph",
           "why": "",
           "priority": "secondary"
+        }
+      ]
+    }
+  ],
+  "reveals": [
+    {
+      "fig": "E1",
+      "title": "The InBody 580, taken apart",
+      "folder": "e1-inbody-580",
+      "slug": "inbody-580",
+      "kind": "reveal",
+      "component": "EquipmentReveal",
+      "page": "reveals/inbody-580-apart.html",
+      "bytes": 972666,
+      "gzipBytes": 270892,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/e1-inbody-580/inbody-580-apart-light.html",
+      "liveEmbed": "https://optimal-research-team.github.io/optimal-anatomy-figures/e1-inbody-580/embed/inbody-580-apart.html",
+      "reserve": {
+        "phone": 1164,
+        "desktop": 1216,
+        "note": "Framed page at 358 px wide (390 px phones) and 760 px; the frame then takes the page's reported height"
+      },
+      "approval": "Approved for the site by Peter Oct 19; the 3-D on the page itself requested Oct 24",
+      "placements": [
+        {
+          "page": "InBody 580",
+          "route": "/services/inbody-580",
+          "file": "src/pages/InBody580Page.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Why\"> (eyebrow BEYOND THE SCALE)",
+          "position": "Its own block right before the 'Why' section, with gutter (so the page reads: the machine, why, then Fig 2 and A8)",
+          "why": "The machine every member stands on, built from its published dimensions: drag to turn it, take it apart, lift the grips, run a measurement",
+          "priority": "primary"
+        }
+      ]
+    },
+    {
+      "fig": "E2",
+      "title": "The Creator 600, taken apart",
+      "folder": "e2-creator-600",
+      "slug": "creator-600",
+      "kind": "reveal",
+      "component": "EquipmentReveal",
+      "page": "reveals/creator-600-apart.html",
+      "bytes": 811338,
+      "gzipBytes": 251679,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/e2-creator-600/creator-600-apart-light.html",
+      "liveEmbed": "https://optimal-research-team.github.io/optimal-anatomy-figures/e2-creator-600/embed/creator-600-apart.html",
+      "reserve": {
+        "phone": 825,
+        "desktop": 984,
+        "note": "Framed page at 358 px wide (390 px phones) and 760 px; the frame then takes the page's reported height"
+      },
+      "approval": "Approved for the site by Peter Oct 19; the 3-D on the page itself requested Oct 24",
+      "placements": [
+        {
+          "page": "Creator 600",
+          "route": "/services/creator-600",
+          "file": "src/pages/GaitAnalysisPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Six measures\">",
+          "position": "Its own block right after 'Six measures', directly above Fig 4 (the runner rig), with gutter",
+          "why": "The treadmill itself: the 50-inch portrait screen and depth camera that track your joints as you run",
+          "priority": "primary"
+        },
+        {
+          "page": "VO2 max testing",
+          "route": "/services/vo2-max-testing",
+          "file": "src/pages/Vo2MaxTestingPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Equipment\"> ('02 — Equipment', 'Treadmill or bike')",
+          "position": "Inside 'Equipment', beside E3, if both machines should turn on this page too",
+          "why": "The VO2 max test can run on this treadmill",
+          "priority": "secondary"
+        }
+      ]
+    },
+    {
+      "fig": "E3",
+      "title": "The KICKR Bike, taken apart",
+      "folder": "e3-kickr-bike",
+      "slug": "kickr-bike",
+      "kind": "reveal",
+      "component": "EquipmentReveal",
+      "page": "reveals/kickr-bike-apart.html",
+      "bytes": 1097902,
+      "gzipBytes": 311299,
+      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/e3-kickr-bike/kickr-bike-apart-light.html",
+      "liveEmbed": "https://optimal-research-team.github.io/optimal-anatomy-figures/e3-kickr-bike/embed/kickr-bike-apart.html",
+      "reserve": {
+        "phone": 927,
+        "desktop": 1005,
+        "note": "Framed page inside the VO2 page's padded Equipment section on a 390 px phone, and at 760 px; the frame then takes the page's reported height"
+      },
+      "approval": "Approved for the site by Peter Oct 19; the 3-D on the page itself requested Oct 24",
+      "placements": [
+        {
+          "page": "VO2 max testing",
+          "route": "/services/vo2-max-testing",
+          "file": "src/pages/Vo2MaxTestingPage.tsx",
+          "method": "component",
+          "anchor": "<SectionTracker section=\"Equipment\"> ('02 — Equipment')",
+          "position": "Inside 'Equipment', after the equipment cards and directly above Fig 5 (the bike ramp)",
+          "why": "The bike the VO2 max test runs on: belt-driven flywheel, electronic brake, five-point fit. Grade is simulated; the frame never tilts",
+          "priority": "primary"
         }
       ]
     }

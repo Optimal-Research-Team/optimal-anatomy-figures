@@ -12,3 +12,6 @@ handoff/qa/shots/
 
 # The engineering handoff package (scripts/package-handoff.mjs); the zip goes on the GitHub release
 handoff/package/
+
+# The framed 3-D take-apart pages for the site (figures/reveal-build.mjs writes them on the light build)
+figures/*/embed/*-apart.html

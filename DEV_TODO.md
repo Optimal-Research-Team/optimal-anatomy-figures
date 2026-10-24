@@ -4,6 +4,10 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Oct 24, 2026: the three machines in 3-D go on the page (Peter).** Inline, on their service pages: the InBody 580 (before "Why"), the Creator 600 (above Fig 4) and the KICKR Bike (VO₂ max "02 — Equipment", above Fig 5). See ENGINEERING_HANDOFF.md, "Added Oct 24".
+  - **Files:** copy `embeds/reveals/` (three framed pages) into `public/figures/reveals/`, from release `handoff-2026-10-24` or `scripts/export-embeds.mjs`, which now writes them.
+  - **Code:** the private patch has a second commit with `EquipmentReveal.tsx`, `REVEAL_RESERVE` and the three spots. It applies cleanly to `main` (`0c0473c`); tsc, 145/145 tests, the build and `check-embeds.mjs` at 390 and 1280 px all pass.
+  - The 15 figure scripts and `hypothalamus-3d.js` are the same as `handoff-2026-10-23`, apart from the optional Oct 24 rebuild below.
 - **Oct 24, 2026 (optional): `hypothalamus-3d.js` was rebuilt with one new, unused option (`power`, the WebGL power preference, which the Ongoing Care deck now uses). Nothing changes on the site.** The `handoff-2026-10-23` release is still valid; re-export only if you want byte-identical files with the repo.
 - **Oct 23, 2026: Peter approved A4 (the heart, round 6) and A2 (the hot-flash switch, round 4 with its real-time 3-D layer) for the site. Ship both.** Nothing is held back any more: copy `hypothalamus-3d.js` with the embeds, and keep the heart's placements (VO₂ max "Why", and the journal block).
   - Use release `handoff-2026-10-23`, or re-run `scripts/export-embeds.mjs`. One embed changed since `handoff-2026-10-21b`: `optimal-fig-hypothalamus.js` (Oct 22, security). Its 3-D file is now read only from the element's own `gl-src` attribute, never from a link's query string. The site never sets `gl-src`, so nothing else changes. The other 14 embeds and `hypothalamus-3d.js` are byte-identical to `handoff-2026-10-21b`.
@@ -38,7 +42,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 1. **Apply the reference integration** (S, about 1 h including review)
    - Apply `beoptimal-landing-anatomy-figures.patch` from the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch) on a branch from `main` (`git apply`). It was made against `0f36c00`; on Oct 21 it applied cleanly there and to `main` at `0c0473c` (re-checked that afternoon with the A2 3-D embeds: build and QA pass).
-   - Copy `embeds/` from the `handoff-2026-10-21b` release into `public/figures/` (15 scripts plus `hypothalamus-3d.js`), or run `scripts/export-embeds.mjs`.
+   - Copy `embeds/` from the `handoff-2026-10-24` release into `public/figures/` (15 scripts, `hypothalamus-3d.js`, and `reveals/` with the three machines), or run `scripts/export-embeds.mjs`.
    - `yarn test` (80/80), `yarn build`, `yarn preview`.
 2. **Compliance look at the Menopause Protocol** (owner: Peter and the Protocol's reviewer)
    - Four figures go in the reviewed page: A9 in §3, Fig 1 and A3 in §5, A2 in §14.
@@ -61,11 +65,11 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 9. **Menopause care (sales page):** Fig 1 under the symptoms list, with a link to Protocol §5.
 10. **VO₂ max FAQ:** A5 inside "How is this different from my watch's estimate?"
 
-## Equipment films (approved Oct 19)
+## Equipment in 3-D (E1–E3 approved Oct 19; inline since Oct 24)
 
-1. **`EquipmentFilm` component** (S): a lazy, muted, looping `<video>` that picks the 16:9 or 9:16 web encode by viewport. It shows the poster under `prefers-reduced-motion` and reserves its aspect ratio.
-2. **Place E1, E2 and E3** on their service pages (S). Copy `figures/e*/assets/*-web-*.mp4` and the posters to `public/figures/reveals/`, and put a "Take it apart →" link to the page under each film.
-3. **E4 on the Longevity Protocol page**, §1.3 (S, optional).
+1. **Ship the three machines in 3-D** (S, done in the patch's second commit): `EquipmentReveal.tsx`, `REVEAL_RESERVE`, and the spots on the InBody 580, Creator 600 and VO₂ max pages. Copy `embeds/reveals/*.html` to `public/figures/reveals/`. Check them on a real iPhone and Android with the rest (task 4): a sideways drag turns the machine, a vertical swipe scrolls the page, and the buttons take it apart.
+2. **The films are optional now.** If you want a video somewhere (a hero, a social embed), the recipe is in ENGINEERING_HANDOFF.md, "Added Oct 19". The web encodes and posters are in the release's `equipment/`.
+3. **E4 (hand dynamometer)** isn't on the site for now.
 4. **Fix "32-inch" on the Creator 600 page** (XS). It's a 50″ display.
 
 ## Blocked

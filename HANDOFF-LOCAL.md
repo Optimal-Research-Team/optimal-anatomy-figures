@@ -164,6 +164,8 @@ Use `drive.mjs` for interaction (`click`, `wait`, `eval`, `shot`). Put anything 
 
 - **The 3-D hypothalamus has one master copy:** A2's `gl/` and `model.mjs`. The Ongoing Care deck syncs it with `tools/sync-hypo3d.mjs`, and its build refuses edited copies. The TV gets the built file with `npm run figures`. After changing it, rebuild here, re-sync the TV, and re-sync and rebuild the deck. See A2 NOTES, "The master copy of the 3-D brain".
 
+- **The machines in 3-D on the site (Oct 24):** E1–E3 show inline through `EquipmentReveal` (a sandboxed iframe of `figures/e*/embed/<slug>-apart.html`, which `figures/reveal-build.mjs` writes on the light build). The page posts its height to the parent. For screenshots of them, use `handoff/qa/viewport-shots.mjs`: drive.mjs's beyond-viewport capture leaves cross-origin frames blank.
+
 ## 9. Gotchas learned the hard way
 
 - **Audit "support":** grounded parts must be named `stand.*` or carry `meta.ground`.

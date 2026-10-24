@@ -12,10 +12,13 @@
 //   - figures with a lazy WebGL layer (A2, `hypothalamus`) bring it up: its chunk (hypothalamus-3d.js, next to
 //     the embed script) loads and the stage reports data-gl="on". If it stays on its SVG, the reason is printed
 //     (svg:load = the chunk isn't deployed next to optimal-fig-hypothalamus.js). Run QA on a machine with WebGL.
+//   - the machines in 3-D (E1–E3, `reveals` in placements.json): the slot exists (`[data-optimal-reveal="<slug>"]`),
+//     its sandboxed frame loads the take-apart page, and the page reports its height (the slot gets data-ready and
+//     the frame takes that height, so there's no inner scrollbar).
 // Then, for pages with such a figure, a second pass with WebGL switched off checks the SVG fallback: the card
 // still mounts and draws, the stage reports data-gl="svg:no-webgl2", nothing downloads the chunk, and the
 // console stays clean.
-// It saves a screenshot of each figure to handoff/qa/shots/. Exit code 1 if anything fails.
+// It saves a screenshot of each figure to handoff/qa/shots/ (viewport-shots.mjs). Exit code 1 if anything fails.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -38,16 +41,18 @@ const width = Number(opt("--width", "390"));
 const onlyRoute = opt("--route", null);
 // figures whose embed lazily adds one WebGL layer, and how to read its state
 const GL_FIGURES = { hypothalamus: { stage: ".a2-stage", chunk: "hypothalamus-3d.js" } };
-const { figures } = JSON.parse(readFileSync(join(here, "..", "placements.json"), "utf8"));
+const { figures, reveals = [] } = JSON.parse(readFileSync(join(here, "..", "placements.json"), "utf8"));
 const pages = new Map();
-for (const f of figures)
-  for (const p of f.placements) {
-    if (!p.route.startsWith("/")) continue; // pages that don't exist yet
-    if (onlyRoute && p.route !== onlyRoute) continue;
-    if (only !== "all" && !p.priority.startsWith(only)) continue;
-    if (!pages.has(p.route)) pages.set(p.route, []);
-    if (!pages.get(p.route).includes(f.slug)) pages.get(p.route).push(f.slug);
-  }
+// figures by slug; the machines in 3-D as "reveal:<slug>"
+for (const [list, key] of [[figures, (f) => f.slug], [reveals, (r) => `reveal:${r.slug}`]])
+  for (const f of list)
+    for (const p of f.placements) {
+      if (!p.route.startsWith("/")) continue; // pages that don't exist yet
+      if (onlyRoute && p.route !== onlyRoute) continue;
+      if (only !== "all" && !p.priority.startsWith(only)) continue;
+      if (!pages.has(p.route)) pages.set(p.route, []);
+      if (!pages.get(p.route).includes(key(f))) pages.get(p.route).push(key(f));
+    }
 if (!pages.size) {
   console.error(`No placements match${onlyRoute ? ` --route ${onlyRoute}` : ""} (--only ${only}).`);
   process.exit(1);
@@ -60,6 +65,22 @@ for (const [route, slugs] of pages) {
     const out = [];
     const tops = {};
     for (const slug of ${JSON.stringify(slugs)}) {
+      if (slug.startsWith('reveal:')) {
+        // a machine in 3-D: the framed take-apart page loads and reports its height
+        const name = slug.slice(7);
+        const slot = document.querySelector('[data-optimal-reveal="' + name + '"]');
+        if (!slot) { out.push(name + ' (3-D): NO SLOT'); continue; }
+        scrollTo({ top: slot.getBoundingClientRect().top + scrollY - 8, behavior: 'instant' });
+        let h = 0;
+        for (let i = 0; i < 100 && !h; i++) {
+          await new Promise((r) => setTimeout(r, 100));
+          const f = slot.querySelector('iframe');
+          if (slot.dataset.ready === 'true' && f) h = Math.round(f.getBoundingClientRect().height);
+        }
+        out.push(name + ' (3-D): ' + (h > 300 ? 'ok, frame ' + h + ' px' : 'FRAME DID NOT REPORT ITS HEIGHT'));
+        tops[slug] = Math.round(slot.getBoundingClientRect().top + scrollY);
+        continue;
+      }
       const slot = document.querySelector('[data-optimal-fig="' + slug + '"]') || document.querySelector('optimal-fig-' + slug)?.closest('.optimal-figure');
       if (!slot) { out.push(slug + ': NO SLOT'); continue; }
       scrollTo({ top: slot.getBoundingClientRect().top + scrollY - 8, behavior: 'instant' }); // the site sets scroll-behavior: smooth
@@ -104,19 +125,23 @@ for (const [route, slugs] of pages) {
   const raw = (log.match(/eval: "(.*)"/) || [])[1] || "no result";
   const [result, topsJson] = raw.split(" @@");
   const consoleLine = (log.match(/console: .*/) || ["console: ?"])[0];
-  let bad = /NO SLOT|DID NOT MOUNT|SIDEWAYS|FAILED|no result/.test(result) || !/console: clean/.test(consoleLine);
+  let bad = /NO SLOT|DID NOT MOUNT|DID NOT REPORT|SIDEWAYS|FAILED|no result/.test(result) || !/console: clean/.test(consoleLine);
   // pass 2: a screenshot of the screen at each figure (visible viewport only)
   let tops = {};
   try {
     tops = JSON.parse(topsJson.replace(/\\"/g, '"'));
   } catch {}
-  const shots = [["wait", 2500]];
-  for (const slug of slugs) {
-    if (tops[slug] === undefined) continue;
-    const y = Math.max(0, tops[slug] - 8);
-    shots.push(["eval", `(scrollTo({ top: ${y}, behavior: 'instant' }), 0)`], ["wait", 1800], ["shot", join(here, "shots", `${route.replace(/\W+/g, "_")}-${slug}-${width}.png`), "html", 1, [0, y, width, 900]]);
+  // (a plain viewport capture: viewport-shots.mjs; drive.mjs's beyond-viewport capture misses cross-origin frames)
+  const shots = slugs
+    .filter((slug) => tops[slug] !== undefined)
+    .map((slug) => ({ y: Math.max(0, tops[slug] - 8), out: join(here, "shots", `${route.replace(/\W+/g, "_")}-${slug.replace("reveal:", "3d-")}-${width}.png`) }));
+  if (shots.length) {
+    try {
+      execFileSync("node", [join(here, "viewport-shots.mjs"), base + route, String(width), JSON.stringify(shots)], { stdio: "ignore" });
+    } catch (e) {
+      console.log(`  (screenshots failed for ${route}: ${e.message.split("\n")[0]})`);
+    }
   }
-  if (shots.length > 1) run(shots);
   console.log(`${bad ? "✗" : "✓"} ${route}  ${result}  ${consoleLine}`);
   // pass 3: no WebGL, for pages with a WebGL-layer figure: the SVG fallback mounts, draws and stays quiet
   if (slugs.some((s) => GL_FIGURES[s])) {

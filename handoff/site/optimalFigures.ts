@@ -41,6 +41,22 @@ export const FIGURE_RESERVE: Record<
 
 export type FigureSlug = keyof typeof FIGURE_RESERVE
 
+/**
+ * The clinic's machines in 3-D (E1–E3, see EquipmentReveal.tsx): each is a take-apart page shown in a sandboxed
+ * iframe from `REVEAL_BASE`. Heights (px) are the framed page at 358 px wide (390 px phones) and at 760 px. The
+ * frame resizes itself to the page's reported height once it loads; these only hold the space until then.
+ */
+export const REVEAL_BASE = '/figures/reveals'
+export const REVEAL_RESERVE: Record<
+  string,
+  { phone: number; desktop: number }
+> = {
+  'inbody-580': { phone: 1164, desktop: 1216 },
+  'creator-600': { phone: 825, desktop: 984 },
+  'kickr-bike': { phone: 927, desktop: 1005 },
+}
+export type RevealSlug = keyof typeof REVEAL_RESERVE
+
 const loading = new Map<string, Promise<void>>()
 
 /** Load a figure's script once; resolves when its custom element is defined. */

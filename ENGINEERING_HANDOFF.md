@@ -1,7 +1,7 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
 **Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b")
-**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-10-21b` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21b), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
+**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-10-24` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-24), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -21,7 +21,34 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `handoff/site/` | Drop-in files for `src/components/optimal-figures/`: `OptimalFigure.tsx`, `optimalFigures.ts`, `optimal-figures.css`. |
 | `scripts/export-embeds.mjs` | Copies the 15 built scripts, and A2's lazy 3-D chunk `hypothalamus-3d.js`, into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha; the chunk is listed under A2's `chunks`). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
-| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-10-21b` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-21b), along with the equipment films. |
+| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-10-24` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-24), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
+
+## Added Oct 24: the three machines in 3-D, on the page
+
+**Peter, Oct 24:** include the 3-D visualizers for the InBody 580, the Creator 600 (treadmill) and the KICKR Bike. Each machine is now shown **inline** on its service page as its interactive 3-D take-apart: drag to turn it, and its own buttons take it apart and run it. The hand dynamometer (E4) isn't part of this.
+
+| Fig | Machine | Page | Where (the patch does this) | Slot reserve, phone / desktop |
+|---|---|---|---|---|
+| E1 | InBody 580 | `/services/inbody-580` | Its own block right before "Why" (BEYOND THE SCALE), with gutter | 1164 / 1216 px |
+| E2 | Creator 600 (treadmill) | `/services/creator-600` | Its own block right after "Six measures", directly above Fig 4, with gutter | 825 / 984 px |
+| E3 | KICKR Bike | `/services/vo2-max-testing` | Inside "02 — Equipment", after the equipment cards, directly above Fig 5 | 927 / 1005 px |
+
+**How it works:** the `EquipmentReveal` component (`handoff/site/EquipmentReveal.tsx`, also in the patch).
+
+```tsx
+import EquipmentReveal from 'components/optimal-figures/EquipmentReveal'
+
+<EquipmentReveal slug="inbody-580" title="The InBody 580 in 3-D: drag to turn it, or use the buttons to take it apart" gutter />
+```
+
+- **The page in the frame:** each machine's take-apart page, embed version: `public/figures/reveals/<slug>-apart.html`, from `scripts/export-embeds.mjs` or the release's `embeds/reveals/`. Its own title block is dropped, because the site section has its heading, and its edges are transparent on the Cream theme. It's 0.8–1.1 MB (250–300 KB gzipped) because the fonts are embedded, and it makes no network requests.
+- **Security:** the frame is `sandbox="allow-scripts"`, so it has no access to the site's page, cookies or storage. Its one message out is `{ type: "optimal-reveal", slug, height }`, so the frame takes exactly the page's height, with no inner scrollbar. The component accepts that message only from its own frame.
+- **Lazy:** the frame is created when the slot comes within 800 px of the viewport. Until the height arrives, the slot holds `REVEAL_RESERVE` (measured at 358 and 760 px; the bike's phone value is measured inside the VO₂ page's padded section).
+- **Phones:** vertical swipes over the frame still scroll the page; a sideways drag turns the machine. Its buttons are real 44 px buttons; the page's hints switch to "tap" on touch screens.
+- **Reduced motion and keyboard:** both handled inside the page (arrow keys turn it; the letters on the plate work too).
+- **QA:** `check-embeds.mjs` now checks each machine: the slot exists, the frame loads and reports its height (`inbody-580 (3-D): ok, frame 1164 px`). Its screenshots now use a plain viewport capture (`handoff/qa/viewport-shots.mjs`), because the old beyond-viewport capture left cross-origin frames blank.
+
+**The films stay available** (the "Added Oct 19" section below) for the reception TV, social posts, or a video slot if you ever want one, but the site now shows the 3-D itself.
 
 ## Added Oct 21 (b): A2 real-time 3-D
 
@@ -87,7 +114,7 @@ The clinic's four testing machines are rebuilt part by part from their published
 - **Reduced motion:** with `prefers-reduced-motion`, show the poster only.
 - **Aspect ratio:** reserve it so the layout doesn't shift.
 
-**The take-apart pages** are full HTML documents (fonts embedded, 0.9–1.2 MB), not custom elements like the 15 figures. Ship them as files and link to them under the film: "Take it apart →" opens the page. Iframing works too, but needs a fixed height per breakpoint, and on a phone the link reads better. If Peter wants them inline later, we'll convert them to `<optimal-fig-*>` elements in this repo.
+**The take-apart pages** are full HTML documents (fonts embedded, 0.8–1.1 MB), not custom elements like the 15 figures. **Since Oct 24 the site shows E1–E3 inline**, framed by `EquipmentReveal` (see "Added Oct 24" above). The frame sizes itself from the page's reported height, so the old fixed-height problem is gone.
 
 **Source.** `reveals/<slug>/` holds the source and `REPORT.md` for each machine: spec with sources, assumptions, part counts, checks and how to rebuild. `reveals/SERIES-SPEC.md` holds the shared look and QA rules. The films take about 2 minutes of render per second of film, so they're committed as files, and the gallery build only copies them.
 
@@ -110,6 +137,7 @@ Line numbers refer to `beoptimal-landing@0f36c00`.
 | Fig | Element | Where | Pri |
 |---|---|---|---|
 | A4 The beating heart | `optimal-fig-heart` | Its own block right after `<SectionTracker section="Why">` ("Why measure it"), with gutter: the delivery side of VO₂max | P |
+| E3 The KICKR Bike, in 3-D | `<EquipmentReveal slug="kickr-bike">` | Inside "Equipment" ("02 — Equipment"), after the equipment cards and directly above Fig 5 | P |
 | 6 The treadmill ramp | `optimal-fig-vo2max-treadmill` | Inside "What to expect" ("01 — The test"), after the steps and the stop note | P |
 | 5 The ramp and the mask (bike) | `optimal-fig-vo2max` | Inside "Equipment" ("02 — Equipment"), after the equipment cards | P |
 | A5 The air sac | `optimal-fig-alveolus` | FAQ answer "How is this different from my watch's estimate?" | S |
@@ -117,6 +145,7 @@ Line numbers refer to `beoptimal-landing@0f36c00`.
 ### Creator 600: `/services/creator-600` (`src/pages/GaitAnalysisPage.tsx`)
 | Fig | Element | Where | Pri |
 |---|---|---|---|
+| E2 The Creator 600, in 3-D | `<EquipmentReveal slug="creator-600" gutter>` | Its own block after "Six measures", directly above Fig 4 | P |
 | 4 The runner rig | `optimal-fig-creator-600` | Its own block after `<SectionTracker section="Six measures">`, with gutter | P |
 | A7 The kneecap's load | `optimal-fig-knee` | Inside "Your report" ("AFTER THE RUN"), after the report preview | P |
 
@@ -127,6 +156,7 @@ Copy fixes on the same page:
 ### InBody 580: `/services/inbody-580` (`src/pages/InBody580Page.tsx`)
 | Fig | Element | Where | Pri |
 |---|---|---|---|
+| E1 The InBody 580, in 3-D | `<EquipmentReveal slug="inbody-580" gutter>` | Its own block right before "Why" (BEYOND THE SCALE) | P |
 | 2 Five cylinders on a bridge | `optimal-fig-inbody-580` | Its own block between "Why" ("BEYOND THE SCALE") and "Result sheet", with gutter | P |
 | A8 Water in and around the fibres | `optimal-fig-muscle-water` | Its own block right after "Result sheet", with gutter | P |
 
@@ -197,7 +227,7 @@ import OptimalFigure from 'components/optimal-figures/OptimalFigure'
 
 ## Ship the scripts
 
-1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the `handoff-2026-10-21b` release. Either way `public/figures/` gets the 15 `optimal-fig-*.js` scripts **and** `hypothalamus-3d.js`.
+1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the `handoff-2026-10-24` release. Either way `public/figures/` gets the 15 `optimal-fig-*.js` scripts, `hypothalamus-3d.js`, **and** `reveals/` (the three machines in 3-D).
 2. Total size is about 3.6 MB raw and 0.93 MB gzipped across all 15. A page only loads its own figures (1–4 per page), each 112–424 KB raw (35–94 KB gzipped). A2 also loads its 3-D chunk (634 KB raw, 169 KB gzipped) when it's near the screen on a device that can run it.
 3. Caching: the file names aren't hashed. Either serve `/figures/*` with `Cache-Control: public, max-age=3600, stale-while-revalidate=86400` (a `headers` entry in `vercel.json`), or version the folder (`/figures/2026-10-12/`) and set `FIGURE_BASE`. `manifest.json` has a sha per file, for cache-busting or CI checks.
 4. Don't hot-link GitHub Pages in production. It's the review gallery and it changes when we iterate.
