@@ -5,9 +5,10 @@
 //   <tag>/ENGINEERING_HANDOFF.md, DEV_TODO.md
 //   <tag>/placements.json           handoff/placements.json
 //   <tag>/export-embeds.mjs         scripts/export-embeds.mjs
-//   <tag>/qa/check-embeds.mjs       handoff/qa/check-embeds.mjs
+//   <tag>/qa/check-embeds.mjs       handoff/qa/check-embeds.mjs (+ viewport-shots.mjs, its screenshot helper)
 //   <tag>/site/                     handoff/site/ (drop-in component, loader, reserves)
-//   <tag>/embeds/                   the 15 embed scripts, their lazy chunks (A2: hypothalamus-3d.js), manifest.json
+//   <tag>/embeds/                   the 15 embed scripts, their lazy chunks (A2: hypothalamus-3d.js), manifest.json,
+//                                   and reveals/ (E1–E3 framed for the site)
 //   <tag>/equipment/<e*>/           web films, posters and take-apart pages for E1–E4
 //
 //   node scripts/package-handoff.mjs --tag handoff-2026-10-21b      # builds everything first
@@ -42,7 +43,7 @@ copyFileSync(join(root, "handoff", "README.md"), join(out, "README.md"));
 for (const f of ["ENGINEERING_HANDOFF.md", "DEV_TODO.md"]) copyFileSync(join(root, f), join(out, f));
 copyFileSync(join(root, "handoff", "placements.json"), join(out, "placements.json"));
 copyFileSync(join(root, "scripts", "export-embeds.mjs"), join(out, "export-embeds.mjs"));
-copyFileSync(join(root, "handoff", "qa", "check-embeds.mjs"), join(out, "qa", "check-embeds.mjs"));
+for (const f of ["check-embeds.mjs", "viewport-shots.mjs"]) copyFileSync(join(root, "handoff", "qa", f), join(out, "qa", f));
 cpSync(join(root, "handoff", "site"), join(out, "site"), { recursive: true });
 
 // equipment: the web encodes and posters (not the 1080p masters) and the built take-apart pages
