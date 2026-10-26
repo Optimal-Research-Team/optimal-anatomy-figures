@@ -6,7 +6,8 @@
 #
 # How: the figure page is widened (.iso-page 1080 px, stage ~1030 px) and captured through Chrome's screencast (JPEG
 # q95) with GPU flags, so WebGL figures run near real time; Playwright's own recorder smears the cream into grey blocks.
-# The stage is padded to 4:5 by smearing its own edge pixels (no seam), then the last 0.5 s fades into the first.
+# The stage is padded to 4:5 with its own edge pixels fading into the stage colour (no seam, no streaks), then the
+# last 0.5 s fades into the first.
 # Needs: Python Playwright + Google Chrome, ffmpeg, Pillow. Re-run after a figure's look changes, then commit the assets.
 import sys, os, json, base64, subprocess, threading, functools, http.server, socketserver, shutil, asyncio
 from playwright.async_api import async_playwright
@@ -66,10 +67,23 @@ async def one(b, d):
     if ph < h: ph = h; pw = round(ph * OW / OH)
     pw += pw % 2; ph += ph % 2
     L = (pw - w) // 2; T = (ph - h) // 2; Rr = pw - w - L; B = ph - h - T
-    # pad, then smear the stage's own edge pixels into the padding: no seam between stage and margin
-    vf = f'crop={w}:{h}:{x}:{y},pad={pw}:{ph}:{L}:{T}:color={hexbg},fillborders=left={L}:right={Rr}:top={T}:bottom={B}:mode=smear,scale={OW}:{OH}:flags=lanczos,fps=30'
+    # Margin to 4:5: the stage's own edge pixels smeared outward (no seam at the edge), fading into the flat stage
+    # colour over ~50 px (so a shadow that touches the edge softens instead of streaking to the frame).
+    import math
+    mask = Image.new('L', (pw, ph)); mp_ = mask.load()
+    for yy in range(ph):
+        dy = max(0, T - yy, yy - (T + h - 1))
+        for xx in range(pw):
+            dx = max(0, L - xx, xx - (L + w - 1))
+            mp_[xx, yy] = 255 if dx == 0 and dy == 0 else int(255 * math.exp(-math.hypot(dx, dy) / 50))
+    mask_png = os.path.join(tmp, 'mask.png'); mask.save(mask_png)
+    fc = (f'[0]crop={w}:{h}:{x}:{y},split[s1][s2];'
+          f'[s1]pad={pw}:{ph}:{L}:{T}:color={hexbg},fillborders=left={L}:right={Rr}:top={T}:bottom={B}:mode=smear,format=gbrp[sm];'
+          f'[s2]pad={pw}:{ph}:{L}:{T}:color={hexbg},format=gbrp[fl];'
+          f'[1]format=gray,format=gbrp[m];'
+          f'[fl][sm][m]maskedmerge,scale={OW}:{OH}:flags=lanczos,fps=30,format=yuv420p')
     mp4 = os.path.join(OUT, f'{d}.mp4')
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', lst, '-vf', vf, '-t', f'{SECS}', '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-pix_fmt', 'yuv420p', '-color_range', 'tv', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', mp4], check=True)
+    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', lst, '-loop', '1', '-i', mask_png, '-filter_complex', fc, '-t', f'{SECS}', '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-color_range', 'tv', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', mp4], check=True)
     shutil.rmtree(tmp, ignore_errors=True)
     dest = os.path.join(ROOT, 'figures', d, 'assets'); os.makedirs(dest, exist_ok=True)
     xf = "[0]split[a][b];[a]trim=0.5:6,setpts=PTS-STARTPTS[x];[b]trim=0:0.5,setpts=PTS-STARTPTS[y];[x][y]xfade=transition=fade:duration=0.5:offset=5.0,format=yuv420p"
