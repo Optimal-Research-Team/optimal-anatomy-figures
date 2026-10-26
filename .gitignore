@@ -15,3 +15,6 @@ handoff/package/
 
 # The framed 3-D take-apart pages for the site (figures/reveal-build.mjs writes them on the light build)
 figures/*/embed/*-apart.html
+
+# Gallery loop capture scratch (scripts/capture-previews.py)
+renders/_previews/

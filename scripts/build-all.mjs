@@ -72,77 +72,130 @@ for (const dir of dirs) {
 }
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const row = (p) => {
+// Each card leads with the figure itself: a 5.5 s seamless loop of its stage in motion (figures/<dir>/assets/
+// preview.mp4 + .jpg, recorded from the Cream page) or, for the machines, their 16:9 web film. Loops play only while
+// on screen, and with reduced motion the card shows the poster.
+const statusHtml = (s) => esc(s).replace(/\S+-\S+/g, (w) => `<span class="nw">${w}</span>`);
+const card = (p) => {
   const b = built.get(p.dir);
   const title = b?.title ?? p.title;
   const line = b?.line ?? p.line;
   const status = b?.status ?? (b ? "Draft" : "Planned");
   const light = b?.pages.find((f) => f.endsWith("-light.html"));
   const dark = b?.pages.find((f) => !f.endsWith("-light.html"));
-  // Theme links and film links sit in their own rows, so a row of four never wraps into 3 + 1.
+  const machine = p.group === "equipment";
+  const slug = p.dir.replace(/^[a-z]?\d+-/, "");
+  const media = machine
+    ? { poster: `${p.dir}/assets/${slug}-16x9.jpg`, src: `${p.dir}/assets/${slug}-web-16x9.mp4` }
+    : { poster: `${p.dir}/assets/preview.jpg`, src: `${p.dir}/assets/preview.mp4` };
+  const has = existsSync(join(dist, media.poster));
+  const open = light ? `${p.dir}/${light}` : null;
   const films = (b?.films || []).map((f) => `<a href="${p.dir}/${esc(f.href)}">${esc(f.label)}</a>`).join("");
   const links = b
-    ? `<div class="links">${light ? `<a href="${p.dir}/${light}">Cream</a>` : ""}${dark ? `<a href="${p.dir}/${dark}">Forest night</a>` : ""}</div>` +
-      (films ? `<div class="links films">${films}</div>` : "")
+    ? `<div class="links">${open ? `<a class="go" href="${open}">${machine ? "Take it apart" : "Open"} <span aria-hidden="true">→</span></a>` : ""}${dark ? `<a href="${p.dir}/${dark}">Forest night</a>` : ""}${films}</div>`
     : `<span class="soon">Not built yet</span>`;
-  return `<li class="${b ? "is-built" : ""}">
-    <div class="n">Fig ${p.n}</div>
-    <div class="body"><h2>${esc(title)}</h2><p>${esc(line)}</p></div>
-    <div class="meta"><span class="status">${esc(status).replace(/\S+-\S+/g, (w) => `<span class="nw">${w}</span>`)}</span>${links}</div>
-  </li>`;
+  const mediaHtml = has
+    ? `<video muted loop playsinline preload="none" poster="${media.poster}" data-src="${media.src}" aria-hidden="true" tabindex="-1"></video>`
+    : `<div class="placeholder" aria-hidden="true">Fig ${esc(p.n)}</div>`;
+  return `<article class="card${machine ? " machine" : ""}">
+    ${open ? `<a class="media" href="${open}" tabindex="-1" aria-hidden="true">${mediaHtml}</a>` : `<div class="media">${mediaHtml}</div>`}
+    <div class="text">
+      <div class="kicker"><span class="n">Fig ${esc(p.n)}</span><span class="status${b ? " is-built" : ""}">${statusHtml(status)}</span></div>
+      <h2>${open ? `<a href="${open}">${esc(title)}</a>` : esc(title)}</h2>
+      <p>${esc(line)}</p>
+      ${links}
+    </div>
+  </article>`;
 };
-const rows = PLAN.filter((p) => !p.group).map(row).join("\n");
-const equipment = PLAN.filter((p) => p.group === "equipment").map(row).join("\n");
+const figuresHtml = PLAN.filter((p) => !p.group).map(card).join("\n");
+const machinesHtml = PLAN.filter((p) => p.group === "equipment").map(card).join("\n");
+const nFig = PLAN.filter((p) => !p.group).length, nMach = PLAN.filter((p) => p.group === "equipment").length;
 
 writeFileSync(join(dist, "index.html"), `<!doctype html>
 <html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Optimal Figures</title>
+<meta name="description" content="Interactive figures for Optimal Health's services: each one a carefully built machine whose motion is the medical idea.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232c4e25' stroke-width='4'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Castoro:ital@0;1&family=Public+Sans:wght@400;500;600&display=swap">
 <style>
-:root{--cream:#fffcf7;--page:#fef8f1;--ink:#252525;--body:#3e3d39;--muted:#76736d;--rule:rgba(44,78,37,.22);--forest:#2c4e25;--sage:#5e7a59}
-*{box-sizing:border-box}html,body{margin:0;background:var(--page);color:var(--ink);font:400 16px/1.55 "Public Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-main{max-width:880px;margin:0 auto;padding:56px 16px 80px}
+:root{--cream:#fffcf7;--page:#fbf6ee;--ink:#252525;--body:#3e3d39;--muted:#716e68;--rule:rgba(44,78,37,.16);--rule-strong:rgba(44,78,37,.42);--forest:#2c4e25;--sage:#5e7a59}
+*{box-sizing:border-box}html,body{margin:0;background:var(--page);color:var(--ink);font:400 16px/1.55 "Public Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","tnum" 0}
+main{max-width:1200px;margin:0 auto;padding:clamp(40px,7vw,80px) 20px 88px}
 .eyebrow{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--sage)}
-h1{font:400 clamp(40px,8vw,64px)/.98 Castoro,Georgia,serif;letter-spacing:-.04em;color:var(--forest);margin:14px 0 14px}
-h1 em{font-style:italic}
-.lede{max-width:560px;color:var(--body);margin:0 0 40px}
-ol{list-style:none;margin:0;padding:0;border-top:1px solid var(--forest)}
-li{display:grid;grid-template-columns:64px minmax(0,1fr) 232px;gap:20px;align-items:start;padding:22px 0;border-bottom:1px solid var(--rule)}
-.n{font:italic 400 15px Castoro,Georgia,serif;color:var(--sage);padding-top:4px}
-h2{font:400 24px/1.1 Castoro,Georgia,serif;letter-spacing:-.02em;color:var(--forest);margin:0 0 6px;text-wrap:balance}
-p{margin:0;color:var(--body);font-size:14.5px}
-.meta{text-align:right;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
-.status+.links{margin-top:2px}
-.status{font-size:10.5px;font-weight:600;line-height:1.5;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-wrap:balance;padding-top:3px}
-li.is-built .status{color:var(--forest)}
+h1{font:400 clamp(42px,7.4vw,76px)/.96 Castoro,Georgia,serif;letter-spacing:-.04em;color:var(--forest);margin:14px 0 18px;text-wrap:balance}
+h1 em,h3 em{font-style:italic}
+.lede{max-width:600px;color:var(--body);margin:0;font-size:17px}
+.facts{display:flex;flex-wrap:wrap;gap:4px 22px;margin:18px 0 0;font-size:13.5px;color:var(--muted)}
+.facts b{color:var(--forest);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-flow:dense;gap:44px 28px;margin-top:44px;padding-top:32px;border-top:1px solid var(--forest)}
+.card{display:flex;flex-direction:column;gap:16px;min-width:0}
+.media{position:relative;display:block;aspect-ratio:4/5;border-radius:18px;overflow:hidden;background:var(--cream);border:1px solid var(--rule);transition:border-color .3s ease;isolation:isolate}
+.media video,.media .placeholder{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.placeholder{display:grid;place-items:center;font:italic 400 22px Castoro,Georgia,serif;color:var(--sage)}
+.card:hover .media{border-color:var(--rule-strong)}
+.card:hover .media video{transform:scale(1.015)}
+.text{display:grid;gap:7px;padding-inline:2px}
+.kicker{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.n{font:italic 400 15px Castoro,Georgia,serif;color:var(--sage);white-space:nowrap}
+.status{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:right;line-height:1.5}
+.status.is-built{color:var(--forest)}
 .nw{white-space:nowrap}
-.links{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.links a{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--forest);color:var(--forest);text-decoration:none;font-size:14px;font-weight:500}
-.links:not(.films) a:first-child{background:var(--forest);color:var(--cream)}
-.films a::before{content:"";width:0;height:0;margin-right:8px;border-left:7px solid currentColor;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent}
+h2{font:400 25px/1.1 Castoro,Georgia,serif;letter-spacing:-.02em;color:var(--forest);margin:2px 0 0;text-wrap:balance}
+h2 a{color:inherit;text-decoration:none}
+h2 a:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+p{margin:0;color:var(--body);font-size:14.5px;max-width:62ch}
+.links{display:flex;flex-wrap:wrap;gap:0 18px;margin-top:4px}
+.links a{display:inline-flex;align-items:center;min-height:44px;color:var(--muted);font-size:14px;font-weight:500;text-decoration:none}
+.links a:hover{color:var(--forest);text-decoration:underline;text-underline-offset:4px}
+.links a.go{color:var(--forest);font-weight:600}
+.links a.go span{display:inline-block;margin-left:6px;transition:transform .25s ease}
+.links a.go:hover span{transform:translateX(3px)}
+a:focus-visible{outline:2px solid var(--forest);outline-offset:3px;border-radius:6px}
 .soon{font-size:13px;color:var(--muted)}
-h3.group{font:400 clamp(28px,5vw,36px)/1.05 Castoro,Georgia,serif;letter-spacing:-.03em;color:var(--forest);margin:56px 0 10px}
-h3.group em{font-style:italic}
-footer{margin-top:40px;font-size:12.5px;color:var(--muted)}
+h3.group{font:400 clamp(30px,5vw,44px)/1.02 Castoro,Georgia,serif;letter-spacing:-.03em;color:var(--forest);margin:88px 0 12px;text-wrap:balance}
+.grid.machines{grid-template-columns:repeat(2,minmax(0,1fr))}
+.machine .media{aspect-ratio:16/9;background:#f4efe6}
+.machine .media video{object-fit:cover}
+footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted)}
 footer a{color:var(--forest)}
-@media (max-width:640px){li{grid-template-columns:1fr;gap:8px}.meta{text-align:left;align-items:flex-start}.links{justify-content:flex-start}.status{padding-top:0}}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 22px}}
+@media (max-width:640px){.grid,.grid.machines{grid-template-columns:minmax(0,1fr);gap:40px}main{padding-inline:16px}}
+@media (prefers-reduced-motion:reduce){.media video{transition:none}.card:hover .media video{transform:none}}
 </style></head>
 <body><main>
 <div class="eyebrow">Optimal Health · Barrie</div>
 <h1>How it <em>works</em>, as machines.</h1>
 <p class="lede">Interactive figures for Optimal's services. Each one is a real, carefully built machine whose motion is the medical idea, driven by real numbers.</p>
-<ol>
-${rows}
-</ol>
+<div class="facts"><span><b>${nFig}</b> figures</span><span><b>${nMach}</b> machines, taken apart</span><span>Cream and Forest night themes</span></div>
+<section class="grid" aria-label="Figures">
+${figuresHtml}
+</section>
 <h3 class="group">Equipment, <em>taken apart</em></h3>
 <p class="lede">The clinic's machines, built part by part from their published dimensions. Turn each one, take it apart, or play its film.</p>
-<ol>
-${equipment}
-</ol>
+<section class="grid machines" aria-label="Equipment">
+${machinesHtml}
+</section>
 <footer>Built with <a href="https://github.com/wheresryan22/anatomy">Anatomy</a> (MIT). Explainers only, not medical advice. Your NP interprets your results.</footer>
-</main></body></html>
+</main>
+<script>
+(() => {
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const videos = [...document.querySelectorAll('.media video[data-src]')];
+  if (still || !('IntersectionObserver' in window)) return;
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      const v = e.target;
+      if (e.isIntersecting) {
+        if (!v.src) { v.src = v.dataset.src; v.preload = 'auto'; }
+        v.play().catch(() => {});
+      } else if (!v.paused) v.pause();
+    }
+  }, { threshold: 0.35 });
+  videos.forEach((v) => io.observe(v));
+})();
+</script>
+</body></html>
 `);
 console.log(`gallery → dist/index.html (${built.size}/${PLAN.length} built)`);
