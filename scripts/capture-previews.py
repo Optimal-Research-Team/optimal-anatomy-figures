@@ -77,9 +77,10 @@ async def one(b, d):
             dx = max(0, L - xx, xx - (L + w - 1))
             mp_[xx, yy] = 255 if dx == 0 and dy == 0 else int(255 * math.exp(-math.hypot(dx, dy) / 50))
     mask_png = os.path.join(tmp, 'mask.png'); mask.save(mask_png)
-    fc = (f'[0]crop={w}:{h}:{x}:{y},split[s1][s2];'
-          f'[s1]pad={pw}:{ph}:{L}:{T}:color={hexbg},fillborders=left={L}:right={Rr}:top={T}:bottom={B}:mode=smear,format=gbrp[sm];'
-          f'[s2]pad={pw}:{ph}:{L}:{T}:color={hexbg},format=gbrp[fl];'
+    # everything in RGB before padding, so the margin colour and the stage pixels go through the same conversion
+    fc = (f'[0]format=gbrp,crop={w}:{h}:{x}:{y},split[s1][s2];'
+          f'[s1]pad={pw}:{ph}:{L}:{T}:color={hexbg},fillborders=left={L}:right={Rr}:top={T}:bottom={B}:mode=smear[sm];'
+          f'[s2]pad={pw}:{ph}:{L}:{T}:color={hexbg}[fl];'
           f'[1]format=gray,format=gbrp[m];'
           f'[fl][sm][m]maskedmerge,scale={OW}:{OH}:flags=lanczos,fps=30,format=yuv420p')
     mp4 = os.path.join(OUT, f'{d}.mp4')
