@@ -5,9 +5,14 @@ import * as k from "../kit/iso-kit.mjs";
 import { turnScript } from "../scripts/inline-kit.mjs";
 import { scene, PAGE_HELPERS } from "./scene.mjs";
 import { FILM, FIGURE, FEATURE_KEYS } from "./film.mjs";
+import { gl3Wire } from "../../../shared/gl3/wire.mjs";
 import { fontFaceCss } from "../scripts/fonts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// the shared 3-D layer renders the parts; the turn runtime's SVG stays on top as ink (reveals/gl3-turn.js)
+const GL3W = gl3Wire();
+const GL3_TURN = readFileSync(join(HERE, "../../gl3-turn.js"), "utf8");
+const GL3_CSS = `${GL3W.css}\n.ar-stage[data-gl3="on"] .iso-halo{display:block}`;
 const theme = process.argv.includes("--light") ? "light" : "dark";
 const W = 640;
 const H = 600;
@@ -24,6 +29,7 @@ ${fontFaceCss()}
 ${readFileSync(join(HERE, "optimal.css"), "utf8")}
 ${readFileSync(join(HERE, "figure.css"), "utf8")}
 ${SERIES_CSS}
+${GL3_CSS}
 .ar-stage{cursor:grab;outline:none;touch-action:none}
 .ar-stage:active{cursor:grabbing}
 .ar-stage:focus-visible{box-shadow:0 0 0 1px var(--anatomy-mid)}
@@ -55,12 +61,12 @@ const plate = plateRaw
   .replace("<figcaption", `${controls}<figcaption`);
 const body = head + plate + keyHelp + note;
 const film = readFileSync(join(HERE, "film.mjs"), "utf8").replace(/^export /gm, "");
-const DATA = { turn: S.out.data, explode: S.obj.explode, basis: S.basis, parts: counts.parts };
+const DATA = { turn: S.out.data, explode: S.obj.explode, basis: S.basis, parts: counts.parts, gl3: { ...GL3W.chunk, slug: "grip-dynamometer" } };
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8")
   .replace("__DATA__", JSON.stringify(DATA))
   .replace("__HELPERS__;", PAGE_HELPERS)
   .replace("__FILM__;", film);
-const page = k.pageHtml({ title: "Hand dynamometer, taken apart · Optimal Health", theme, body, script: turnScript() + LIVE, width: 760 });
+const page = k.pageHtml({ title: "Hand dynamometer, taken apart · Optimal Health", theme, body, script: turnScript() + GL3W.host + "\n" + GL3_TURN + "\n" + LIVE, width: 760 });
 const name = `figure${theme === "light" ? "-light" : ""}.html`;
 // an inline icon, so the gallery doesn't log a /favicon.ico 404 on every page
 writeFileSync(join(HERE, name), page.replace("<title>", `<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232c4e25' stroke-width='4'/%3E%3C/svg%3E"><title>`));

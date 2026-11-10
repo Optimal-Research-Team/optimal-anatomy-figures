@@ -9,6 +9,9 @@
 const GL3_BASE = (() => {
   try {
     const s = document.currentScript;
+    // a page may say where the chunk is (window.OPTIMAL_GL3_BASE, relative to the page); an embed script's own URL
+    // is the base otherwise, and a standalone figure page keeps the chunk in embed/
+    if (window.OPTIMAL_GL3_BASE) return new URL(window.OPTIMAL_GL3_BASE, document.baseURI).href;
     return s && s.src ? s.src : new URL("embed/", document.baseURI).href;
   } catch (_) {
     return "";
@@ -62,7 +65,10 @@ function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redr
   let last = 0;
   let slow = 0;
   let run = 0;
+  let strikes = 0;
+  const paced = new URLSearchParams(location.search).get("gl3pace") !== "off"; // QA can hold full quality
   const pace = () => {
+    if (!paced) return;
     const now = performance.now();
     const dt = now - last;
     last = now;
@@ -70,7 +76,9 @@ function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redr
     run++;
     if (dt > 30) slow++;
     if (run >= 45) {
-      if (slow > 18 && L.quality() > 0) L.quality(L.quality() - 1);
+      // two slow stretches in a row, so one hiccup (a tab waking, another page loading) costs nothing
+      strikes = slow > 20 ? strikes + 1 : 0;
+      if (strikes >= 2 && L.quality() > 0) { L.quality(L.quality() - 1); strikes = 0; }
       slow = 0;
       run = 0;
     }
@@ -79,6 +87,7 @@ function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redr
     on: false,
     figure(key, parts, materialOf) { if (L) L.figure(key, parts, materialOf); },
     move(piece, vec) { if (L) L.move(piece, vec); },
+    pose(piece, R, t) { if (L) L.pose(piece, R, t); },
     set(name, what) { return L ? L.set(name, what) : false; },
     add(desc) { return L ? L.add(desc) : false; },
     update(state) { if (L) L.update(state); },

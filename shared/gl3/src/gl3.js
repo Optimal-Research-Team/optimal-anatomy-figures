@@ -103,6 +103,7 @@ const PRESETS = {
   bone: { color: 0xe7dfd0, roughness: 0.62 },
   sage: { color: 0xa7b89d, roughness: 0.46, clearcoat: 0.3, clearcoatRoughness: 0.38 },
   forest: { color: 0x2f5227, roughness: 0.4, clearcoat: 0.5, clearcoatRoughness: 0.3 },
+  moss: { color: 0x596a53, roughness: 0.46, clearcoat: 0.35, clearcoatRoughness: 0.35 },
   slate: { color: 0x5c675d, roughness: 0.5, metalness: 0.2 },
   graphite: { color: 0x30362f, roughness: 0.5, metalness: 0.25 },
   rubber: { color: 0x22261f, roughness: 0.88 },
@@ -699,10 +700,15 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   // camera, which is the kit's projection exactly. Lights and the floor live in the same mirrored space.
   const cam = new THREE.OrthographicCamera((0 - P.origin[0]) / k, (W - P.origin[0]) / k, P.origin[1] / k, (P.origin[1] - H) / k, 1, 6000);
   cam.matrixAutoUpdate = false;
-  cam.matrix.makeBasis(r.clone().negate(), u, d).setPosition(d.clone().multiplyScalar(3000));
-  cam.matrixWorld.copy(cam.matrix);
-  cam.matrixWorldInverse.copy(cam.matrix).invert();
-  cam.updateProjectionMatrix();
+  const placeCamera = (dist) => {
+    cam.near = dist * 0.01;
+    cam.far = dist * 2;
+    cam.matrix.makeBasis(r.clone().negate(), u, d).setPosition(d.clone().multiplyScalar(dist));
+    cam.matrixWorld.copy(cam.matrix);
+    cam.matrixWorldInverse.copy(cam.matrix).invert();
+    cam.updateProjectionMatrix();
+  };
+  placeCamera(3000);
   const mirror = new THREE.Group();
   mirror.matrixAutoUpdate = false;
   mirror.matrix.set(1 - 2 * r.x * r.x, -2 * r.x * r.y, 0, 0, -2 * r.x * r.y, 1 - 2 * r.y * r.y, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
@@ -803,6 +809,10 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   const span = Math.max(size.x, size.y, size.z);
   const groundZ = scene.ground ?? box.min.z;
   const look = scene.look || {};
+  // `unit`: how many of the scene's units make a centimetre (1 for the figures, 10 for a model built in millimetres).
+  // Distances the passes use (shadow bias, occlusion radius) scale with it.
+  const unit = look.unit ?? 1;
+  if (span > 600) placeCamera(span * 5);
 
   const key = new THREE.DirectionalLight(0xfff4e6, night ? 3.3 : 3.0);
   // from above, a little left of the camera and toward it: tops lightest, shadows falling back and to the right
@@ -821,7 +831,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   sc.near = 1;
   sc.far = span * 5;
   key.shadow.bias = -0.0005;
-  key.shadow.normalBias = 0.6;
+  key.shadow.normalBias = 0.6 * unit;
   key.shadow.radius = coarse ? 7 : 9; // wide: the key is a big softbox, so its shadow is soft
   key.shadow.blurSamples = coarse ? 10 : 16;
   mirror.add(key, key.target);
@@ -858,13 +868,15 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     ground: groundZ,
     span,
     lightDir: keyDir.clone().transformDirection(mirror.matrix),
-    height: look.contactHeight ?? clamp(span * 0.14, 12, 38),
+    height: look.contactHeight ?? clamp(span * 0.14, 12 * unit, 38 * unit),
     color: night ? 0x000000 : 0x3d3320,
     cast: (look.cast ?? 1) * (night ? 0.55 : 0.26),
     contact: (look.contact ?? 1) * (night ? 0.85 : 0.7),
     res,
   });
   world.add(ground.plane);
+  const floorless = look.cast === 0 && look.contact === 0; // an object turning in space (the take-apart pages)
+  ground.plane.visible = !floorless;
   const groundOnly = [ground.plane].concat(pool ? [pool] : []);
 
   // ── dynamic figures (the mannequin): parts keyed by name, geometry built once, frames updated every call
@@ -925,7 +937,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
       const aoScale = level === 2 ? (pw * ph > 2.6e6 ? 0.75 : 1) : 0.5;
       gtao.setSize(Math.max(2, Math.round(pw * aoScale)), Math.max(2, Math.round(ph * aoScale)));
       gtao.blendIntensity = look.ao ?? 1;
-      const aoR = look.aoRadius ?? clamp(span * 0.045, 4, 12); // world units (cm); `thickness` is too, so it scales with the radius
+      const aoR = look.aoRadius ?? clamp(span * 0.045, 4 * unit, 12 * unit); // world units (cm); `thickness` is too, so it scales with the radius
       gtao.updateGtaoMaterial({ radius: aoR, distanceExponent: 1.2, thickness: aoR * 2.2, distanceFallOff: 1, scale: 1.7, samples: level === 2 ? 16 : 8, screenSpaceRadius: false });
       gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: level === 2 ? 6 : 4, radiusExponent: 1.4, rings: 2, samples: level === 2 ? 16 : 8 });
     }
@@ -962,8 +974,8 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     resize,
     render() {
       if (lost || !cssW) return;
-      const hidden = groundOnly.concat(ghosts.filter((g) => g.visible));
-      ground.update(renderer, world, hidden);
+      const hidden = groundOnly.filter((o) => o.visible).concat(ghosts.filter((g) => g.visible));
+      if (!floorless) ground.update(renderer, world, hidden);
       renderer.setRenderTarget(beauty);
       renderer.setClearColor(0x000000, 0);
       renderer.clear();
@@ -998,6 +1010,16 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     move(piece, v) {
       const g = pieces.get(piece);
       if (g) g.position.set(v[0], v[1], v[2]);
+    },
+    /**
+     * Rigid pose of a piece: world = R·p + t, R a 3 × 3 rotation in row order (the kit's turn runtime hands these
+     * out per group, every frame).
+     */
+    pose(piece, R, t) {
+      const g = pieces.get(piece);
+      if (!g) return;
+      g.matrixAutoUpdate = false;
+      g.matrix.set(R[0], R[1], R[2], t[0], R[3], R[4], R[5], t[1], R[6], R[7], R[8], t[2], 0, 0, 0, 1);
     },
     /**
      * Change a named part: its frame ({ o, a, u, v }; the vectors may be scaled, which stretches the part), whether

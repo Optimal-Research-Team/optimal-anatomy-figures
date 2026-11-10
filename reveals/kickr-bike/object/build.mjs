@@ -5,8 +5,13 @@ import * as k from "../kit/iso-kit.mjs";
 import { turnScript } from "../scripts/inline-kit.mjs";
 import { scene, PAGE_HELPERS } from "./scene.mjs";
 import { FILM, FIGURE, FEATURE_KEYS } from "./film.mjs";
+import { gl3Wire } from "../../../shared/gl3/wire.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// the shared 3-D layer renders the parts; the turn runtime's SVG stays on top as ink (reveals/gl3-turn.js)
+const GL3W = gl3Wire();
+const GL3_TURN = readFileSync(join(HERE, "../../gl3-turn.js"), "utf8");
+const GL3_CSS = `${GL3W.css}\n.ar-stage[data-gl3="on"] .iso-halo{display:block}`;
 const theme = process.argv.includes("--light") ? "light" : "dark";
 const W = 640;
 const H = 600;
@@ -43,7 +48,8 @@ ${S.out.css}
 .ar-stage:focus-visible{box-shadow:0 0 0 1px var(--anatomy-mid)}
 .iso-face-text[data-tone="lit"]{fill:var(--anatomy-lit)}
 .iso-face-text[data-tone="mid"]{fill:var(--anatomy-mid)}
-${SERIES_CSS}`;
+${SERIES_CSS}
+${GL3_CSS}`;
 const halo = `<ellipse cx="${W / 2}" cy="${H * 0.72}" rx="${W * 0.17}" ry="${H * 0.022}" class="iso-halo" style="filter:blur(8px)"/>`;
 const aria = `${FIGURE.title}: drag to turn it, hover to take it apart; arrow keys turn it, A takes it apart${keySpeech ? `, ${keySpeech}` : ""}`;
 const stage = `<div class="iso-stage iso-turn ar-stage" tabindex="0" role="slider" aria-label="${aria}" aria-valuetext="assembled">${k.figureSvg({ width: W, height: H, label: fill(FIGURE.label), body: halo })}${S.out.layerSvg("live", { width: W, height: H })}</div>`;
@@ -59,7 +65,7 @@ const body = header + k.plateHtml({
   body: `<style>${css}</style>${stage}`,
 });
 const film = readFileSync(join(HERE, "film.mjs"), "utf8").replace(/^export /gm, "");
-const DATA = { turn: S.out.data, explode: S.obj.explode, basis: S.basis, parts: counts.parts };
+const DATA = { turn: S.out.data, explode: S.obj.explode, basis: S.basis, parts: counts.parts, gl3: { ...GL3W.chunk, slug: "kickr-bike" } };
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8")
   .replace("__DATA__", JSON.stringify(DATA))
   .replace("__HELPERS__;", PAGE_HELPERS)
@@ -68,7 +74,7 @@ const BUTTON_LABEL = { c: "Turn the cranks", o: "Lift the cover", s: "Raise the 
 const controls = `<div class="ar-controls" role="group" aria-label="Controls"><button type="button" class="ar-btn" data-act="apart" aria-pressed="false">Take apart</button>${FEATURE_KEYS.map((f) => `<button type="button" class="ar-btn" data-act="${f.key}"${f.values ? ' aria-pressed="false"' : ""}>${BUTTON_LABEL[f.key] ?? f.verb}</button>`).join("")}</div>`;
 const hoverHint = `Drag to turn · hover to take apart${keyList ? ` · ${keyList}` : ""}`;
 const page = k
-  .pageHtml({ title: "KICKR Bike, taken apart · Optimal Health", theme, body, script: turnScript() + LIVE, width: 760 })
+  .pageHtml({ title: "KICKR Bike, taken apart · Optimal Health", theme, body, script: turnScript() + GL3W.host + "\n" + GL3_TURN + "\n" + LIVE, width: 760 })
   .replace("VO2_SUB", "VO<sub>2</sub>")
   .replace(`data-corner="hint">${hoverHint}</span>`, `data-corner="hint"><span class="h-hover">${hoverHint}</span><span class="h-touch">Drag to turn · tap to take apart</span></span>`)
   .replace(`</div><figcaption class="iso-legend">`, `</div>${controls}<figcaption class="iso-legend">`);

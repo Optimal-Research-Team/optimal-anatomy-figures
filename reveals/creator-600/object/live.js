@@ -35,6 +35,10 @@ const live = svgs[svgs.length - 1];
 const halo = svgs[0].querySelector(".iso-halo");
 const VB = svgs[0].getAttribute("viewBox").split(" ").map(Number);
 const view = { zoom: 1.4, cx: VB[2] / 2, cy: VB[3] / 2, y1: VB[3] * 0.7, w: VB[2] * 0.4 };
+// The 3-D layer (shared/gl3): the parts as rendered bodies under the drawing, which stays on top as ink
+// (reveals/gl3-turn.js holds the bridge and the series' colourway).
+const viewRect = [0, 0, VB[2], VB[3]];
+const GL = gl3Turn(stage, DATA.turn, { slug: DATA.gl3.slug, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => paint(0) });
 function frameView(dt) {
   const b = live.getBBox();
   if (!b.width) return;
@@ -50,6 +54,10 @@ function frameView(dt) {
   const h = VB[3] / view.zoom;
   const vb = `${(view.cx - w / 2).toFixed(2)} ${(view.cy - h / 2).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)}`;
   for (const svg of svgs) svg.setAttribute("viewBox", vb);
+  viewRect[0] = view.cx - w / 2;
+  viewRect[1] = view.cy - h / 2;
+  viewRect[2] = w;
+  viewRect[3] = h;
   halo.setAttribute("cx", view.cx.toFixed(2));
   halo.setAttribute("cy", (view.y1 + 10 / view.zoom + 6).toFixed(2));
   halo.setAttribute("rx", (view.w * 0.34).toFixed(2));
@@ -59,6 +67,7 @@ function paint(dt = 0) {
   ctl.set({ root: { R: orient(drawn.yaw, drawn.pitch, 0) }, ...featureValues(drawn, explodeValues(drawn.apart)) });
   if (typeof featureDom === "function") featureDom(stage, drawn);
   frameView(dt);
+  GL.sync(ctl, viewRect);
   const custom = typeof featureReadout === "function" ? featureReadout(drawn) : null;
   const state = custom
     ? custom

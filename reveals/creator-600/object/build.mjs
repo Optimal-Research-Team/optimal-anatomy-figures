@@ -5,9 +5,14 @@ import * as k from "../kit/iso-kit.mjs";
 import { turnScript } from "../scripts/inline-kit.mjs";
 import { scene, PAGE_HELPERS } from "./scene.mjs";
 import { FILM, FIGURE, FEATURE_KEYS } from "./film.mjs";
+import { gl3Wire } from "../../../shared/gl3/wire.mjs";
 import { fontCss } from "../scripts/fonts.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// the shared 3-D layer renders the parts; the turn runtime's SVG stays on top as ink (reveals/gl3-turn.js)
+const GL3W = gl3Wire();
+const GL3_TURN = readFileSync(join(HERE, "../../gl3-turn.js"), "utf8");
+const GL3_CSS = `${GL3W.css}\n.ar-stage[data-gl3="on"] .iso-halo{display:block}`;
 const theme = process.argv.includes("--light") ? "light" : "dark";
 const W = 640;
 const H = 600;
@@ -34,7 +39,8 @@ const css = `${S.out.css}
 .iso-face-text[data-tone="lit"]{fill:var(--anatomy-lit)}
 .iso-face-text[data-tone="mid"]{fill:var(--anatomy-mid)}
 ${OPTIMAL}
-${SERIES_CSS}`;
+${SERIES_CSS}
+${GL3_CSS}`;
 const halo = `<ellipse cx="${W / 2}" cy="${H * 0.72}" rx="${W * 0.17}" ry="${H * 0.022}" class="iso-halo" style="filter:blur(8px)"/>`;
 const aria = `${FIGURE.title}: drag to turn it, hover to take it apart; arrow keys turn it, A takes it apart${keySpeech ? `, ${keySpeech}` : ""}`;
 const stage = `<div class="iso-stage iso-turn ar-stage" tabindex="0" role="slider" aria-label="${aria}" aria-valuetext="assembled">${k.figureSvg({ width: W, height: H, label: fill(FIGURE.label), body: halo })}${S.out.layerSvg("live", { width: W, height: H })}</div>`;
@@ -56,12 +62,12 @@ const figureHtml = body
 if (figureHtml === body) throw new Error("figure: could not place the controls or the touch hint");
 const header = `<header class="ar-head"><p class="ar-eyebrow">${FILM.fig}</p><h1>Creator 600, <em>taken apart</em></h1><p class="ar-sub">${counts.parts} parts: a depth camera under a 50-inch portrait screen that tracks your joints as you run.</p></header>`;
 const film = readFileSync(join(HERE, "film.mjs"), "utf8").replace(/^export /gm, "");
-const DATA = { turn: S.out.data, explode: S.obj.explode, basis: S.basis, parts: counts.parts };
+const DATA = { turn: S.out.data, explode: S.obj.explode, basis: S.basis, parts: counts.parts, gl3: { ...GL3W.chunk, slug: "creator-600" } };
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8")
   .replace("__DATA__", JSON.stringify(DATA))
   .replace("__HELPERS__;", PAGE_HELPERS)
   .replace("__FILM__;", film);
-const page = k.pageHtml({ title: "Creator 600, taken apart · Optimal Health", theme, body: `<style>${fontCss()}</style>${header}${figureHtml}`, script: turnScript() + LIVE, width: 760 });
+const page = k.pageHtml({ title: "Creator 600, taken apart · Optimal Health", theme, body: `<style>${fontCss()}</style>${header}${figureHtml}`, script: turnScript() + GL3W.host + "\n" + GL3_TURN + "\n" + LIVE, width: 760 });
 const name = `figure${theme === "light" ? "-light" : ""}.html`;
 // an inline icon, so the gallery doesn't log a /favicon.ico 404 on every page
 writeFileSync(join(HERE, name), page.replace("<title>", `<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%232c4e25' stroke-width='4'/%3E%3C/svg%3E"><title>`));

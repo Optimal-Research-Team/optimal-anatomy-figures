@@ -4,13 +4,16 @@
 .gl3-canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block;pointer-events:none;opacity:0;transition:opacity .5s ease}
 .iso-stage[data-gl3="on"]>.gl3-canvas{opacity:1}
 /* the SVG multiplies over the render: white leaves the render as it is, ink darkens it */
-.iso-stage[data-gl3="on"]>svg{position:relative;mix-blend-mode:multiply}
+.iso-stage[data-gl3="on"]>svg{mix-blend-mode:multiply}
+.iso-stage[data-gl3="on"]>svg:not(.iso-layer){position:relative}
 /* solids: the render is the body now. Fills go white (they still hide what is behind them, in the drawing's own
    order), and the drawn shading, edges and ground shadow step aside. Anything inside [data-gl3-keep] stays as drawn
    (a small moving marker the layer has no solid for). */
-.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-fill{fill:#fff!important;stroke:none!important}
-.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-shade,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-top{display:none}
-.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-edge,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-crease,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-bevel{stroke-opacity:0}
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-fill{fill:#fff!important;stroke:none!important}
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-shade,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-top{display:none}
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-edge,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-crease,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-bevel{stroke-opacity:0}
+/* the turn runtime's tone facets (the take-apart pages) are shading too */
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep]):not([data-gl3-keep] *)>.iso-tn{display:none}
 .iso-stage[data-gl3="on"] .iso-halo{display:none}
 .iso-stage[data-gl3="on"] .tb-body{fill:#fff!important}
 .iso-stage[data-gl3="on"] .tb-shine,.iso-stage[data-gl3="on"] .tb-shade{display:none}

@@ -10,15 +10,18 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { gl3Wire } from "../shared/gl3/wire.mjs";
 
 // color-scheme: the page sets dark on <html>; a framed document whose scheme differs from the host gets an opaque
 // backdrop, so the embed declares light (the site is Cream) and stays transparent.
-const EMBED_CSS = `<style data-embed>:root{color-scheme:light!important}.ar-head{display:none!important}html,body{background:transparent!important}.iso-page{width:100%!important;margin:0!important}.iso-figure{margin:0!important}</style><meta name="robots" content="noindex">`;
+// The 3-D layer's chunk (shared/gl3) sits next to the framed page, so that page says so; the gallery page finds it in embed/.
+const EMBED_CSS = `<script data-embed>window.OPTIMAL_GL3_BASE="./"</script><style data-embed>:root{color-scheme:light!important}.ar-head{display:none!important}html,body{background:transparent!important}.iso-page{width:100%!important;margin:0!important}.iso-figure{margin:0!important}</style><meta name="robots" content="noindex">`;
 const embedScript = (slug) =>
   `<script data-embed>(()=>{const slug=${JSON.stringify(slug)};let last=0;const post=()=>{const h=Math.ceil(document.documentElement.getBoundingClientRect().height);if(h&&h!==last){last=h;parent.postMessage({type:"optimal-reveal",slug,height:h},"*")}};new ResizeObserver(post).observe(document.documentElement);addEventListener("load",post);post()})();</script>`;
 
 export function copyReveal(metaUrl, slug) {
   const here = dirname(fileURLToPath(metaUrl));
+  gl3Wire().copyTo(join(here, "embed"));
   const light = process.argv.includes("--light");
   const src = join(here, "..", "..", "reveals", slug, "object", light ? "figure-light.html" : "figure.html");
   copyFileSync(src, join(here, `${slug}-apart${light ? "-light" : ""}.html`));
