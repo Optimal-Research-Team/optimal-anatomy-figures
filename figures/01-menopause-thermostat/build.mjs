@@ -21,6 +21,8 @@ import * as G from "../../.claude/skills/anatomy/kit/lathe.mjs";
 import * as A from "../../.claude/skills/anatomy/kit/audit.mjs";
 import { tubePieces, tubeSvg } from "../../.claude/skills/anatomy/kit/tube.mjs";
 import { plate, page, embed } from "../../shared/page.mjs";
+import { glPart, gl3SceneOf } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -105,18 +107,41 @@ const record = R.solid;
 function put(name, ref, svg, shapes = [], { bias = 0, piece = "stand", move, attrs = "" } = {}) {
   return R.put({ name, at: ref, bias, svg, shapes, piece, move, attrs });
 }
-function box(name, plan, z0, h, style = {}, { steps = 3, bevel = 0, inner = "", extra = "", bias = 0, piece, move, ground = false } = {}) {
+// The 3-D layer's copy of every solid (shared/gl3): each helper below notes the true solid it drew, in world units,
+// under the solid's name and its mover. `gl: false` leaves a solid out (it is noted by hand instead), `gl: { … }`
+// adds to its descriptor (a bevel, a material, another name).
+const GL = [];
+const FLOOR_F = { o: [0, 0, 0], a: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] };
+const glNote = (desc, piece) => GL.push(piece && piece !== "stand" ? { ...desc, p: piece } : desc);
+const glPlan = (plan) => k.roundedPlan(plan, plan.r > 1.5 ? 8 : plan.r > 0 ? 4 : 0);
+// The renderer rounds both ends of a solid. Where a part stands on another, its rounded foot would leave a hairline
+// undercut all round (it reads as grit at phone size), so the rendered body is let into its seat by `seat` instead:
+// boxes on the base plate by default, anything else by `gl: { seat }`.
+const glSeat = (profile, seat) => (seat ? [[profile[0][0] - seat, profile[0][1]], ...profile] : profile);
+function box(name, plan, z0, h, style = {}, { steps = 3, bevel = 0, inner = "", extra = "", bias = 0, piece, move, ground = false, gl } = {}) {
   const shape = record(A.slab(plan, z0, h, { name, ground }, steps));
+  if (gl !== false) {
+    const { seat = z0 === 0 && !piece ? 1.2 : 0, ...more } = gl ?? {};
+    glNote(glPart.prism(name, FLOOR_F, glPlan(plan), z0 - seat, z0 + h, { bevel: Math.max(0.3, bevel * 1.6), ...more }), piece);
+  }
   put(name, [plan.x + plan.w / 2, plan.y + plan.d / 2, z0 + h / 2], S(k.slabOf(plan, z0, h, P, steps, bevel), { tone: "mid", ...style, inner }) + extra, [shape], { bias, piece, move });
   return shape;
 }
-function cyl(name, cx, cy, r, z0, h, style = {}, { steps = 32, bevel = 0, inner = "", extra = "", bias = 0, piece, move } = {}) {
+function cyl(name, cx, cy, r, z0, h, style = {}, { steps = 32, bevel = 0, inner = "", extra = "", bias = 0, piece, move, gl } = {}) {
   const shape = record(A.cylinder(cx, cy, r, z0, h, { name }));
+  if (gl !== false) {
+    const { seat = 0, ...more } = gl ?? {};
+    glNote(glPart.lathe(name, { ...FLOOR_F, o: [cx, cy, 0] }, glSeat([[z0, r], [z0 + h, r]], seat), { ...(bevel ? { bevel: Math.max(0.3, bevel) } : {}), ...more }), piece);
+  }
   put(name, [cx, cy, z0 + h / 2], S(k.cylinder(cx, cy, r, z0, h, P, steps, bevel), { tone: "mid", ...style, inner }) + extra, [shape], { bias, piece, move });
   return shape;
 }
-function turned(name, F, profile, style = {}, { extra = "", inner = "", bias = 0, piece, move, steps, smooth } = {}) {
+function turned(name, F, profile, style = {}, { extra = "", inner = "", bias = 0, piece, move, steps, smooth, gl } = {}) {
   const opts = { ...(steps ? { steps } : {}), ...(smooth !== undefined ? { smooth } : {}) };
+  if (gl !== false) {
+    const { seat = 0, ...more } = gl ?? {};
+    glNote(glPart.lathe(name, F, glSeat(profile, seat), more), piece);
+  }
   const paths = G.solidOf(profile, F, P, opts);
   const mid = (profile[0][0] + profile[profile.length - 1][0]) / 2;
   const shape = record(A.solid(F, profile, { name }));
@@ -136,6 +161,7 @@ const CABLES = [];
 function cable(name, points, r = 0.9, { tone = "mid", bend = 4, maxLength = 14, bias = 0.05 } = {}) {
   const route = G.fillet(points, Math.max(bend, r * 2.6), 10, { P, tube: r });
   R.route(name, route, r, { limp: true, piece: "stand" });
+  glNote(glPart.tube(name, route, r));
   CABLES.push(name);
   tubePieces(route, r, P, { maxLength, spacing: Math.max(0.6, Math.min(1.6, r)) }).forEach((piece, index) =>
     put(`${name}:${index}`, piece.mid, tubeSvg(piece, { tone }), [A.tube(piece.points, piece.radii)], { bias, attrs: ` data-route="${name}"` }),
@@ -158,8 +184,14 @@ const plateScrews = k.corners(PLATE, 10);
 back.push(Ln(plateScrews.map(([x, y]) => k.ring(x, y, 2.2, 0, P, 16)).join(""), { tone: "lo" }));
 back.push(Dots(plateScrews.map(([x, y]) => at([x, y, 0])), { size: 0.5 }));
 record(A.slab(PLATE, -PLATE_H, PLATE_H, { name: "stand.plate", ground: true }, 8));
+glNote(glPart.prism("stand.plate", FLOOR_F, k.roundedPlan(PLATE, 10), -PLATE_H, 0, { bevel: 1.6 }));
+k.corners(PLATE, 22).forEach(([x, y], i) => {
+  glNote(glPart.lathe(`stand.foot${i}.pad`, { ...FLOOR_F, o: [x, y, 0] }, [[-PLATE_H - FOOT_H, 7], [-PLATE_H - FOOT_H + 1.6, 7]]));
+  glNote(glPart.lathe(`stand.foot${i}`, { ...FLOOR_F, o: [x, y, 0] }, [[-PLATE_H - FOOT_H + 1.6, 5.4], [-PLATE_H, 5.4]]));
+});
 const LABEL = { x: -143, y: 24, w: 24, d: 12, r: 1.2 };
 back.push(S(k.slabOf(LABEL, 0, 0.8, P, 3), { tone: "lo", crease: "none" }));
+glNote(glPart.prism("stand.label", FLOOR_F, k.roundedPlan(LABEL, 3), -0.5, 0.8, { bevel: 0.15 }));
 back.push(Ln(k.planOutline(k.insetPlan(LABEL, 1.4), 0.8, P, 3), { tone: "faint" }));
 back.push(Ln([20, 13, 16].map((w, i) => k.lineOnTop([LABEL.x + 3.4, LABEL.y + 3.4 + i * 3], [LABEL.x + 3.4 + w * 0.8, LABEL.y + 3.4 + i * 3], 0.8, P)).join(""), { tone: "lo", free: true }));
 back.push(Dots([at([LABEL.x + LABEL.w - 2.6, LABEL.y + 2.4, 0.8]), at([LABEL.x + LABEL.w - 2.6, LABEL.y + LABEL.d - 2.4, 0.8])], { size: 0.45 }));
@@ -187,23 +219,25 @@ box("scale.foot", { x: BOARD.x - 4, y: 0, w: BOARD.w + 7, d: 12, r: 2 }, 0, BOAR
   const rule = k.segment([edge, face, BOARD_Z[0]], [edge, face, BOARD_Z[1]], P) + k.segment([edge - RULE2, face, BOARD_Z[0]], [edge - RULE2, face, BOARD_Z[1]], P);
   const inner = Ln(rule, { tone: "mid" }) + Ln(ticks.join(""), { tone: "lo" }) + Ln(major.join(""), { tone: "mid" }) + `<path class="iso-line" data-tone="hi" d="${zero}" style="stroke-width:1.2"/>`;
   const screws = Dots([at([BOARD.x + 3.5, face, BOARD_Z[1] - 5]), at([BOARD.x + 3.5, face, BOARD_Z[0] + 5])], { size: 0.5, tone: "mid" });
-  box("scale.board", BOARD, BOARD_Z[0], BOARD_Z[1] - BOARD_Z[0], { tone: "mid" }, { steps: 2, bevel: 0.4, extra: inner + screws });
+  box("scale.board", BOARD, BOARD_Z[0], BOARD_Z[1] - BOARD_Z[0], { tone: "mid" }, { steps: 2, bevel: 0.4, extra: inner + screws, gl: { seat: 1 } });
 }
 
 // ---------------------------------------------------------------- capsule (the core) and its gland
 {
   const F = vframe(CAN.x, CAN.y);
-  turned("can.flange", F, [[0, 19], [3, 19]], { tone: "lo" }, { extra: Dots(G.dotsOf(F, 3, 17, 10, P, { all: false, fade: [0.04, 0.42] }), { size: 0.5, tone: "mid" }) });
+  turned("can.flange", F, [[0, 19], [3, 19]], { tone: "lo" }, { gl: { seat: 1 }, extra: Dots(G.dotsOf(F, 3, 17, 10, P, { all: false, fade: [0.04, 0.42] }), { size: 0.5, tone: "mid" }) });
   const body = G.solidOf([[3, 16], [36, 16]], F, P);
   const knurl = k.knurl(CAN.x, CAN.y, 16, 14, 28, 44, P, 0.4);
   const seams = [14, 28].map((z) => k.sideArc(CAN.x, CAN.y, 16, z, P, 40)).join("");
   put("can.body", [CAN.x, CAN.y, 20], S(body, { tone: "mid", inner: Ln(seams, { tone: "faint" }) + Ln(knurl, { tone: "faint" }) }), [record(A.solid(F, [[3, 16], [36, 16]], { name: "can.body" }))]);
-  turned("can.cap", F, [[36, 16], [37.6, 16], [40, 13], [41, 12]], { tone: "mid" });
-  turned("can.gland", F, [[41, 6.2], [GLAND - 1.2, 6.2], [GLAND, 5.4]], { tone: "mid" }, { extra: Ln(G.circleOf(F, GLAND, ROD_R + 0.5, P), { tone: "faint" }) });
+  // body and cap are one turned shell in the render (the same wall, 16 across): no hairline groove where they meet
+  glNote(glPart.lathe("can.body", F, [[2, 16], [37.6, 16], [40, 13], [41, 12]], { bevel: 0.3 }));
+  turned("can.cap", F, [[36, 16], [37.6, 16], [40, 13], [41, 12]], { tone: "mid" }, { gl: false });
+  turned("can.gland", F, [[41, 6.2], [GLAND - 1.2, 6.2], [GLAND, 5.4]], { tone: "mid" }, { gl: { seat: 0.6 }, extra: Ln(G.circleOf(F, GLAND, ROD_R + 0.5, P), { tone: "faint" }) });
   // Common terminal on the capsule's front.
   const TF = G.frameOf([CAN.x + 8.5, CAN.y + 13.6, 24], G.unit3([0.53, 0.85, 0]), [0, 0, 1], G.unit3([-0.85, 0.53, 0]));
-  pin("can.boss", TF, -0.3, 2.4, 3.0, { tone: "mid" });
-  pin("can.stud", TF, 2.4, 4.4, 1.8, { tone: "hi" });
+  pin("can.boss", TF, -0.3, 2.4, 3.0, { tone: "mid" }, { gl: { seat: 0.6 } });
+  pin("can.stud", TF, 2.4, 4.4, 1.8, { tone: "hi" }, { gl: { seat: 0.4 } });
 }
 
 // ---------------------------------------------------------------- the column (lit): rod, collar, finger, index
@@ -214,21 +248,23 @@ const ROD_PIECE = { piece: "rod", move: [0, 0, TRAVEL] };
   const rod = G.rodOut(F, GLAND, tip, ROD_R, P, { stroke: TRAVEL });
   const svg = `<clipPath id="mt-rod"><path data-hold d="${rod.clip}"/></clipPath><g clip-path="url(#mt-rod)">${S(rod.paths, { tone: "hi", lit: true })}</g>`;
   put("rod", [CAN.x, CAN.y, (GLAND + tip) / 2], svg, [record(A.slide(F, GLAND, tip, ROD_R, { name: "rod" }))], { ...ROD_PIECE, attrs: ` data-hold-group` });
+  // the rendered rod is one length that reaches down into the capsule, so the gland hides its foot over the whole stroke
+  glNote(glPart.lathe("rod", F, [[GLAND - TRAVEL - 4, ROD_R], [tip + 1, ROD_R]]), "rod");
   const z = Z_LOW;
   cyl("collar", CAN.x, CAN.y, 5.2, z - 3.5, 7, { tone: "hi", lit: true }, { bevel: 0.4, ...ROD_PIECE, extra: Ln(k.sideArc(CAN.x, CAN.y, 5.2, z, P, 24), { tone: "lit" }) });
   box("finger", { x: CAN.x + 4.8, y: CAN.y - 2.5, w: JAW_X + 4 - (CAN.x + 4.8), d: 5, r: 1 }, z - 1.5, 3, { tone: "hi", lit: true }, { steps: 2, bevel: 0.3, ...ROD_PIECE });
-  cyl("finger.pad.top", JAW_X, CAN.y, 2.2, z + 1.5, 1.1, { tone: "hi" }, { steps: 20, ...ROD_PIECE });
+  cyl("finger.pad.top", JAW_X, CAN.y, 2.2, z + 1.5, 1.1, { tone: "hi" }, { steps: 20, ...ROD_PIECE, gl: { seat: 0.4 } });
   cyl("finger.pad.bottom", JAW_X, CAN.y, 2.2, z - 2.6, 1.1, { tone: "hi" }, { steps: 20, ...ROD_PIECE, bias: -0.2 });
   box("index", { x: BOARD.x + BOARD.w - 5, y: CAN.y - 1.5, w: CAN.x - 5.0 - (BOARD.x + BOARD.w - 5), d: 3, r: 0.6 }, z - 0.6, 1.2, { tone: "hi", lit: true }, { steps: 2, ...ROD_PIECE });
 }
 
 // ---------------------------------------------------------------- the upright: base, back plate, rails, lead screw, bridge, knob
 box("up.base", { x: UP.x, y: -8, w: UP.w, d: 28, r: 3 }, 0, 12, { tone: "mid" }, { bevel: 0.6, inner: Ln(k.sideSeam({ x: UP.x, y: -8, w: UP.w, d: 28, r: 3 }, 4, P, 3), { tone: "faint" }), extra: Dots([at([UP.x + 4, 16, 12]), at([UP.x + UP.w - 4, 16, 12])], { size: 0.5 }) });
-box("up.back", { x: UP.x + 2, y: -6, w: UP.w - 4, d: 4, r: 1 }, 12, UP_TOP - 12, { tone: "mid" }, { steps: 2, bevel: 0.4 });
-for (const rx of [UP.x + 6, UP.x + UP.w - 10]) box(`up.rail`, { x: rx, y: -2, w: 4, d: 2, r: 0.6 }, 12, UP_TOP - 12, { tone: "hi" }, { steps: 2 });
+box("up.back", { x: UP.x + 2, y: -6, w: UP.w - 4, d: 4, r: 1 }, 12, UP_TOP - 12, { tone: "mid" }, { steps: 2, bevel: 0.4, gl: { seat: 1.2 } });
+[UP.x + 6, UP.x + UP.w - 10].forEach((rx, i) => box(`up.rail`, { x: rx, y: -2, w: 4, d: 2, r: 0.6 }, 12, UP_TOP - 12, { tone: "hi" }, { steps: 2, gl: { n: `up.rail.${i}`, seat: 1.2 } }));
 {
   const F = vframe(SCREW[0], SCREW[1]);
-  pin("screw.foot", F, 12, 14, 3.6, { tone: "mid" });
+  pin("screw.foot", F, 12, 14, 3.6, { tone: "mid" }, { gl: { seat: 0.6 } });
   pin("screw.head", F, UP_TOP - 2, UP_TOP, 3.6, { tone: "mid" });
 }
 const screwSvg = (phase) => {
@@ -245,6 +281,7 @@ const screwSvg = (phase) => {
 {
   const [x, y] = SCREW;
   const shape = record(A.cylinder(x, y, 2.2, 14, UP_TOP - 16, { name: "screw" }));
+  glNote(glPart.lathe("screw", { ...FLOOR_F, o: [x, y, 0] }, [[13, 2.2], [UP_TOP - 1, 2.2]]));
   put("screw", [x, y, UP_TOP / 2], S(k.cylinder(x, y, 2.2, 14, UP_TOP - 16, P, 20), { tone: "hi", crease: "none", inner: `<path class="iso-line" data-tone="lo" data-part="thread" d="${screwSvg(0)}"/>` }), [shape]);
 }
 const BRIDGE = { x: UP.x, y: -8, w: UP.w, d: 28, r: 3 };
@@ -260,9 +297,9 @@ const DIAL_TOP_Z = UP_TOP + 11.2;
 {
   const F = vframe(KNOB.x, KNOB.y);
   const plateTicks = k.radialTicks(KNOB.x, KNOB.y, 12.2, 12, 11, DIAL_TOP_Z, [1.4, 2.6], P, M.KNOB.from, M.KNOB.span);
-  turned("knob.plate", F, [[UP_TOP + 10, 13], [DIAL_TOP_Z, 13]], { tone: "lo" }, { extra: Ln(plateTicks.minor, { tone: "lo" }) + Ln(plateTicks.major, { tone: "hi" }) + Ln(k.ring(KNOB.x, KNOB.y, 13 - 0.8, DIAL_TOP_Z, P, 48), { tone: "faint" }) });
+  turned("knob.plate", F, [[UP_TOP + 10, 13], [DIAL_TOP_Z, 13]], { tone: "lo" }, { gl: { seat: 0.8 }, extra: Ln(plateTicks.minor, { tone: "lo" }) + Ln(plateTicks.major, { tone: "hi" }) + Ln(k.ring(KNOB.x, KNOB.y, 13 - 0.8, DIAL_TOP_Z, P, 48), { tone: "faint" }) });
   const knurl = k.knurl(KNOB.x, KNOB.y, KNOB.r, DIAL_TOP_Z, DIAL_TOP_Z + 6, 40, P, 0.4);
-  turned("knob", F, [[DIAL_TOP_Z, KNOB.r], [DIAL_TOP_Z + 6, KNOB.r]], { tone: "hi", crease: "lo" }, { extra: Ln(knurl, { tone: "lo" }) });
+  turned("knob", F, [[DIAL_TOP_Z, KNOB.r], [DIAL_TOP_Z + 6, KNOB.r]], { tone: "hi", crease: "lo" }, { gl: { seat: 0.6, bevel: 0.5 }, extra: Ln(knurl, { tone: "lo" }) });
 }
 const KNOB_TOP = DIAL_TOP_Z + 6;
 const pointerAt = (angle) => {
@@ -292,7 +329,7 @@ function jaw(which) {
   const armZ = upper ? zt + 3.6 : zt - 6.6;
   box(`${which}.arm`, { x: JAW_X - 6, y: CAN.y - 2.5, w: carriage.x - (JAW_X - 6), d: 5, r: 1 }, armZ, 3, { tone: "hi", crease: "lo" }, { steps: 2, bevel: 0.3, ...piece });
   const bz = upper ? zt + 2.6 : zt - 3.6;
-  cyl(`${which}.button`, JAW_X, CAN.y, 2.2, bz, 1.0, { tone: "hi" }, { steps: 20, ...piece, bias: upper ? -0.3 : 0.3 });
+  cyl(`${which}.button`, JAW_X, CAN.y, 2.2, bz, 1.0, { tone: "hi" }, { steps: 20, ...piece, bias: upper ? -0.3 : 0.3, gl: { seat: upper ? 0 : 0.4 } });
   void s;
 }
 jaw("lower");
@@ -306,7 +343,7 @@ box("relay", RELAY, 0, RELAY_H, { tone: "mid" }, {
 });
 const LAMPS = { warm: [RELAY.x + 9, RELAY.y + 15], cool: [RELAY.x + 18.5, RELAY.y + 15] };
 for (const [name, [x, y]] of Object.entries(LAMPS)) {
-  cyl(`lamp.${name}.bezel`, x, y, 3.6, RELAY_H, 1.4, { tone: "mid" }, { steps: 28, extra: Ln(k.ring(x, y, 2.9, RELAY_H + 1.4, P, 28), { tone: "faint" }) });
+  cyl(`lamp.${name}.bezel`, x, y, 3.6, RELAY_H, 1.4, { tone: "mid" }, { steps: 28, gl: { seat: 0.6 }, extra: Ln(k.ring(x, y, 2.9, RELAY_H + 1.4, P, 28), { tone: "faint" }) });
   const LF = vframe(x, y, RELAY_H + 1.4);
   const dome = Array.from({ length: 13 }, (_, i) => {
     const a = (i / 12) * (Math.PI / 2);
@@ -317,6 +354,7 @@ for (const [name, [x, y]] of Object.entries(LAMPS)) {
   const slope = (sv) => -sv / Math.max(0.05, radius(sv));
   const c = [x, y, RELAY_H + 1.4 + 1];
   const shape = record(A.solid(LF, dome, { name: `lamp.${name}`, radius }));
+  glNote(glPart.lathe(`lamp.${name}`, LF, [[-0.5, 2.7], ...dome]));
   put(`lamp.${name}`, c, `<g class="mt-lamp" data-lamp="${name}">${S(G.solidOf(dome, LF, P, { smooth: { slope, radius } }), { tone: "hi" })}</g>`, [shape], { bias: 0.1 });
 }
 
@@ -329,7 +367,7 @@ for (const [name, [x, y]] of Object.entries(LAMPS)) {
   const fins = [];
   for (let x = core.x + 4; x < core.x + core.w - 3; x += 6) fins.push(faceY(core.y + core.d, roundRect(x, x + 2.2, 13, top - 3, 1.1, 3)));
   const wash = `<path class="mt-heat" data-part="wash" d="${faceY(core.y + core.d + 0.01, roundRect(core.x, core.x + core.w, 10, top, 0, 1))}"/>`;
-  box("rad.core", core, 10, top - 10, { tone: "lo" }, { steps: 2, extra: wash + Ln(fins.join(""), { tone: "lo" }) });
+  box("rad.core", core, 10, top - 10, { tone: "lo" }, { steps: 2, gl: { seat: 1 }, extra: wash + Ln(fins.join(""), { tone: "lo" }) });
   box("rad.post.r", { x: x1 - post, y: y0, w: post, d: y1 - y0, r: 1.2 }, 0, top, { tone: "mid" }, { steps: 2, bevel: 0.4 });
   const header = { x: x0 - 2, y: y0 - 2, w: x1 - x0 + 4, d: y1 - y0 + 4, r: 2 };
   box("rad.header", header, top, 8, { tone: "mid" }, {
@@ -344,10 +382,23 @@ const slatFrame = (zc, deg) => {
   return G.frameOf([RAD.x0 + RAD.post, PIVOT_Y, zc], [1, 0, 0], [0, Math.sin(a), Math.cos(a)], [0, -Math.cos(a), Math.sin(a)]);
 };
 const SLAT_POLY = [[-SLAT_W / 2, -SLAT_T / 2], [SLAT_W / 2, -SLAT_T / 2], [SLAT_W / 2, SLAT_T / 2], [-SLAT_W / 2, SLAT_T / 2]];
+// The same blade for the 3-D layer, described across its thickness (axis = the blade's normal, outline = length × width),
+// so the renderer rounds the long edges of its two faces. live.js builds the same frame every frame.
+const slatBlade = (zc, deg) => {
+  const a = (deg * Math.PI) / 180;
+  return G.frameOf([RAD.x0 + RAD.post, PIVOT_Y, zc], [0, -Math.cos(a), Math.sin(a)], [1, 0, 0], [0, Math.sin(a), Math.cos(a)]);
+};
+const SLAT_BLADE = [[-0.6, -SLAT_W / 2], [SLAT_LEN + 0.6, -SLAT_W / 2], [SLAT_LEN + 0.6, SLAT_W / 2], [-0.6, SLAT_W / 2]]; // ends let into the posts
+// The blades are wider than their pitch (15.4 on 13), so shut they must lap like shingles: flat, as the drawing has
+// them, they would be one sheet in the render. The rendered blades rest at this angle (the least that clears the
+// blade's thickness is asin(1.4 / 13) = 6.2°) and reach the drawing's own angle at full open.
+const SLAT_REST = 8;
+const slatRenderDeg = (deg) => SLAT_REST + deg * (1 - SLAT_REST / SLAT_OPEN);
 SLATS.forEach((zc, i) => {
   const shape = record(A.prism(slatFrame(zc, 0), SLAT_POLY, 0, SLAT_LEN, { name: `slat` }));
+  glNote(glPart.prism(`slat.${i}`, slatBlade(zc, slatRenderDeg(0)), SLAT_BLADE, -SLAT_T / 2, SLAT_T / 2, { bevel: 0.3 })); // live.js turns it: gl.set("slat.i", { F })
   put(`slat`, [(RAD.x0 + RAD.x1) / 2, PIVOT_Y, zc], `<g data-slat="${i}">${S(G.prismOf(slatFrame(zc, 0), SLAT_POLY, 0, SLAT_LEN, P), { tone: "mid" })}</g>`, [shape], { bias: 0.4 });
-  pin(`slat.pin`, xframe(RAD.x1, PIVOT_Y, zc), 0, 1.6, 1.5, { tone: "mid" });
+  pin(`slat.pin`, xframe(RAD.x1, PIVOT_Y, zc), 0, 1.6, 1.5, { tone: "mid" }, { gl: { seat: 0.5 } });
 });
 // Linkage: a crank on each pin drives a slotted bar; the solenoid lifts the bar.
 const crankTip = (zc, deg) => {
@@ -368,12 +419,14 @@ const BAR_Z = [SOL.z0 + SOL.h - 2, SLATS[SLATS.length - 1] + 6];
     true,
   );
   const shape = record(A.slab(bar, SOL.z0 + SOL.h, BAR_Z[1] - SOL.z0 - SOL.h, { name: "bar" }, 2));
+  // the rendered bar runs on down into the solenoid (its plunger), so it never lifts clear of the can
+  glNote(glPart.prism("bar", FLOOR_F, k.roundedPlan(bar, 3), BAR_Z[0] - 6, BAR_Z[1], { bevel: 0.2 }), "bar");
   const pinsSvg = `<g data-part="crankpins">${Dots(SLATS.map((zc) => at([BAR.x + BAR.w, crankTip(zc, 0)[1], zc])), { size: 0.8, tone: "hi" })}</g>`;
   put("bar", [BAR.x + BAR.w / 2, BAR.y + BAR.d / 2, (BAR_Z[0] + BAR_Z[1]) / 2], `<clipPath id="mt-bar"><path data-hold d="${clip}"/></clipPath><g clip-path="url(#mt-bar)">${S(k.slabOf(bar, BAR_Z[0], barH, P, 2, 0.3), { tone: "mid", inner: Ln(slots, { tone: "lo" }) })}${pinsSvg}</g>`, [shape], { bias: 0.2, attrs: ` data-part="bar"` });
   // solenoid on a plinth
   box("sol.plinth", { x: SOL.x - 4.6, y: SOL.y - 6, w: 10.4, d: 12, r: 1.4 }, 0, SOL.z0, { tone: "lo" }, { steps: 2, bevel: 0.4, extra: Dots(k.corners({ x: SOL.x - 4.6, y: SOL.y - 6, w: 10.4, d: 12 }, 1.6).map(([x, y]) => at([x, y, SOL.z0])), { size: 0.45 }) });
   const F = vframe(SOL.x, SOL.y);
-  turned("sol.can", F, [[SOL.z0, SOL.r], [SOL.z0 + SOL.h - 1.2, SOL.r], [SOL.z0 + SOL.h, SOL.r - 0.8]], { tone: "mid" }, { inner: Ln([SOL.z0 + 3, SOL.z0 + SOL.h - 4].map((z) => k.sideArc(SOL.x, SOL.y, SOL.r, z, P, 24)).join(""), { tone: "faint" }) });
+  turned("sol.can", F, [[SOL.z0, SOL.r], [SOL.z0 + SOL.h - 1.2, SOL.r], [SOL.z0 + SOL.h, SOL.r - 0.8]], { tone: "mid" }, { gl: { seat: 0.6 }, inner: Ln([SOL.z0 + 3, SOL.z0 + SOL.h - 4].map((z) => k.sideArc(SOL.x, SOL.y, SOL.r, z, P, 24)).join(""), { tone: "faint" }) });
 }
 
 // ---------------------------------------------------------------- console with the skin and heart-rate dials
@@ -386,7 +439,10 @@ for (const [name, [x, y]] of Object.entries(DIALS)) {
   const dial = M.DIALS[name];
   const ticks = k.radialTicks(x, y, DIAL_R - 2.6, dial.count, dial.every, DIAL_Z, [1.2, 2.4], P, dial.from, dial.span);
   const F = vframe(x, y);
+  glNote(glPart.lathe(`dial.${name}`, F, [[CONSOLE_H - 1, DIAL_R], [DIAL_Z, DIAL_R], [DIAL_Z, DIAL_R - 1.8], [DIAL_Z - 0.6, DIAL_R - 1.8]], { bevel: 0.35 }));
+  glNote(glPart.lathe(`dial.${name}.face`, F, [[DIAL_Z - 1.2, DIAL_R - 1.75], [DIAL_Z - 0.5, DIAL_R - 1.75]], { bevel: 0 }));
   turned(`dial.${name}`, F, [[CONSOLE_H, DIAL_R], [DIAL_Z, DIAL_R]], { tone: "hi", crease: "lo" }, {
+    gl: false,
     extra:
       Ln(k.knurl(x, y, DIAL_R, DIAL_Z - 2.2, DIAL_Z, 60, P, 0.3), { tone: "lo" }) +
       Ln(k.sideArc(x, y, DIAL_R, DIAL_Z - 2.2, P, 40), { tone: "faint" }) +
@@ -404,8 +460,8 @@ const needleAt = (name, angle) => {
 // ---------------------------------------------------------------- terminals and cables: capsule → relay (common), relay → solenoid, relay → dials
 function stud(name, o, a) {
   const F = G.frameAlong(o, a);
-  pin(`${name}.boss`, F, 0, 1.2, 2.4, { tone: "mid" });
-  pin(name, F, 1.2, 2.6, 1.5, { tone: "hi" });
+  pin(`${name}.boss`, F, 0, 1.2, 2.4, { tone: "mid" }, { gl: { seat: 0.6 } });
+  pin(name, F, 1.2, 2.6, 1.5, { tone: "hi" }, { gl: { seat: 0.4 } });
   return G.add3(o, G.mul3(a, 2.6));
 }
 const TIP = {
@@ -461,7 +517,58 @@ const svg = k.figureSvg({
   ],
 });
 
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same solids, rendered
+// The brand's colourway, not a maker's: warm white enamel for the plate and every housing, graphite and rubber
+// underfoot (feet, the capsule's flange, the scale's foot, the solenoid's plinth, the radiator's sill and core),
+// brushed metal for everything turned or ground (screw, rails, knob, bezels, jaws, contacts), satin louvres. Green is
+// kept for the one part the drawing lights: the column (rod, collar, finger, index), in forest paint. Anything the
+// drawing puts ink on (scale, dial faces, knob plate, bridge label) stays pale so the ink reads. The core is dark so
+// that its glow during a flash (live.js) is the only warm colour in the picture, as the heat wash is in the drawing.
+const GL3W = gl3Wire();
+const GL3 = {
+  ...gl3SceneOf(GL, {
+    ground: -PLATE_H - FOOT_H,
+    look: { aoRadius: 9, ao: 0.55 },
+    materials: [
+      ["^stand\\.foot\\d\\.pad", "rubber"],
+      ["^stand\\.foot", "graphite"],
+      ["^stand\\.label", "alu"],
+      ["^stand\\.plate", "shell"],
+      ["^cable", "rubber"],
+      ["\\.boss$", "graphite"],
+      ["^stud\\.|^can\\.stud", "nickel"],
+      ["^(rod|collar|finger|index)$", "forest"],
+      ["^finger\\.pad|\\.button$", "steel"],
+      ["^scale\\.foot|^can\\.flange|^sol\\.plinth", "graphite"],
+      ["^can\\.gland", "nickel"],
+      ["^up\\.rail|^screw$", "steel"],
+      ["^screw\\.", "nickel"],
+      ["^knob$", "alu"],
+      ["\\.(carriage|arm)$", "alu"],
+      ["\\.bushing$", "nickel"],
+      ["^lamp\\.\\w+\\.bezel", "nickel"],
+      ["^dial\\.\\w+\\.face", "shell"],
+      ["^dial\\.", "nickel"],
+      ["^rad\\.(core|rail)", "graphite"],
+      ["^slat\\.pin", "nickel"],
+      ["^slat\\.", "satin"],
+      ["^bar$|^sol\\.can", "alu"],
+    ],
+  }),
+  ...GL3W.chunk,
+};
+// Forest night dims the studio's floor, and upright metal mirrors the floor: steel rails and a steel screw go black
+// there and lose their thread. Those few parts carry a second finish (`mn`, satin) that live.js swaps in at night.
+const NIGHT = [[/^up\.rail|^screw$|^bar$|^sol\.can$/, "satin"]];
+for (const part of GL3.parts) {
+  const hit = NIGHT.find(([re]) => re.test(part.n));
+  if (hit) part.mn = hit[1];
+}
+
 const DATA = {
+  gl3: GL3,
+  W,
+  H,
   P,
   KZ,
   zone0: { sweat: zOf(ZONE_PRE.sweat), shiver: zOf(ZONE_PRE.shiver) },
@@ -476,6 +583,7 @@ const DATA = {
   dialZ: DIAL_Z,
   slats: SLATS,
   slatOpen: SLAT_OPEN,
+  slatRest: SLAT_REST,
   slat: { x: RAD.x0 + RAD.post, y: PIVOT_Y, len: SLAT_LEN, poly: SLAT_POLY },
   bar: { x: BAR.x + BAR.w, crank: BAR.crank, pivotY: PIVOT_Y },
 };
@@ -484,9 +592,9 @@ const MODEL_SRC = readFileSync(join(HERE, "model.mjs"), "utf8").replace(/^export
 const latheSource = readFileSync(join(HERE, "../../.claude/skills/anatomy/kit/lathe.mjs"), "utf8").replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const LATHE = `const G = (() => {${latheSource}\nreturn { frameOf, prismOf };})();\n`;
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
-const SCRIPT = `${LATHE}\n${MODEL_SRC}\n${LIVE}`;
+const SCRIPT = `${GL3W.host}\n${LATHE}\n${MODEL_SRC}\n${LIVE}`;
 
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 const T = M.TRUTH;
 const CAPTION = [
   `Your brain holds core temperature inside a band, the <em>thermoneutral zone</em>: above it you sweat and flush, below it you shiver. In lab studies the zone was about ${T.zonePre} °C wide in women without hot flashes and close to ${T.zonePost.toFixed(1)} °C in women with them, mostly because the sweating threshold sat lower. Falling estrogen is thought to narrow it through neurokinin B signalling in the brain.`,
@@ -520,6 +628,8 @@ writeFileSync(join(HERE, out), page({ title: "The narrowing thermostat", theme: 
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `${CABLES.length} cables`, `scale ${KS.toFixed(3)}`);
 A.auditOrExit(R, P, { frames: STATES });

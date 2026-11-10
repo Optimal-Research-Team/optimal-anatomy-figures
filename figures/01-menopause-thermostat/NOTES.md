@@ -1,6 +1,6 @@
 # Fig 1 · The narrowing thermostat
 
-**Size:** Figure (one mechanism; 75 recorded solids, 3 cables, 96 painted items). SVG only; no WebGL layer.
+**Size:** Figure (one mechanism; 75 recorded solids, 3 cables, 96 painted items). One WebGL layer, the shared `shared/gl3` (since Nov 10): it renders the same solids under the SVG, and the SVG is the whole figure wherever the layer can't run (`?gl=off` shows it).
 
 **Mapping in one sentence:** a capsule pushes a lit column up and down between two contact jaws on a lead screw: the gap between the jaws is the thermoneutral zone, the estrogen knob closes the jaws, and when a small natural rise brings the column's finger onto the upper jaw, the circuit opens the radiator's louvres (skin vasodilation), swings the skin and heart-rate dials, and the column then dips below rest (the after-chill), which on a narrow zone can touch the lower jaw too.
 
@@ -9,10 +9,11 @@
 | File | What it is |
 |---|---|
 | `model.mjs` | Pure model: `zoneOf(e)`, `rateOf(e)`, `flashAt(t)`, `swingAt(s)`, knob and dial scales. Imported by the build and inlined in the page |
-| `build.mjs` | Geometry, audit recorder, card, page, embed. `--light` for Cream, `--audit` to prove the geometry |
-| `live.js` | Motion, tour, input, readout. Every value comes from `model.mjs` |
+| `build.mjs` | Geometry, audit recorder, card, page, embed. `--light` for Cream, `--audit` to prove the geometry. Its own `box` / `cyl` / `turned` / `pin` / `cable` helpers also note each solid for the 3-D layer |
+| `live.js` | Motion, tour, input, readout. Every value comes from `model.mjs`. Mirrors every mover into the 3-D layer |
 | `figure.css` | Heat wash, lamp colours, the lit column's green wash |
 | `embed/optimal-fig-menopause-thermostat.js` | Self-contained custom element (built with `--light`) |
+| `embed/optimal-gl3.js` | The shared 3-D chunk, copied by the build; the embed loads it lazily from beside itself |
 | `shots/` | Phone 390/360/320 and desktop in both themes, 4× close-ups |
 
 ## Parts (75 recorded solids, ≈ 110 parts counting screws, ticks and seams)
@@ -57,6 +58,38 @@ All in `reference/truth-pack.md` §1 ("How Fig 1 uses these numbers").
 - **Time.** About one model minute per second, quiet spells between rises cut; the caption says so.
 - **Colour.** Only heat: the radiator core's warm wash and the flash lamp (`--opt-heat-ink`), and the chill lamp (`--opt-cold-ink`). The lit part is the forest-green column.
 
+## The 3-D layer (shared/gl3, 2026-11-10)
+
+This figure does not use `shared/figkit.mjs`, so `build.mjs` keeps its own `GL` list: every local helper pushes one descriptor (`glPart.prism | lathe | tube`) with the frame, outline and extents the kit call gets, and the piece name for movers. Solids drawn by a direct kit call are noted by hand: base plate, feet, label plate, capsule body, rod, lead screw, lamp domes, slats, linkage bar. 80 rendered parts. `gl3SceneOf(GL, …)` gives each a material by name.
+
+**Colourway.** Warm white enamel (`shell`) for the plate and every housing, the scale board, knob plate and dial faces (ink reads on them). `graphite` for the feet, the capsule's flange, the scale's foot, the solenoid's plinth, terminal bosses, and the radiator's sill and core. `rubber` for foot pads and cables. Metal for what is turned or ground: `steel` rails, screw and contacts, `alu` knob, jaws, linkage bar, solenoid can and label plate, `nickel` bezels, bushings, bearings, gland, pins and studs. `satin` louvres. **Green is only the lit column** (rod, collar, finger, index) in `forest`, so the legend's "lit" swatch still means one thing. The only warm colour is the flash: the core glows and the flash lamp lights; the chill lamp is the only blue.
+
+**Movers** (each mirrored in `live.js` inside the same `set(…)` call that moves the SVG, so the two never disagree):
+
+| SVG | Layer |
+|---|---|
+| `[data-move=rod]` translate | `gl.move("rod", [0, 0, dz])` |
+| `[data-move=jawU]`, `[data-move=jawL]` | `gl.move("jawU" / "jawL", [0, 0, dz])` |
+| slats redrawn each frame | `gl.set("slat.i", { F })`, the blade's frame turned about the same pivot |
+| linkage bar translate | `gl.move("bar", [0, 0, lift])` |
+| heat wash opacity = louvre | `gl.set("rad.core", { emissive, intensity ∝ louvre })` |
+| lamp `data-on` (300 ms fill transition) | `gl.set("lamp.warm" / "lamp.cool", { color, emissive, intensity })`, eased over the same 300 ms |
+| thread rings, knob pointer, dial needles, crank pins, ticks | ink only; nothing to render |
+
+When the layer arrives (or is lost) `redraw` forgets what was drawn and draws once, so every mover is pushed again. `gl.render()` runs only on frames where something changed.
+
+**Where the render departs from the drawing, on purpose** (the drawing with the layer off is byte-for-byte the old one; the build's SVG was diffed against the previous commit's):
+
+- **Shingled louvres.** The blades are 15.4 wide on a 13 pitch, so shut and flat (as drawn) they are one coplanar sheet and the render showed a blank panel. The rendered blades rest at 8° (the least that clears the 1.4 thickness is 6.2°) and reach the drawing's own 60° at full open: `8 + deg × (1 − 8/60)`. The blades' ends are let 0.6 into the posts.
+- **Seats.** The renderer rounds both ends of every solid; a rounded foot standing on a face leaves a hairline undercut that reads as grit at phone size. Seated parts are let into what they stand on by 0.4 to 1.2 (`gl: { seat }`; boxes on the plate by default). Nothing visible moves.
+- **One capsule shell.** Body and cap are one turned solid in the render (same 16 wall), so there is no groove at the joint.
+- **Rod and bar run on inside.** The rendered rod reaches down into the capsule and the rendered bar into the solenoid, so neither shows a foot at full stroke (the SVG does this with clip paths).
+- **Dials.** The bezel is a nickel ring with the face let in 0.5 behind it (`dial.*.face`, `shell`); the ink ring at R − 1.8 is the bezel's inner edge.
+- **Night finish.** Forest night dims the studio's floor and upright metal mirrors the floor, so steel rails and a steel screw went black and lost the thread. Rails, screw, linkage bar and solenoid can carry a second finish (`mn: "satin"`) that `live.js` swaps in when the theme is dark. This belongs in the shared studio (a brighter floor bounce at night); it is done here because `shared/` was out of bounds.
+- **Look.** `look: { aoRadius: 9, ao: 0.55 }`: at the phone quality level (half-resolution occlusion) the default radius (12 for this span) and full strength left blotchy patches on the upright and beside the radiator posts; a radius of 7 speckled the jaw under the bridge. The key light's shadows and the floor shadow are untouched.
+
+**Known limits.** At the phone quality level (half-resolution occlusion) a faint comb can show where a jaw meets the back plate; it is the shared occlusion pass, not this figure. The floor shadow is the shared one.
+
 ## Interaction
 
 - **Buttons:** Pre-menopause / Post-menopause (radio group, arrow keys move between them).
@@ -64,6 +97,13 @@ All in `reference/truth-pack.md` §1 ("How Fig 1 uses these numbers").
 - **Idle tour** (54 s loop): a rise with the zone wide (nothing), the knob turns to post, the same rise trips a flash and the after-chill, the knob turns back. Pauses on input and resumes 3.6 s after the last one.
 - **Reduced motion:** one still frame at the post end with a flash at its height (finger on the upper jaw, louvres open, dials up); the buttons still switch between the two states.
 - **Offscreen:** the loop stops (IntersectionObserver).
+
+## Verification (2026-11-10, with the 3-D layer)
+
+- `node scripts/verify.mjs 01-menopause-thermostat`: see the table it prints (phones 390 / 360 / 320 in both themes, reduced motion, desktop, line ends with `?gl=off`). The stage ends at `data-gl3="on"` with a clean console.
+- `node build.mjs --audit` → `audit passed` (unchanged: 75 solids, 96 items, 15 depth states).
+- The SVG and the plate markup of both pages and the embed are identical to the previous commit's build (string compare).
+- The embed was tested in both themes on a plain host page: the layer mounts in the shadow root and loads the chunk from beside the embed script.
 
 ## Verification (2026-10-11)
 
@@ -87,5 +127,5 @@ All in `reference/truth-pack.md` §1 ("How Fig 1 uses these numbers").
 
 1. **Treatment switch:** waiting on HANDOFF §7 Q2.
 2. **Sources:** values were checked against abstracts and search extracts, not full text (network policy). Freedman 1999's shivering thresholds and the after-chill size are the weakest links; neither is printed.
-3. **WebGL heat shimmer:** optional per HANDOFF; not built, because the SVG wash already carries it on phones. Can add if wanted.
+3. **WebGL heat shimmer:** optional per HANDOFF; not built. With the 3-D layer on, the core now glows during a flash (emissive, in step with the wash); there is still no shimmer.
 4. **Medical sign-off:** HANDOFF §7 Q4.

@@ -25,6 +25,23 @@ function mount(fig) {
   const still = matchMedia("(prefers-reduced-motion: reduce)");
 
   const zOf = (t) => DATA.ZREF + t * DATA.KZ;
+  // The 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
+  // When it arrives (or is lost) everything is pushed again: forget what was drawn and draw.
+  const night = (fig.closest("[data-theme]")?.getAttribute("data-theme") ?? "dark") !== "light";
+  const gl = gl3Attach(fig, {
+    // at night the few upright metal parts wear their second finish (see build.mjs, NIGHT)
+    scene: night ? { ...DATA.gl3, parts: DATA.gl3.parts.map((part) => (part.mn ? { ...part, m: part.mn } : part)) } : DATA.gl3,
+    P,
+    W: DATA.W,
+    H: DATA.H,
+    file: DATA.gl3.file,
+    v: DATA.gl3.v,
+    redraw: () => {
+      for (const key of Object.keys(drawn)) delete drawn[key];
+      draw();
+    },
+  });
+  let glDirty = false;
   const SPEED = 1; // model minutes per real second
   const QUIET = 4; // minutes between the end of one event and the next rise (the cut quiet time)
   const CHILL_END = TRUTH.chillMin[2];
@@ -53,6 +70,18 @@ function mount(fig) {
     const F = G.frameOf([DATA.slat.x, DATA.slat.y, zc], [1, 0, 0], [0, Math.sin(a), Math.cos(a)], [0, -Math.cos(a), Math.sin(a)]);
     return solidSvg(G.prismOf(F, DATA.slat.poly, 0, DATA.slat.len, P), { tone: "mid" });
   };
+  // the same blade for the rendered slat: the frame the build recorded it in (axis = the blade's normal), turned
+  // (shut, the rendered blades lap like shingles at slatRest; they reach the drawing's angle at full open)
+  const slatBlade = (zc, deg) => {
+    const a = ((DATA.slatRest + deg * (1 - DATA.slatRest / DATA.slatOpen)) * Math.PI) / 180;
+    return G.frameOf([DATA.slat.x, DATA.slat.y, zc], [0, -Math.cos(a), Math.sin(a)], [1, 0, 0], [0, Math.sin(a), Math.cos(a)]);
+  };
+  // The two lamps and the radiator core glow in the render (the drawing's lamp colours and heat wash, as light).
+  // A lamp's lens goes from white to its colour over 300 ms, like the drawing's own fill transition.
+  const LAMP = { warm: [0xb8401c, 0xff5222], cool: [0x2f6fae, 0x3f8fe0], off: 0xece8de };
+  const mixHex = (a, b, t) => [16, 8, 0].reduce((hex, s) => hex | (Math.round(((a >> s) & 255) + (((b >> s) & 255) - ((a >> s) & 255)) * t) << s), 0);
+  const glow = { warm: 0, cool: 0 };
+  let glowAt = 0;
   const crankTip = (zc, deg) => {
     const a = (deg * Math.PI) / 180;
     return DATA.bar.pivotY - DATA.bar.crank * Math.cos(a);
@@ -167,14 +196,24 @@ function mount(fig) {
       if (drawn[key] !== value) {
         drawn[key] = value;
         fn(value);
+        glDirty = true;
       }
     };
     const zf = zOf(shown);
-    set("rod", Math.round(zf * 100) / 100, (z) => move(rodItems, z - DATA.rod0));
+    set("rod", Math.round(zf * 100) / 100, (z) => {
+      move(rodItems, z - DATA.rod0);
+      gl.move("rod", [0, 0, z - DATA.rod0]);
+    });
     const du = zOf(zone.sweat) - DATA.zone0.sweat;
     const dl = zOf(zone.shiver) - DATA.zone0.shiver;
-    set("jawU", Math.round(du * 100) / 100, (v) => move(jawU, v));
-    set("jawL", Math.round(dl * 100) / 100, (v) => move(jawL, v));
+    set("jawU", Math.round(du * 100) / 100, (v) => {
+      move(jawU, v);
+      gl.move("jawU", [0, 0, v]);
+    });
+    set("jawL", Math.round(dl * 100) / 100, (v) => {
+      move(jawL, v);
+      gl.move("jawL", [0, 0, v]);
+    });
     set("thread", Math.round(du * 50) / 50, () => {
       const lower = screwRings(dl, DATA.screwZ[0], DATA.screwMid - 1, 1);
       const upper = screwRings(-du, DATA.screwMid + 1, DATA.screwZ[1], -1);
@@ -184,8 +223,11 @@ function mount(fig) {
     const deg = DATA.slatOpen * flash.louvre;
     set("slats", Math.round(deg * 4) / 4, (d) => {
       slats.forEach((node, i) => (node.innerHTML = slatSvg(DATA.slats[i], d)));
+      DATA.slats.forEach((zc, i) => gl.set(`slat.${i}`, { F: slatBlade(zc, d) }));
       const lift = DATA.bar.crank * Math.sin((d * Math.PI) / 180);
       move([bar], lift);
+      gl.move("bar", [0, 0, lift]);
+      gl.set("rad.core", { emissive: 0xff6028, intensity: 1.2 * flash.louvre });
       crankpins.innerHTML = dotsSvg(DATA.slats.map((zc) => at3([DATA.bar.x, crankTip(zc, d), zc])), { size: 0.8, tone: "hi" });
       wash.style.opacity = String(flash.louvre);
     });
@@ -193,6 +235,14 @@ function mount(fig) {
     set("hr", Math.round(flash.hr * 10), () => needles.hr.setAttribute("d", needleAt("hr", DIALS.hr.angleOf(flash.hr))));
     set("warm", flash.on > 0.25, (on) => (on ? lamps.warm.setAttribute("data-on", "") : lamps.warm.removeAttribute("data-on")));
     set("cool", chilled, (on) => (on ? lamps.cool.setAttribute("data-on", "") : lamps.cool.removeAttribute("data-on")));
+    const stamp = performance.now();
+    const fade = still.matches || !frame ? 1 : Math.min(1, (stamp - glowAt) / 300);
+    glowAt = stamp;
+    for (const name of ["warm", "cool"]) {
+      const to = drawn[name] ? 1 : 0;
+      glow[name] += Math.max(-fade, Math.min(fade, to - glow[name]));
+      set(`glow.${name}`, Math.round(glow[name] * 40) / 40, (g) => gl.set(`lamp.${name}`, { color: mixHex(LAMP.off, LAMP[name][0], g), emissive: LAMP[name][1], intensity: 0.95 * g }));
+    }
 
     const sign = (v, digits) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(digits);
     const rate = rateOf(e);
@@ -209,6 +259,10 @@ function mount(fig) {
       if (now && document.activeElement === stage) status.textContent = now;
     }
     stage.setAttribute("data-flash", flash.on > 0.25 ? "on" : "off");
+    if (glDirty) {
+      glDirty = false;
+      gl.render();
+    }
   }
   const at3 = (p) => iso(p, P);
 
