@@ -12,8 +12,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { figkit, k, G, A } from "../../shared/figkit.mjs";
+import { figkit, k, G, A, glPart } from "../../shared/figkit.mjs";
 import { plate, page, embed } from "../../shared/page.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -107,6 +108,11 @@ const HEAD = (() => {
     `<clipPath id="ib-scr"><path d="M${scr.x0} ${scr.y0}H${scr.x1}V${scr.y1}H${scr.x0}Z"/></clipPath>`;
   prism("head", Fh, poly, -t, 0, { tone: "mid" }, { extra: screen });
   HEAD.screen = { scr };
+  // 3-D layer: the bezel and the screen are drawn in colour, so they get a paper panel on the tablet's face
+  const ex = [0, -1, 0];
+  const ey = G.mul3(v, -1);
+  const corner = G.add3(G.add3(c, G.mul3(n, 0.09)), G.add3(G.mul3(u, w / 2), G.mul3(v, h / 2)));
+  F.glNote(glPart.panel("head.screen", G.add3(corner, G.add3(G.mul3(ex, scr.x0 - 0.8), G.mul3(ey, scr.y0 - 0.8))), ex, ey, scr.x1 - scr.x0 + 1.6, scr.y1 - scr.y0 + 1.6, { shadow: false }));
 }
 // grips on rods: a rod from each dock to its grip; the grip has palm and thumb electrode bands
 const GRIPS = [];
@@ -123,6 +129,8 @@ for (const side of [1, -1]) {
   turned(`grip`, Fg, [[0, 2.2], [1, 2.6], [gripLen - 1, 2.6], [gripLen, 2.2]], { tone: "mid" }, {
     inner: Ln([2, 5.2, 7.2, 10.4].map((s) => G.arcOf(Fg, s, 2.6, P)).join(""), { tone: "lo" }),
   });
+  // 3-D layer: the palm and thumb electrodes are metal bands on the grip (the SVG marks their edges with four lines)
+  for (const [i, [s0, s1]] of [[2, 5.2], [7.2, 10.4]].entries()) F.glNote(glPart.lathe(`grip.band${i}`, Fg, [[s0, 2.68], [s1, 2.68]], { bevel: 0.05, shadow: false }));
   GRIPS.push({ side, grip, axis, Fg, gripLen });
 }
 
@@ -177,10 +185,14 @@ function segment(name, o, a, r, len, { side = 1, current = true, host = null } =
     G.pointOf(Fs, len * 0.94, r, band[1]),
     G.pointOf(Fs, len * 0.06, r, band[1]),
   ], true);
-  const glass = `<g class="ib-glass">${S(G.disc(0, len, r, Fs, P, { rims: "none" }), { tone: "hi", crease: "none" })}<path class="ib-shine" d="${shine}"/></g>`;
+  const glass = `<g class="ib-glass">${S(G.disc(0, len, r, Fs, P, { rims: "none" }), { tone: "hi", crease: "none" })}<path class="ib-shine" data-gl3-hide="" d="${shine}"/></g>`;
   const seat = host ? { seated: true, cut: host } : {};
   const shape = record(A.disc(Fs, 0, len, r, { name: `body.${name}`, ...seat }));
   put(`body.${name}`, G.add3(o, G.mul3(a, len / 2)), back + section + glass, [shape], { attrs: ` data-seg="${name}"` });
+  // 3-D layer (this item is drawn with the kit directly, so the helpers recorded nothing): the back half as a solid
+  // whose flat face is the section the SVG draws on, and the glass tube round it (its ends sit inside the caps).
+  F.glNote(glPart.prism(`body.${name}.core`, Fs, half, 0, len, { bevel: 0 }));
+  F.glNote(glPart.lathe(`body.${name}`, Fs, [[-0.4, r], [len + 0.4, r]], { m: "glass", bevel: 0 }));
   const capR = r + 0.6;
   const C = 1.6;
   pin(`body.${name}.cap0`, Fs, -C, 0, capR, { tone: "mid" }, { inner: Ln(G.arcOf(Fs, -C / 2, capR, P), { tone: "faint" }) });
@@ -262,7 +274,7 @@ const MET = { w: 13.5, h: 10, r: 1.4, piv: 3.2, len: 7.4, from: -50, span: 100, 
     }).join("L");
     meters +=
       `<path class="ib-meter" d="${flatRect(x0, y0, MET.w, MET.h, MET.r)}"/>` +
-      `<path class="iso-line" data-tone="mid" d="${flatRect(x0, y0, MET.w, MET.h, MET.r)}"/>` +
+      `<path class="iso-line ib-frame" data-tone="mid" d="${flatRect(x0, y0, MET.w, MET.h, MET.r)}"/>` + // the frame (figure.css draws it as a bezel while the 3-D layer is on)
       `<path class="iso-line" data-tone="lo" d="${arc}"/>` +
       `<path class="iso-line" data-tone="lo" d="${t.minor}"/><path class="iso-line" data-tone="mid" d="${t.major}"/>` +
       `<path class="iso-line ib-needle" data-tone="hi" data-free="" data-needle="${name}" d="M${piv[0]} ${piv[1] + 1}L${piv[0]} ${piv[1] - MET.len + 0.4}" style="stroke-width:0.9"/>` +
@@ -279,6 +291,15 @@ const MET = { w: 13.5, h: 10, r: 1.4, piv: 3.2, len: 7.4, from: -50, span: 100, 
   const faceSvg = `<g transform="${m}">${meters}</g>`;
   prism("console", Fc, CONSOLE_POLY, 0, CONSOLE.x1 - CONSOLE.x0, { tone: "mid" }, { extra: faceSvg + Dots([at([CONSOLE.x0 + 2, CONSOLE.y1 - 1.6, 7]), at([CONSOLE.x1 - 2, CONSOLE.y1 - 1.6, 7])], { size: 0.5 }) });
   DATA_SWITCH.sw = sw;
+  // 3-D layer: the meter faces are drawn in colour on the sloped face, so each gets a paper card of its own outline
+  // (a hair proud of the face; its frame stays ink, drawn heavier: see figure.css); the switch is a low knob the
+  // pointer line is drawn on.
+  const Fface = { o: FACE.top, a: FACE.nrm, u: [1, 0, 0], v: FACE.dir };
+  for (const [name, c] of Object.entries(METERS)) {
+    const card = roundRect(c.x - MET.w / 2, c.x + MET.w / 2, c.y - MET.h / 2, c.y + MET.h / 2, MET.r, 5);
+    F.glNote(glPart.prism(`meter.${name}`, Fface, card, 0, 0.06, { m: "paper", bevel: 0, shadow: false })); // flat on the face: no shadow, no occlusion fringe
+  }
+  F.glNote(glPart.lathe("switch.knob", { ...Fface, o: G.add3(FACE.top, G.add3(G.mul3([1, 0, 0], sw.x), G.mul3(FACE.dir, sw.y))) }, [[0, 2.6], [0.5, 2.6]], { bevel: 0.16 }));
 }
 function flatRect(x, y, w, h, r) {
   return `M${x + r} ${y}H${x + w - r}Q${x + w} ${y} ${x + w} ${y + r}V${y + h - r}Q${x + w} ${y + h} ${x + w - r} ${y + h}H${x + r}Q${x} ${y + h} ${x} ${y + h - r}V${y + r}Q${x} ${y} ${x + r} ${y}Z`;
@@ -297,7 +318,45 @@ const LABEL_TEXT =
   "An InBody 580 body-composition analyser, with a glass body standing on its footplate and holding its grips. The body is five cylinders cut lengthwise: two thin arms, a wide short trunk and two legs. Inside each, long cells sit in fluid, and the measuring current runs through as a stream of dots: round the cells at low frequency, increasingly through them at high frequency. A console beside it carries five meters, one per segment; the arm and leg meters read several times higher than the trunk's.";
 const svg = k.figureSvg({ width: W, height: H, label: LABEL_TEXT, body: [...back, ...groups] });
 
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same solids, rendered
+// The brand's colourway, not a maker's finish: warm white shells; forest paint on the bench, the column's trim and
+// the glass body's caps and soles; graphite and rubber at the base, the feet and the grips; brushed metal for the
+// electrodes, rods, joints and the knob; glass for the five tubes (live.js gives them their own glass material).
+// The floor is under the bench's feet (z = -13).
+const GL3W = gl3Wire();
+const GL3 = {
+  ...F.gl3Scene({
+    ground: -13,
+    materials: [
+      ["^stand\\.foot", "rubber"],
+      ["^stand\\.label", "alu"],
+      ["^stand\\.plate", "forest"],
+      ["^fp\\.foot", "rubber"],
+      ["^fp\\.base", "graphite"],
+      ["^fp\\.(sole|heel)", "nickel"],
+      ["^col\\.strip", "forest"],
+      ["^col\\.neck", "graphite"],
+      ["^head\\.joint", "nickel"],
+      ["^grip\\.rod", "alu"],
+      ["^grip\\.band", "nickel"],
+      ["^grip$", "graphite"],
+      ["^switch\\.knob", "nickel"],
+      ["^body\\.\\w+\\.cap", "forest"],
+      ["^body\\.\\w+\\.core", "shell"],
+      ["^shoulder", "nickel"],
+      ["^sole$", "forest"],
+      ["^stud\\.\\w+\\.boss", "graphite"],
+      ["^stud\\.", "brass"],
+      ["^cable", "rubber"],
+    ],
+  }),
+  ...GL3W.chunk,
+};
+
 const DATA = {
+  gl3: GL3,
+  W,
+  H,
   P,
   segs: SEGS.map(({ name, len, cap, colY, gapY, current }) => ({ name, len, cap, colY, gapY, current })),
   meter: MET,
@@ -307,8 +366,8 @@ const DATA = {
 };
 const MODEL_SRC = readFileSync(join(HERE, "model.mjs"), "utf8").replace(/^export /gm, "");
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
-const SCRIPT = `${MODEL_SRC}\n${LIVE}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${MODEL_SRC}\n${LIVE}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 const T = M.TRUTH;
 const z50 = (s) => M.impedance(s, 50).Z.toFixed(0);
 const CAPTION = [
@@ -345,6 +404,8 @@ writeFileSync(join(HERE, out), page({ title: "Five cylinders on a bridge", theme
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `scale ${KS.toFixed(3)}`);
 // The arm tubes end with their rim on the shoulder balls; the 4 px² sliver at that rim was checked at 8× (shots/tmp/shoulder8x.png).

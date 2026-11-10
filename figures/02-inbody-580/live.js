@@ -15,6 +15,84 @@ function mount(fig) {
   const KIND = (name) => (name.startsWith("arm") ? "arm" : name.startsWith("leg") ? "leg" : "trunk");
   const MET = DATA.meter;
   const SPEED = 9; // world units per second through a 9-lane section; narrower sections run faster (same current)
+  // the 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
+  // Nothing solid moves in this figure (dots, needles and the switch are ink), so the layer is drawn on change only.
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => glArrive(), build: glGlass });
+  // The far shoulder stands above the viewBox (the SVG shows it: its overflow is visible), and the layer's canvas
+  // only covers the SVG's box. So while the layer is on, the viewBox reaches up to it (same scale, same place on
+  // the page: the margin takes the extra height back) and the layer's camera follows.
+  const VB_TOP = 36;
+  function glArrive() {
+    if (gl.on && typeof ResizeObserver !== "undefined") {
+      svg.setAttribute("viewBox", `0 ${-VB_TOP} ${DATA.W} ${DATA.H + VB_TOP}`);
+      svg.style.marginTop = `${((-VB_TOP / DATA.W) * 100).toFixed(4)}%`;
+      stage.style.display = "flow-root"; // the stage keeps its own box: the margin doesn't collapse through it
+      gl.view(0, -VB_TOP, DATA.W, DATA.H + VB_TOP);
+    } else {
+      svg.setAttribute("viewBox", `0 0 ${DATA.W} ${DATA.H}`);
+      svg.style.marginTop = "";
+      stage.style.display = "";
+    }
+    glGlow(true);
+  }
+  // The five tubes: the layer's glass preset is a faint film in this studio (an upright tube seen from above mirrors
+  // the floor), so the figure brings its own glass: a hair of tint, edges that thicken toward the silhouette, and
+  // long highlights that keep their place across each tube whatever its lean. It stays out of the shadow and
+  // occlusion passes, as the preset does (the parts are recorded as glass in build.mjs).
+  function glGlass({ THREE, root, material, night }) {
+    const preset = material("glass");
+    const glass = new THREE.ShaderMaterial({
+      uniforms: {
+        uTint: { value: new THREE.Color(night ? 0x9fbf96 : 0xb9c7b6) },
+        uEdge: { value: new THREE.Color(night ? 0xcfe6c6 : 0x8a9a86) },
+        uFilm: { value: night ? 0.07 : 0.06 },
+        uRim: { value: night ? 0.42 : 0.62 },
+      },
+      vertexShader: `
+        varying vec3 vN; varying vec3 vAcross;
+        void main(){
+          vN = normalize(normalMatrix * normal);
+          vec3 ax = normalize(mat3(modelViewMatrix) * vec3(0.0, 0.0, 1.0)); // the tube's axis, as the camera sees it
+          vec3 ac = cross(ax, vec3(0.0, 0.0, 1.0));
+          vAcross = normalize(ac) * (ac.x < 0.0 ? -1.0 : 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }`,
+      fragmentShader: `
+        uniform vec3 uTint; uniform vec3 uEdge; uniform float uFilm; uniform float uRim;
+        varying vec3 vN; varying vec3 vAcross;
+        void main(){
+          vec3 n = normalize(vN);
+          float t = dot(n, normalize(vAcross));            // across the tube as it is seen: -1 left edge, +1 right edge
+          float rim = smoothstep(0.55, 1.0, abs(t));
+          float s1 = exp(-pow((t + 0.5) / 0.1, 2.0));       // the broad highlight, left of centre
+          float s2 = exp(-pow((t + 0.27) / 0.022, 2.0));    // a thin one beside it
+          float s3 = exp(-pow((t - 0.74) / 0.04, 2.0));     // the far side's return
+          float hi = clamp(s1 * 0.62 + s2 * 0.5 + s3 * 0.34, 0.0, 1.0);
+          float a = uFilm + rim * rim * uRim;
+          vec3 c = mix(uTint, uEdge, rim);
+          float A = a + hi * (1.0 - a);
+          gl_FragColor = vec4((c * a + vec3(2.6) * hi * (1.0 - a)) / max(A, 1e-4), A);
+        }`,
+      transparent: true,
+      depthWrite: false,
+    });
+    root.traverse((o) => {
+      if (o.isMesh && o.material === preset) o.material = glass;
+    });
+    return { dispose: () => glass.dispose() };
+  }
+  // The measured segment glows a little from inside (the SVG lights its needle; the ink stays the truth).
+  const GLOW = Object.fromEntries(DATA.segs.map((sg) => [sg.name, { x: 0, to: 0 }]));
+  function glGlow(now) {
+    let moved = !!now;
+    for (const [name, g] of Object.entries(GLOW)) {
+      if (g.x === g.to && !now) continue;
+      g.x = now || still.matches || Math.abs(g.to - g.x) < 0.02 ? g.to : g.x + (g.to - g.x) * 0.22;
+      gl.set(`body.${name}.core`, { emissive: 0xfff1d6, intensity: 0.8 * g.x });
+      moved = true;
+    }
+    if (moved) gl.render();
+  }
 
   // ---------------------------------------------------------------- dots: one set per segment on the measured (right) path
   const NS = "http://www.w3.org/2000/svg";
@@ -86,6 +164,8 @@ function mount(fig) {
     stage.setAttribute("aria-valuetext", valuetext);
     groups.freq.forEach((b, i) => setPressed(b, i === fi));
     groups.seg.forEach((b) => setPressed(b, b.dataset.value === seg));
+    for (const [name, g] of Object.entries(GLOW)) g.to = lit.includes(name) ? 1 : 0;
+    if (still.matches) glGlow(false);
   }
   const setPressed = (b, on) => {
     b.setAttribute("aria-checked", on ? "true" : "false");
@@ -150,6 +230,7 @@ function mount(fig) {
         if (d.through) d.node.setAttribute("data-in", "");
         else d.node.removeAttribute("data-in");
       }
+    glGlow(false);
   }
 
   function tick(now) {

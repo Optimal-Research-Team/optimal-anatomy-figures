@@ -26,3 +26,6 @@
 .ib-wall .iso-fill { fill: var(--ib-ecw); }
 .iso.optimal { --ib-glass: #9fbf96; --ib-shine: #f3f7ee; }
 .iso.optimal[data-theme="light"] { --ib-glass: #dfe9e4; --ib-shine: #ffffff; }
+/* With the 3-D layer on (shared/gl3) the meter's frame is drawn as a bezel: a band in the face's own plane, so it
+   foreshortens with the face and stays crisp at any pixel ratio (a rendered bezel this thin breaks up on a phone). */
+.iso-stage[data-gl3="on"] .ib-frame { vector-effect: none; stroke: #454c44; stroke-width: 0.75; stroke-opacity: 1; stroke-linejoin: round; }
