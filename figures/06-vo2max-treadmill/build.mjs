@@ -10,10 +10,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { figkit, k, G, A } from "../../shared/figkit.mjs";
+import { figkit, k, G, A, glPart } from "../../shared/figkit.mjs";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { MANNEQUIN } from "../../shared/mannequin.mjs";
 import { assessorSvg } from "../../shared/assessor.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -34,6 +35,7 @@ const DISPLAY = { x: 100, y: -37, w: 16, d: 74, r: 2.5, z0: 66, z1: 232 };
 const SCREEN = { y0: -31, y1: 31, z0: 115, z1: 226 }; // the panel on the display's face (x = 100), facing the runner
 const RAIL = { x0: -8, x1: 72, z: 118, h: 6, half: 47.5 }; // handrails at y = ±47.5, over the uprights beside the hood
 const ASSESSOR = { at: [-150, 22], heading: -8 }; // behind the treadmill, watching the runner over the tablet
+const SLAT_GAP = 12; //      the belt's slat lines, one every 12 cm (live.js draws them at the same pitch)
 
 const B = { ...MANNEQUIN.BODY };
 B.pelvis = M.pelvisOf(B);
@@ -74,7 +76,7 @@ turned("roller", G.frameOf([-104, -29, 15.5], [0, 1, 0], [1, 0, 0], [0, 0, 1]), 
 // ---------------------------------------------------------------- belt (slats, landing marks and the plumb spot drawn by the page) and step rails
 box("belt", { x: BELT.x, y: -BELT.half, w: BELT.x1 - BELT.x, d: BELT.half * 2, r: 0.5 }, 22, BELT_Z - 22, { tone: "lo" }, {
   steps: 2,
-  extra: `<path class="cr-slats iso-line" data-tone="faint" data-part="slats" d=""/><g data-part="marks"></g>`,
+  extra: `<path class="cr-slats iso-line" data-tone="faint" data-part="slats" data-gl3-hide d=""/><g data-part="marks"></g>`,
 });
 const TREAD = [33.5, 37.5, 41.5, 45.5];
 for (const side of [-1, 1]) {
@@ -105,7 +107,7 @@ const hood = box("hood", { x: BELT.x1, y: -43.5, w: 26, d: 87, r: 4 }, 22, 9, { 
   const lens = (y, z, r) => Ln(G.circleOf(G.frameOf([96.97, y, z], [-1, 0, 0], [0, 1, 0], [0, 0, 1]), 0, r, P), { tone: "mid" });
   box("camera", { x: 97, y: -8.5, w: 3, d: 17, r: 1.2 }, 101, 13, { tone: "hi", crease: "lo" }, {
     steps: 2,
-    extra: [-4.2, 4.2].map((y) => `<path class="cr-lens" d="${G.circleOf(G.frameOf([96.97, y, 107.5], [-1, 0, 0], [0, 1, 0], [0, 0, 1]), 0, 2.6, P)}"/>${lens(y, 107.5, 2.6)}`).join("") + Dots([at([96.97, 0, 103.6])], { size: 0.8, tone: "lit" }),
+    extra: [-4.2, 4.2].map((y) => `<path class="cr-lens" data-gl3-hide d="${G.circleOf(G.frameOf([96.97, y, 107.5], [-1, 0, 0], [0, 1, 0], [0, 0, 1]), 0, 2.6, P)}"/>${lens(y, 107.5, 2.6)}`).join("") + `<g data-gl3-hide>${Dots([at([96.97, 0, 103.6])], { size: 0.8, tone: "lit" })}</g>`,
   });
 }
 
@@ -132,6 +134,7 @@ for (const side of [-1, 1]) {
 }
 // the side touch panel on a stalk off the far handrail, tilted toward the runner; its screen shows the belt speed
 const CONSOLE = { x: RAIL.x1 - 2, y: -RAIL.half };
+let CONSOLE_FACE = null; // the panel's face plane, for the 3-D layer's paper panel
 const stalk = cyl("console.stalk", CONSOLE.x, CONSOLE.y, 1.4, RAIL.z + RAIL.h, 14.7, { tone: "lo" }, { steps: 16 });
 {
   const tilt = 22 * (Math.PI / 180);
@@ -141,6 +144,7 @@ const stalk = cyl("console.stalk", CONSOLE.x, CONSOLE.y, 1.4, RAIL.z + RAIL.h, 1
   const Ft = G.frameOf(G.add3(c, G.mul3(n, -1)), n, [0, 1, 0], up); // a: through the slab, u: across, v: up the face
   const corner = G.add3(G.add3(G.add3(c, G.mul3(n, 1.02)), [0, -12, 0]), G.mul3(up, 7.6));
   const m = planeMatrix(corner, [0, 1, 0], G.mul3(up, -1));
+  CONSOLE_FACE = { corner, ex: [0, 1, 0], ey: G.mul3(up, -1), n };
   const face = `<g transform="${m}"><rect class="cr-screen" x="0.8" y="0.8" width="22.4" height="13.6" rx="0.8"/><text class="cr-digits" data-part="speed" x="21.6" y="10.4" font-size="8" text-anchor="end">9.3</text><text class="cr-unit" x="21.6" y="13.4" font-size="2.2" text-anchor="end">km/h</text></g>`;
   prism("console", Ft, [[-12, -8.4], [12, -8.4], [12, 8.4], [-12, 8.4]], 0, 2, { tone: "mid" }, { extra: face, meta: { seated: true, cut: [stalk] } });
 }
@@ -157,14 +161,97 @@ const svg = k.figureSvg({
   body: [...back, ...groups.filter((g) => !isFront(g)), `<g data-part="runner"></g>`, ...groups.filter(isFront), AS.svg],
 });
 
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same solids, rendered
+// The Creator 600 as Fig 4 renders it (the same machine: keep the two in step), in the brand's colourway, no maker's
+// finish: warm white shells (housing, rear caps, hood, column, display), sage uprights as the accent (forest paint
+// sinks into the Forest night page; sage reads on both), a rubber belt over its roller, slate step rails, graphite
+// where hands go (the handrails), brushed aluminium rail ends, a steel stalk. The runner and the assessor are
+// Fig 5's: maple with satin nickel joints, a silicone mask with a white analyser (live.js), a graphite tablet.
+// Every surface the drawing lights in colour (the display, the side panel, the tablet) has a paper panel under it.
+const GL3W = gl3Wire();
+const FLOOR_F = F.vframe(0, 0, 0);
+const r3 = (v) => Math.round(v * 1000) / 1000;
+const rectOf = (u0, u1, v0, v1) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]];
+// A surface the SVG draws on in colour (a screen): a paper-white panel with the drawn rect's round corners, a hair
+// inside its outline (so the panel's bright edge sits under the screen's own dark fill) and a hair proud of the body.
+const paperPanel = (name, o, ex, ey, w, h, r, inset = 0.45) =>
+  glPart.prism(name, G.frameOf(o, G.cross3(ex, ey), ex, ey), F.roundRect(inset, w - inset, inset, h - inset, Math.max(0.1, r - inset)), -0.4, 0.03, { m: "paper", bevel: 0 });
+F.glNote(paperPanel("display.screen", [DISPLAY.x, SCREEN.y0, SCREEN.z1], [0, 1, 0], [0, 0, -1], SCREEN.y1 - SCREEN.y0, SCREEN.z1 - SCREEN.z0, 1.2));
+F.glNote(paperPanel("console.screen", G.add3(G.add3(CONSOLE_FACE.corner, G.mul3(CONSOLE_FACE.ex, 0.8)), G.mul3(CONSOLE_FACE.ey, 0.8)), CONSOLE_FACE.ex, CONSOLE_FACE.ey, 22.4, 13.6, 0.8));
+// the depth camera's two apertures as bezels with dark glass, and its pilot light (the drawing's copies step aside)
+for (const y of [-4.2, 4.2]) {
+  const Fl = G.frameOf([97, y, 107.5], [-1, 0, 0], [0, 1, 0], [0, 0, 1]);
+  F.glNote(glPart.lathe(`camera.bezel${y > 0 ? "L" : "R"}`, Fl, [[-0.4, 2.6], [0.3, 2.6]], { bevel: 0.12 }));
+  F.glNote(glPart.lathe(`camera.lens${y > 0 ? "L" : "R"}`, Fl, [[0.3, 2.05], [0.42, 2.05]], { bevel: 0.04 }));
+}
+F.glNote(glPart.ball("camera.pilot", [96.98, 0, 103.6], 0.5, { shadow: false }));
+// The belt's slats: the drawing's moving lines are ink, and ink can't show on a rubber belt, so the layer carries
+// the same lines as thin strips. They are modelled across the belt at x = 0; the page puts each one where it draws
+// its line, every frame (live.js), and the drawn lines step aside.
+const SLAT = { gap: SLAT_GAP, w: 0.44, n: Math.ceil((BELT.x1 - BELT.x) / SLAT_GAP) + 1 };
+for (let i = 0; i < SLAT.n; i++) F.glNote(glPart.prism(`belt.slat${i}`, FLOOR_F, rectOf(-SLAT.w / 2, SLAT.w / 2, -BELT.half + 0.6, BELT.half - 0.6), BELT_Z - 0.1, BELT_Z + 0.03, { bevel: 0, shadow: false }));
+{
+  // the big shells get a rounder edge than the kit's default, so they catch the studio's key light
+  const bevelOf = (n) => (/^(deck$|deck\.cap|hood|column|display$)/.test(n) ? 0.9 : /^(front\.)?(rail|railcap|upright)[LR]$/.test(n) ? 0.6 : /^deck\.rail/.test(n) ? 0.3 : null);
+  // Joints. The kit stands one solid exactly on the next, and the renderer rounds every solid's ends over, which
+  // leaves a hairline groove at each joint: a dotted dark line at phone size. So the rendered copies are let into
+  // what they stand on (down by `sink`) and run a little into what they butt against along the deck (`grow`:
+  // [toward the rear, toward the front]). The drawing's own solids are untouched.
+  const sink = { display: 1.2, hood: 1.2, "deck.railL": 1.2, "deck.railR": 1.2, "console.stalk": 0.5, "front.uprightL": 2.2, uprightR: 2.2 };
+  const grow = { "deck.railL": [0.9, 0.5], "deck.railR": [0.9, 0.5], hood: [0, 0.6], camera: [0, 0.5] };
+  for (const q of F.GL) {
+    const bevel = bevelOf(q.n);
+    if (bevel) q.bevel = bevel;
+    if (sink[q.n] && q.k === "p") q.s0 = r3(q.s0 - sink[q.n]);
+    if (sink[q.n] && q.k === "l") q.prof = q.prof.map((pt, i) => (i === 0 ? [r3(pt[0] - sink[q.n]), ...pt.slice(1)] : pt));
+    if (grow[q.n]) {
+      const xs = q.poly.map((pt) => pt[0]);
+      const mid = (Math.min(...xs) + Math.max(...xs)) / 2;
+      q.poly = q.poly.map(([x, y]) => [r3(x + (x < mid ? -grow[q.n][0] : grow[q.n][1])), y]);
+    }
+  }
+  // the belt runs on over the rear roller: its body reaches the roller's crown, so belt and roller read as one loop
+  // (and, at the front, a little way under the hood)
+  Object.assign(F.GL.find((q) => q.n === "belt"), glPart.prism("belt", FLOOR_F, k.roundedPlan({ x: -104, y: -BELT.half, w: BELT.x1 + 104 + 0.5, d: BELT.half * 2, r: 0.5 }, 4), 22, BELT_Z, { bevel: 0.08 }));
+}
+F.glFigure("as", AS.gl, (q) => (q.name === "tablet" ? "graphite" : null));
+F.glNote(glPart.panel("as.screen", AS.glScreen.o, AS.glScreen.ex, AS.glScreen.ey, AS.glScreen.w, AS.glScreen.h));
+const GL3 = {
+  ...F.gl3Scene({
+    ground: 0,
+    // a long, low machine: the default occlusion radius (4.5 % of its span) reaches too far for the creases between
+    // its shells and turns grainy at the phone quality level, so it is held to 5 cm and eased a little (as Fig 4)
+    look: { aoRadius: 5, ao: 0.8 },
+    materials: [
+      ["^stand\\.foot", "graphite"],
+      ["^deck\\.rail", "slate"],
+      ["^belt\\.slat", "slate"],
+      ["^belt|^roller", "rubber"],
+      ["upright[LR]$", "sage"],
+      ["railcap[LR]$", "alu"],
+      ["rail[LR]$", "graphite"],
+      ["^console\\.stalk", "steel"],
+      ["^console", "graphite"],
+      ["^camera\\.bezel", "nickel"],
+      ["^camera\\.lens", "smoke"],
+      ["^camera\\.pilot", "leaf"],
+    ],
+  }),
+  ...GL3W.chunk,
+};
+
 const DATA = {
+  gl3: GL3,
   P,
+  W,
+  H,
   B,
   beltZ: BELT_Z,
   runX: RUN_X,
   belt: BELT,
   screen: { ...SCREEN, x: DISPLAY.x },
   tablet: AS.screen,
+  slats: SLAT,
 };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const MODEL_SRC = strip(readFileSync(join(HERE, "model.mjs"), "utf8"));
@@ -173,8 +260,8 @@ const VIEW_SRC = readFileSync(join(ROOT, "shared/mannequin-view.js"), "utf8") + 
 const latheSource = strip(readFileSync(join(ROOT, ".claude/skills/anatomy/kit/lathe.mjs"), "utf8"));
 const LATHE = `const G = (() => {${latheSource}\nreturn { frameOf, frameAlong, prismOf, pointOf, solidOf, sphereOf, circleOf };})();\n`;
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
-const SCRIPT = `${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
-const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(ROOT, "shared/assessor.css"), "utf8") + readFileSync(join(ROOT, "figures/04-creator-600/figure.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
+const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(ROOT, "shared/assessor.css"), "utf8") + readFileSync(join(ROOT, "figures/04-creator-600/figure.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 
 const T45 = M.runTestOf(45);
 const CAPTION = [
@@ -209,6 +296,8 @@ writeFileSync(join(HERE, out), page({ title: "The treadmill ramp", theme: THEME,
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `scale ${KS.toFixed(3)}`, `H ${H}`, `facing away ${AS.facingAway}`);
 A.auditOrExit(R, P, {});

@@ -6,7 +6,7 @@
 - 25 recorded solids: Fig 4's deck, display, uprights, handrails and side touch panel, without Fig 4's gait instruments.
 - The page-drawn runner: Fig 4's mannequin and gait, run at the speed of the moment, plus the mask and analyser.
 - The assessor, drawn once by `shared/assessor.mjs`.
-- SVG only.
+- SVG, plus the shared real-time 3-D layer under it since 2026-11-10 (see "The 3-D layer" below). The SVG is still the whole figure wherever the layer can't run.
 
 **Mapping in one sentence:** the belt speeds up a little every few seconds while the mannequin runs in a mask whose wireless analyser blinks each breath. The assessor's tablet plots oxygen uptake against speed: a straight line at about 3.5 ml/kg/min per km/h (at a 1 % incline) that flattens at the ceiling. The display still draws the live skeleton, and the side panel shows the belt speed.
 
@@ -24,6 +24,18 @@ It's a generic UI, not a copy of the Creator software. Audit passed and `lines.m
 - Measured by hit-testing the digits through the stride at each ceiling, at 1100 and 390 px:
   - The first digit was up to 94 % covered; now nothing beyond the blank bezel is.
 - The stage viewBox is unchanged (600 × 713), so card reserves stand. `scripts/verify.mjs` passed: line ends 0 in both themes, fits at 390/360/320, console clean.
+
+**The 3-D layer (2026-11-10, `shared/gl3`):** the figure's own solids are now rendered under the drawing (PBR materials, studio light, soft shadows), and the SVG stays on top as the ink. Nothing in the model, the numbers, the words or the interaction changed, and with `?gl=off` (or wherever the layer can't run) the page is the drawing as before, checked pixel for pixel against the previous build in both themes at 900 and 390 px.
+
+- **Colourway: Fig 4's, the same machine. Keep the two in step.** Warm white shells (housing, rear caps, hood, column, display), sage uprights, a rubber belt running on over its roller, slate step rails, graphite handrails with brushed aluminium ends, a steel stalk under a graphite side panel, graphite feet. The runner and the assessor are Fig 5's: maple with satin nickel joints, a silicone mask with a white analyser, a graphite tablet.
+- **Screens:** the display, the side panel and the tablet each have a `paper` panel under the drawn screen, so their colours show exactly as drawn.
+- **The belt's slats** are ink in the drawing, and ink can't show on rubber. The layer carries the same lines as thin slate strips (`belt.slat0…14`); `beltSvg()` in `live.js` puts each one where it draws its line, every frame, and widens them on a small stage so they never break into dashes. The drawn lines step aside while the layer is on (`data-gl3-hide`).
+- **The depth camera's** apertures are nickel bezels with dark glass and its pilot light glows; the drawn lens fills and pilot dot step aside (`data-gl3-hide`), the drawn rings stay.
+- **Left as drawn (ink over the render):** the analyser's blinking light and the joint tracking dots (tiny markers on white and nickel), every seam, vent slot, tread line, bolt and screw, and everything on the three screens.
+- **Joints.** The kit stands one solid exactly on the next and the renderer rounds every solid's ends, which leaves a hairline groove at each joint: a dotted dark line at phone size. The rendered copies (never the drawing's solids) are let a few millimetres into what they stand on or butt against: display into column, hood into housing and column, step rails into housing, caps and hood, uprights into housing, camera into display. See `sink` and `grow` in `build.mjs`. Fig 4 doesn't do this yet.
+- **Look:** `aoRadius: 5, ao: 0.8`, as Fig 4 (a long, low machine: the default occlusion radius turns grainy at the phone quality level).
+- **Known limits.** The assessor stands at the stage's bottom edge, where the layer's floor shadow has faded out, so their feet have next to no ground shadow. Keeping the drawn halo there left a white fringe round the feet, so it stays hidden. The seam between each rear cap and the housing is a little rough at the phone quality level.
+- `node scripts/verify.mjs 06-vo2max-treadmill` passed (stage ends at `data-gl3="on"`, console clean, line ends 0 with `?gl=off`). The embed (`embed/test.html`) ends at `data-gl3="on"` too; `optimal-gl3.js` sits next to the embed script.
 
 ## Numbers
 

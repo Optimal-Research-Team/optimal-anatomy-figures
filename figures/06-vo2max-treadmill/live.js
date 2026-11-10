@@ -23,7 +23,11 @@ function mount(fig) {
     return n;
   };
   const KS = P.scale * Math.sqrt(1.6);
-  const view = mannequinView(nodes.runner, P, {});
+  // the 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => render(0) });
+  const runnerSkin = (p) => (p.name === "mask" ? "silicone" : p.name === "analyser" ? "shell" : null);
+  const view = mannequinView(nodes.runner, P, { gl, key: "runner", materialOf: runnerSkin });
+  let glLit = false;
   const Z = DATA.beltZ;
   const base = [DATA.runX, 0, Z];
   const fmt = (min) => {
@@ -83,6 +87,16 @@ function mount(fig) {
     let d = "";
     for (let x = DATA.belt.x1 - off; x > DATA.belt.x + 0.5; x -= gap) d += lineOnTop([x, -DATA.belt.half + 0.6], [x, DATA.belt.half - 0.6], Z + 0.02, P);
     nodes.slats.setAttribute("d", d);
+    // The rendered belt (shared/gl3): the same lines as thin strips, each put where its line is drawn (ink can't show
+    // on rubber, so the drawn lines step aside while the layer is on). A strip keeps at least a device pixel of
+    // width, so a small or low-density stage doesn't break it into dashes.
+    if (!gl.on) return;
+    const st = gl.stats();
+    const fat = Math.max(1, 1.15 / (DATA.slats.w * KS * (st.cssW / DATA.W) * st.dpr));
+    for (let i = 0; i < DATA.slats.n; i++) {
+      const x = DATA.belt.x1 - off - i * gap;
+      gl.set(`belt.slat${i}`, x > DATA.belt.x + 0.5 ? { visible: true, F: { o: [x, 0, 0], a: [0, 0, 1], u: [fat, 0, 0], v: [0, 1, 0] } } : { visible: false });
+    }
   }
   // the Creator's screen as a clean live dashboard: clock, belt speed, the tracked skeleton on its
   // floor line, and tiles for cadence, step length and grade (all from the model)
@@ -175,6 +189,12 @@ function mount(fig) {
     if (nodes.speed) nodes.speed.textContent = s.v.toFixed(1);
     plotDraw(t, pulse);
     readout(s);
+    // the 3-D layer: the camera's pilot light glows (set once, when the layer arrives), then one render, last
+    if (gl.on !== glLit) {
+      glLit = gl.on;
+      if (glLit) gl.set("camera.pilot", { emissive: 0x7fe08a, intensity: 2.4 });
+    }
+    gl.render();
   }
 
   // ---------------------------------------------------------------- readout
