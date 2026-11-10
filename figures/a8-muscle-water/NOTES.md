@@ -67,3 +67,19 @@ Peter approved the isometric look (A3b), so the slice is now the front face of a
   - a cylinder shade square to the axis.
 - **Visibility:** only the half of the cylinder facing the viewer is drawn (`DATA.body.ta`–`tb`, from the view vector). That half doesn't depend on the spread, because RX and RY scale together.
 - **Verified:** both themes; 320 px; Extra fluid scene; console clean; line ends 0.
+
+## Round 3 (2026-11-10): the bundle in real-time 3-D (shared/gl3)
+The same bundle, modelled and lit, under the SVG. `gl-scene.js` holds the scene (the layer's `build` hook); `build.mjs` inlines it and passes the projection (`DATA.P`, the same `PB` the drawing uses) and `DATA.gl3`. World units are the section's own, so every part sits where the drawing has it (checked by laying the drawing over the render at 50 %: fibres, nuclei, capillaries and sheath coincide in every scene).
+
+- **Fibres:** one prism per fibre (44), cut from the drawing's own outline (the same Catmull-Rom through the cell's corners as `smooth()`), run the length of the bundle, with a rounded shoulder and a slightly pillowed cut face. Myofibril ends stipple the cut face and cross-striations band the sides (both procedural in the fibre's shader; each fades out before it is too fine to resolve, so phones don't shimmer). Two fibre types, two materials, in the drawing's reds.
+- **Fluid:** a glossy bed on the cut face that the fibres stand 3.5 units proud of, and a bed along the body that follows the outer fibres just under their outer faces, so it shows as the blue floor of every groove (the drawing's blue between the bands).
+- **Sheath:** an opaque cut rim (the drawn 9-unit ring), then a clear wet film along the body, denser toward its outline: the drawing's 14 % veil and edge line.
+- **Capillaries:** cut ends in the corners between fibres (pale wall, red lumen; instanced), and fine vessels in the outer grooves, beside the blue, as drawn.
+- **Nuclei:** flattened ovals at the edge of each fibre's cut face (instanced), at `fibrePt(cell, mid-edge, 0.86)` as in the drawing.
+- **Motion:** `drawTissue()` hands the layer the drawing's own state (`g.fibre`, `g.spread`) and renders one frame. Fibres are moved and scaled, instances re-placed, the sheath and face fluid scaled; only the small groove bed (about 300 vertices) is re-laid. The layer draws only while a scene is easing; at rest it costs nothing.
+- **Still in the SVG, on top:** the ⊙ current marks (they are symbols, and stay crisp at phone size) and the arm locator. The drawn tissue carries `data-gl3-hide`; with the layer off (`?gl=off`, no WebGL 2, Save-Data, small devices) the drawing is the figure, pixel for pixel as before (compared against the committed build with the random marks hidden: no difference).
+- **Theme:** `island: false`, so Forest night keeps its own ground; the palette for each theme is `figure.css`'s, as lit surfaces.
+- **Budget:** 52 draw calls (44 fibres + 8), about 88 k triangles on desktop and 33 k on touch devices (coarser outlines and rings).
+- **Arrival:** the drawn tissue fades out as the render fades in (`figure.css`); under reduced motion it switches at once.
+- **Not carried over:** nothing dropped. The drawn cylinder shade and edge line are now the light and the film's own rim.
+- **Verified:** `node scripts/verify.mjs a8-muscle-water` passes (390 / 360 / 320, both themes, reduced motion, desktop, lines 0, console clean); the embed (`embed/test.html`) runs the layer inside its shadow root.

@@ -16,6 +16,7 @@ import { plate, page, embed } from "../../shared/page.mjs";
 import * as M from "./model.mjs";
 import { throughShare } from "../02-inbody-580/model.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
@@ -147,7 +148,7 @@ const svg = `<svg class="iso-svg a8-svg" viewBox="0 0 600 520" role="img" aria-l
   <radialGradient id="a8-ecw" cx="50%" cy="50%" r="60%"><stop offset="0" class="a8-e0"/><stop offset="1" class="a8-e1"/></radialGradient>
 <linearGradient id="a8-cyl" gradientUnits="userSpaceOnUse"><stop offset="0" class="a8-g0"/><stop offset="0.38" class="a8-g1"/><stop offset="1" class="a8-g2"/></linearGradient>
 </defs>
-<g class="a8-body" aria-hidden="true">
+<g class="a8-body" aria-hidden="true" data-gl3-hide>
 <path class="a8-body-sheath" data-part="bodySheath"/><path class="a8-body-gap" data-part="bodyGap"/>
 <path class="a8-body-f1" data-part="bodyF1"/><path class="a8-body-f2" data-part="bodyF2"/>
 <path class="a8-body-stri" data-part="bodyStri"/><path class="a8-body-cap" data-part="bodyCap"/>
@@ -155,6 +156,7 @@ const svg = `<svg class="iso-svg a8-svg" viewBox="0 0 600 520" role="img" aria-l
 <path class="a8-body-edge" data-part="bodyEdge"/>
 </g>
 <g class="a8-front" transform="${FRONT}">
+<g data-gl3-hide>
 <ellipse class="a8-peri" data-part="peri" cx="${C[0]}" cy="${C[1]}" rx="${RX + 9}" ry="${RY + 9}"/>
 <ellipse class="a8-ecw" data-part="ecw" cx="${C[0]}" cy="${C[1]}" rx="${RX}" ry="${RY}" fill="url(#a8-ecw)"/>
 <path class="a8-cap" data-part="caps"/><path class="a8-cap-lumen" data-part="capl"/>
@@ -162,6 +164,7 @@ const svg = `<svg class="iso-svg a8-svg" viewBox="0 0 600 520" role="img" aria-l
 <path class="a8-fibre a8-fibre2" data-part="fib2" fill="url(#a8-fib2)"/>
 <path class="a8-myo" data-part="myo"/>
 <path class="a8-nuc" data-part="nuc"/>
+</g>
 <path class="a8-cur-ring" data-part="curRing"/><path class="a8-cur-dot" data-part="curDot"/>
 </g>
 <g class="a8-loc" aria-hidden="true" transform="translate(18 444)">
@@ -179,10 +182,22 @@ const LINES = [
   "Smaller fibres, as with muscle loss: less water inside, so the share outside rises.",
   "Extra fluid between the fibres: the share outside rises too. The ratio alone can't tell this from muscle loss.",
 ];
-const DATA = { body: BODY, C, RX, RY, cells, gaps, caps, fibres, share: SHARE, freqs: FREQS, lines: LINES };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3)
+// The figure has no kit solids: its scene is built in the browser by gl-scene.js, in these same world units and this
+// same projection (PB), under the SVG. The drawn tissue is hidden while the layer is on ([data-gl3-hide]); the ⊙
+// current marks and the arm locator stay as drawn, on top. With no layer the drawing is the figure, unchanged.
+const GL3W = gl3Wire();
+const GL3 = {
+  parts: [],
+  ground: H - (C[1] + RY + 9) - 5, // a floor just under the bundle, for its soft shadow only
+  bounds: [W3(C[0] - RXM, 0, C[1] + RYM), W3(C[0] + RXM, D, C[1] - RYM)],
+  look: { aoRadius: 9, ao: 0.85, contactHeight: 46, cast: 0.6, pool: 0.45 },
+  ...GL3W.chunk,
+};
+const DATA = { gl3: GL3, P: PB, W: 600, body: BODY, C, RX, RY, cells, gaps, caps, fibres, share: SHARE, freqs: FREQS, lines: LINES };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 const R = M.WATER.scenes.map((s) => M.ratioOf(s).toFixed(3));
 const CAPTION = [
   `Most of the body's water sits inside cells, and much of that inside muscle fibres. The rest bathes the cells and fills the blood. InBody's current runs along the arm (toward you in this slice, ⊙). At low frequency, cell membranes block it, so it flows only through the fluid between the fibres; that reading gives extracellular water (ECW). At higher frequencies some current crosses the membranes, adding the water inside (ICW) to give total body water (TBW).`,
@@ -217,5 +232,6 @@ writeFileSync(join(HERE, out), page({ title: "Water in and around the fibres", t
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  GL3W.copyTo(join(HERE, "embed")); // the 3-D chunk travels beside the embed script
 }
 console.log("wrote", out, `${cells.length} fibres, ${gaps.length} gap points, ${caps.length} capillaries, ratios ${R.join(" ")}, through ${SHARE.join(" ")}`);

@@ -49,3 +49,14 @@
 .a8-body-veil { fill: var(--a8-peri); opacity: 0.14; }
 .a8-body-edge { fill: none; stroke: var(--a8-peri-edge); stroke-width: 1.2; stroke-linejoin: round; }
 .a8-g0 { stop-color: #fff; stop-opacity: 0.2; } .a8-g1 { stop-color: #fff; stop-opacity: 0; } .a8-g2 { stop-color: #000; stop-opacity: 0.34; }
+/* with the 3-D layer on (shared/gl3) the SVG is only the current marks and the locator: drawn normally over the render.
+   The drawn tissue fades out as the render fades in (gl3.css hides it; where a browser can't delay that, it just switches). */
+.iso-stage.a8-stage[data-gl3="on"] > svg { mix-blend-mode: normal; }
+@media (prefers-reduced-motion: no-preference) {
+  .iso-stage.a8-stage [data-gl3-hide] { transition: opacity 0.4s ease 0.2s, display 0.6s allow-discrete; }
+  .iso-stage.a8-stage[data-gl3="on"] [data-gl3-hide] { opacity: 0; }
+}
+/* reduced motion: the render replaces the drawing at once, never a half-faded still */
+@media (prefers-reduced-motion: reduce) {
+  .iso-stage.a8-stage > .gl3-canvas { transition: none; }
+}

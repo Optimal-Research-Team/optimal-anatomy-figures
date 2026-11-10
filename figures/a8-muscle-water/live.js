@@ -35,6 +35,17 @@ function mount(fig) {
   let freq = 1;
   const g = { fibre: 1, spread: 1 };
   let dirty = true;
+  // the 3-D layer (shared/gl3, scene in gl-scene.js): the same bundle, modelled, under this SVG. It takes the same
+  // state as the drawing (g) and is redrawn only when that changes; the ⊙ marks stay in the SVG on top. Until the
+  // layer arrives (and whenever it can't run) every call is a no-op and the drawing is the figure.
+  const gl = gl3Attach(fig, {
+    scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.body.H, file: DATA.gl3.file, v: DATA.gl3.v, island: false,
+    redraw: () => {
+      drawTissue();
+      drawCurrent();
+    },
+    build: (ctx) => a8Scene(ctx, DATA, BASE),
+  });
   const cur = [];
   const spreadPt = (p) => [C[0] + (p[0] - C[0]) * g.spread, C[1] + (p[1] - C[1]) * g.spread];
   const fibrePt = (cell, v, r = 1) => {
@@ -76,6 +87,8 @@ function mount(fig) {
       set(part, "ry", f1(DATA.RY * g.spread + pad));
     }
     drawBody();
+    gl.update(g);
+    gl.render();
   }
   // the 3-D bundle behind the slice: sheath, fluid, the outer fibres running back with their
   // cross-striations, capillaries in the grooves, a cylinder shade
