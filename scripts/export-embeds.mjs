@@ -57,7 +57,10 @@ for (const dir of readdirSync(join(root, "figures")).sort()) {
     if (!REVEALS.includes(slug)) continue;
     const body = readFileSync(join(embed, file));
     copyFileSync(join(embed, file), join(out, "reveals", file));
-    reveals[slug] = { file: `reveals/${file}`, folder: dir, bytes: body.length, gzipBytes: gzipSync(body, { level: 9 }).length, sha256: createHash("sha256").update(body).digest("hex").slice(0, 16) };
+    // the shared 3-D layer's chunk: each framed page loads it from its own folder (window.OPTIMAL_GL3_BASE = "./")
+    const chunks = readdirSync(embed).filter((f) => /^optimal-gl3.*\.js$/.test(f));
+    for (const c of chunks) copyFileSync(join(embed, c), join(out, "reveals", c));
+    reveals[slug] = { file: `reveals/${file}`, folder: dir, bytes: body.length, gzipBytes: gzipSync(body, { level: 9 }).length, sha256: createHash("sha256").update(body).digest("hex").slice(0, 16), ...(chunks.length ? { chunks: chunks.map((c) => `reveals/${c}`) } : {}) };
   }
 }
 const missing = REVEALS.filter((s) => !reveals[s]);
