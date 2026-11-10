@@ -52,7 +52,7 @@ function gl3Load(src) {
   });
   return w.__optimalGL3Loading;
 }
-function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redraw, build = null } = {}) {
+function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redraw, build = null, island = true } = {}) {
   const stage = fig.querySelector(".iso-stage");
   const svg = stage && stage.querySelector("svg.iso-svg, svg");
   const host = fig.getRootNode() && fig.getRootNode().host;
@@ -132,7 +132,8 @@ function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redr
     if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (L) { fit(); L.render(); } }).observe(svg);
     ctl.on = true;
     // the stage becomes a Cream island: the SVG is now ink on rendered solids, whatever the page's theme
-    if (theme !== "light") { stage.classList.add("iso", "optimal"); stage.setAttribute("data-theme", "light"); stage.dataset.gl3Theme = "1"; }
+    // (island: false keeps the page's own theme on the stage: for figures whose SVG is labels over their own 3-D scene)
+    if (island && theme !== "light") { stage.classList.add("iso", "optimal"); stage.setAttribute("data-theme", "light"); stage.dataset.gl3Theme = "1"; }
     stage.__gl3 = L; // QA reads stats and stills through this
     if (redraw) redraw(); // the figure pushes its current state and renders
     L.render();

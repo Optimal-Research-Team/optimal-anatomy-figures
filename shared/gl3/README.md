@@ -88,6 +88,9 @@ shared preset; clone it before changing it. Tissue presets: `tissue`, `mucosa`, 
 
 The figure's drawn art that the 3-D scene replaces gets `data-gl3-hide` (it shows again whenever the layer is off);
 labels, tracers, charts and hit targets stay in the SVG on top. `gl.view(x, y, w, h)` follows a changed viewBox.
+Such a figure usually wants its SVG drawn normally over the render, not multiplied, and no Cream island in Forest
+night: pass `island: false` to `gl3Attach` and set `mix-blend-mode: normal` on its SVG in the figure's CSS, e.g.
+`.<figure-class> .iso-stage[data-gl3="on"] > svg { mix-blend-mode: normal }` (more specific than gl3.css).
 
 ## What to check on every figure
 
