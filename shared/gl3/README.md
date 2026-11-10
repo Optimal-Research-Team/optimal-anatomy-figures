@@ -59,6 +59,36 @@ gl.render();                          // once, last
 Every call is a no-op until the chunk has loaded, so the figure never waits on it. `redraw` is called once when
 the layer arrives (and if it is lost): push the current state and render. `gl.add(desc)` adds a part after mount.
 
+## A figure with its own 3-D scene (tissue, organs, anything the helpers don't record)
+
+`gl3Attach(fig, { ..., build })` takes figure-specific scene code. It runs once when the layer arrives, on the same
+root, lights, shadows and passes as everything else:
+
+```js
+const gl = gl3Attach(fig, {
+  scene: DATA.gl3,                      // may hold no parts: { parts: [], ground: 0, bounds: [[x0,y0,z0],[x1,y1,z1]], ...chunk }
+  P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v,
+  redraw: () => render(0),
+  build({ THREE, root, material, add, ghost, night, coarse }) {
+    // root: a Group in the kit's own coordinates (cm or the figure's unit, z up). Add any three.js object.
+    const cell = new THREE.Mesh(new THREE.SphereGeometry(4, 48, 32), material("tissue"));
+    cell.castShadow = cell.receiveShadow = true;
+    root.add(cell);
+    ghost(membraneMesh);                // see-through meshes: kept out of the shadow and occlusion passes
+    return { update(state) { cell.position.z = state.lift; }, dispose() {} };
+  },
+});
+// every frame: gl.update(state); gl.render();
+```
+
+`THREE` here is a chosen set of three.js classes (geometry, curves, materials, math, InstancedMesh, CanvasTexture):
+no loaders, so the chunk still holds no network or storage API (the build audits this). `material(name)` returns a
+shared preset; clone it before changing it. Tissue presets: `tissue`, `mucosa`, `muscle`, `fat`, `cartilage`,
+`marrow`, `artery`, `vein`, `nerve`, `redcell`, `membrane`, `cytoplasm`, plus `bone`.
+
+The figure's drawn art that the 3-D scene replaces gets `data-gl3-hide` (it shows again whenever the layer is off);
+labels, tracers, charts and hit targets stay in the SVG on top. `gl.view(x, y, w, h)` follows a changed viewBox.
+
 ## What to check on every figure
 
 1. **Nothing missing.** With the layer on, every solid of the drawing must have a rendered body. Compare the page

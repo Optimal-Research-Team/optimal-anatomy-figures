@@ -52,7 +52,7 @@ function gl3Load(src) {
   });
   return w.__optimalGL3Loading;
 }
-function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redraw } = {}) {
+function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redraw, build = null } = {}) {
   const stage = fig.querySelector(".iso-stage");
   const svg = stage && stage.querySelector("svg.iso-svg, svg");
   const host = fig.getRootNode() && fig.getRootNode().host;
@@ -81,6 +81,8 @@ function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redr
     move(piece, vec) { if (L) L.move(piece, vec); },
     set(name, what) { return L ? L.set(name, what) : false; },
     add(desc) { return L ? L.add(desc) : false; },
+    update(state) { if (L) L.update(state); },
+    view(x, y, w, h) { if (L) L.view(x, y, w, h); },
     render() { if (L) { L.render(); pace(); } },
     stats: () => (L ? L.stats() : null),
   };
@@ -114,7 +116,7 @@ function gl3Attach(fig, { scene, P, W, H, file = "optimal-gl3.js", v = "1", redr
     canvas.className = "gl3-canvas";
     canvas.setAttribute("aria-hidden", "true");
     stage.insertBefore(canvas, stage.firstChild);
-    L = api.create({ canvas, P, W, H, scene, theme, clear: null, coarse: matchMedia("(pointer: coarse)").matches, debug: new URLSearchParams(location.search).get("gl3debug") || "", onLost: () => off("lost") });
+    L = api.create({ canvas, P, W, H, scene, theme, clear: null, coarse: matchMedia("(pointer: coarse)").matches, debug: new URLSearchParams(location.search).get("gl3debug") || "", build, onLost: () => off("lost") });
     if (!L) { canvas.remove(); return off("init"); }
     const fit = () => {
       const s = svg.getBoundingClientRect();

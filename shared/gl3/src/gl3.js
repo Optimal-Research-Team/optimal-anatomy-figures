@@ -13,6 +13,83 @@ import { GTAOPass } from "three-addons/postprocessing/GTAOPass.js";
 import { FullScreenQuad } from "three-addons/postprocessing/Pass.js";
 
 export const version = 2;
+// Figure-specific scene code (a `build` function, see create) gets three.js from here: one copy for every figure.
+// A chosen set, not the whole library: no loaders, so the chunk still holds no network or storage API.
+export const T = {
+  Vector2: THREE.Vector2,
+  Vector3: THREE.Vector3,
+  Vector4: THREE.Vector4,
+  Matrix3: THREE.Matrix3,
+  Matrix4: THREE.Matrix4,
+  Quaternion: THREE.Quaternion,
+  Euler: THREE.Euler,
+  Color: THREE.Color,
+  Box3: THREE.Box3,
+  Sphere: THREE.Sphere,
+  Plane: THREE.Plane,
+  MathUtils: THREE.MathUtils,
+  Object3D: THREE.Object3D,
+  Group: THREE.Group,
+  Mesh: THREE.Mesh,
+  InstancedMesh: THREE.InstancedMesh,
+  Line: THREE.Line,
+  LineSegments: THREE.LineSegments,
+  Points: THREE.Points,
+  BufferGeometry: THREE.BufferGeometry,
+  BufferAttribute: THREE.BufferAttribute,
+  Float32BufferAttribute: THREE.Float32BufferAttribute,
+  Uint16BufferAttribute: THREE.Uint16BufferAttribute,
+  Uint32BufferAttribute: THREE.Uint32BufferAttribute,
+  InstancedBufferAttribute: THREE.InstancedBufferAttribute,
+  SphereGeometry: THREE.SphereGeometry,
+  BoxGeometry: THREE.BoxGeometry,
+  CylinderGeometry: THREE.CylinderGeometry,
+  ConeGeometry: THREE.ConeGeometry,
+  TorusGeometry: THREE.TorusGeometry,
+  PlaneGeometry: THREE.PlaneGeometry,
+  CircleGeometry: THREE.CircleGeometry,
+  RingGeometry: THREE.RingGeometry,
+  TubeGeometry: THREE.TubeGeometry,
+  LatheGeometry: THREE.LatheGeometry,
+  ExtrudeGeometry: THREE.ExtrudeGeometry,
+  ShapeGeometry: THREE.ShapeGeometry,
+  IcosahedronGeometry: THREE.IcosahedronGeometry,
+  CapsuleGeometry: THREE.CapsuleGeometry,
+  CatmullRomCurve3: THREE.CatmullRomCurve3,
+  CubicBezierCurve3: THREE.CubicBezierCurve3,
+  QuadraticBezierCurve3: THREE.QuadraticBezierCurve3,
+  LineCurve3: THREE.LineCurve3,
+  CurvePath: THREE.CurvePath,
+  Shape: THREE.Shape,
+  Path: THREE.Path,
+  ShapeUtils: THREE.ShapeUtils,
+  MeshPhysicalMaterial: THREE.MeshPhysicalMaterial,
+  MeshStandardMaterial: THREE.MeshStandardMaterial,
+  MeshBasicMaterial: THREE.MeshBasicMaterial,
+  ShaderMaterial: THREE.ShaderMaterial,
+  LineBasicMaterial: THREE.LineBasicMaterial,
+  PointsMaterial: THREE.PointsMaterial,
+  CanvasTexture: THREE.CanvasTexture,
+  DataTexture: THREE.DataTexture,
+  PointLight: THREE.PointLight,
+  DoubleSide: THREE.DoubleSide,
+  FrontSide: THREE.FrontSide,
+  BackSide: THREE.BackSide,
+  NormalBlending: THREE.NormalBlending,
+  AdditiveBlending: THREE.AdditiveBlending,
+  MultiplyBlending: THREE.MultiplyBlending,
+  RepeatWrapping: THREE.RepeatWrapping,
+  ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
+  MirroredRepeatWrapping: THREE.MirroredRepeatWrapping,
+  SRGBColorSpace: THREE.SRGBColorSpace,
+  LinearSRGBColorSpace: THREE.LinearSRGBColorSpace,
+  LinearFilter: THREE.LinearFilter,
+  NearestFilter: THREE.NearestFilter,
+  LinearMipmapLinearFilter: THREE.LinearMipmapLinearFilter,
+  DynamicDrawUsage: THREE.DynamicDrawUsage,
+  RGBAFormat: THREE.RGBAFormat,
+  UnsignedByteType: THREE.UnsignedByteType,
+};
 
 const V = (a) => new THREE.Vector3(a[0], a[1], a[2]);
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
@@ -43,7 +120,20 @@ glass: { color: 0xf2f7f3, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoat
   fluid: { color: 0xc9a25a, roughness: 0.15, transparent: true, opacity: 0.78, ghost: true },
   water: { color: 0xa9cfe0, roughness: 0.08, transparent: true, opacity: 0.5, ghost: true },
   blood: { color: 0x8f1f1c, roughness: 0.25, clearcoat: 0.6, clearcoatRoughness: 0.2 },
-    leaf: { color: 0x8fc47f, roughness: 0.42, clearcoat: 0.3 },
+  // living tissue: soft, a little wet. `sheen` gives the velvet falloff that reads as flesh; clearcoat is the wet film.
+  tissue: { color: 0xe7a9a0, roughness: 0.55, sheen: 0.8, sheenRoughness: 0.45, sheenColor: 0xffd9cf, clearcoat: 0.25, clearcoatRoughness: 0.35 },
+  mucosa: { color: 0xf0c4b6, roughness: 0.42, sheen: 0.7, sheenRoughness: 0.4, sheenColor: 0xffe6dc, clearcoat: 0.55, clearcoatRoughness: 0.22 },
+  muscle: { color: 0xb5514a, roughness: 0.5, sheen: 0.6, sheenRoughness: 0.5, sheenColor: 0xf0b0a4, clearcoat: 0.3, clearcoatRoughness: 0.3 },
+  fat: { color: 0xf1dc9c, roughness: 0.48, sheen: 0.5, sheenRoughness: 0.5, sheenColor: 0xfff3cf, clearcoat: 0.4, clearcoatRoughness: 0.3 },
+  cartilage: { color: 0xdfe8ee, roughness: 0.3, sheen: 0.5, sheenRoughness: 0.4, sheenColor: 0xffffff, clearcoat: 0.7, clearcoatRoughness: 0.18 },
+  marrow: { color: 0xc98a78, roughness: 0.6, sheen: 0.5, sheenRoughness: 0.5, sheenColor: 0xf4c9bb },
+  artery: { color: 0xb8322c, roughness: 0.38, clearcoat: 0.6, clearcoatRoughness: 0.2 },
+  vein: { color: 0x4d6aa8, roughness: 0.4, clearcoat: 0.6, clearcoatRoughness: 0.2 },
+  nerve: { color: 0xe6c86a, roughness: 0.45, clearcoat: 0.4, clearcoatRoughness: 0.3 },
+  redcell: { color: 0xb5231f, roughness: 0.34, clearcoat: 0.7, clearcoatRoughness: 0.18, sheen: 0.4, sheenColor: 0xff8a7a },
+  membrane: { color: 0xf3cfc4, roughness: 0.25, clearcoat: 0.6, clearcoatRoughness: 0.2, transparent: true, opacity: 0.4, depthWrite: false, ghost: true },
+  cytoplasm: { color: 0xf6e6d6, roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.25, transparent: true, opacity: 0.3, depthWrite: false, ghost: true },
+  leaf: { color: 0x8fc47f, roughness: 0.42, clearcoat: 0.3 },
   heat: { color: 0xd8663c, roughness: 0.45, clearcoat: 0.3 },
   cool: { color: 0x4f7ea3, roughness: 0.45, clearcoat: 0.3 },
   red: { color: 0xb3402f, roughness: 0.55 },
@@ -574,8 +664,14 @@ function groundShadows({ size, centre, ground, span, lightDir, height, color, ca
  *   scene   { parts: [descriptor…], ground }  from shared/figkit.mjs (gl3Scene)
  *   clear   a CSS colour to paint behind the figure, or null for a see-through canvas
  *   coarse  true on touch devices: lighter shadows and occlusion
+ *   build   optional: figure-specific scene code. build(ctx) is called once, after the scene's parts are in, with
+ *           ctx = { THREE, root, material(name), add(desc), ghost(mesh), night, coarse, P, W, H }. `root` is a Group
+ *           in the kit's own coordinates (cm, z up): add any three.js object to it. Meshes that should shade and
+ *           be shaded need castShadow / receiveShadow = true; pass see-through meshes to ghost() so they stay out
+ *           of the shadow and occlusion passes. It may return { update(state), dispose() }; the figure then calls
+ *           layer.update(state) before render().
  */
-export function create({ canvas, P, W, H, scene, theme = "light", clear = null, coarse = false, debug = "", onLost, onRestored }) {
+export function create({ canvas, P, W, H, scene, theme = "light", clear = null, coarse = false, debug = "", build = null, onLost, onRestored }) {
   let renderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: "high-performance", premultipliedAlpha: true });
@@ -661,13 +757,44 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     }
   }
 
+  // the figure's own scene code, on the same root, lights and passes
+  let custom = null;
+  if (build) {
+    try {
+      custom =
+        build({
+          THREE: T,
+          root,
+          material: mat,
+          add: (desc) => addPart(desc),
+          ghost: (mesh) => {
+            mesh.castShadow = false;
+            ghosts.push(mesh);
+            return mesh;
+          },
+          night,
+          coarse,
+          P,
+          W,
+          H,
+        }) || null;
+    } catch (err) {
+      console.warn("gl3: the figure's scene failed to build", err);
+      renderer.dispose();
+      return null;
+    }
+  }
+
   // bounds → ground, lights, shadow camera (in the kit's own, unmirrored coordinates)
-  root.updateMatrixWorld(true);
+  world.updateMatrixWorld(true); // from the top: the mirror group's own world matrix must be current
   const box = new THREE.Box3();
+  const inRoot = new THREE.Matrix4();
   root.traverse((o) => {
-    if (!o.isMesh) return;
-    o.geometry.computeBoundingBox();
-    box.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrix));
+    if (!o.isMesh || !o.geometry) return;
+    if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    // the mesh's box in the kit's coordinates: its world matrix with the mirror taken back off
+    inRoot.copy(mirror.matrix).invert().multiply(o.matrixWorld);
+    box.union(o.geometry.boundingBox.clone().applyMatrix4(inRoot));
   });
   if (scene.bounds) box.union(new THREE.Box3(V(scene.bounds[0]), V(scene.bounds[1])));
   if (box.isEmpty()) box.set(new THREE.Vector3(-50, -50, 0), new THREE.Vector3(50, 50, 100));
@@ -909,6 +1036,21 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
       return !!addPart(desc);
     },
     figure,
+    /** Hand the figure's state to its own scene code (the object `build` returned). */
+    update(state) {
+      if (custom && custom.update) custom.update(state);
+    },
+    /**
+     * Follow a changed viewBox (x, y, w, h in the SVG's own units): the picture then shows that part of the drawing.
+     * The canvas must be laid over the SVG's box as before.
+     */
+    view(x, y, w, h) {
+      cam.left = (x - P.origin[0]) / k;
+      cam.right = (x + w - P.origin[0]) / k;
+      cam.top = (P.origin[1] - y) / k;
+      cam.bottom = (P.origin[1] - y - h) / k;
+      cam.updateProjectionMatrix();
+    },
     has: (name) => named.has(name) || pieces.has(name),
     /** A world point in the SVG's own pixels (QA: must equal the kit's iso()). */
     project(p) {
@@ -921,6 +1063,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
         if (o.geometry) o.geometry.dispose();
       });
       if (world.environment) world.environment.dispose();
+      if (custom && custom.dispose) custom.dispose();
       ground.dispose();
       if (gtao) gtao.dispose();
       if (beauty) beauty.dispose();
