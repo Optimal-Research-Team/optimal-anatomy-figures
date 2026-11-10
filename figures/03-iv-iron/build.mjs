@@ -12,8 +12,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { figkit, k, G, A } from "../../shared/figkit.mjs";
+import { figkit, k, G, A, glPart } from "../../shared/figkit.mjs";
 import { plate, page, embed } from "../../shared/page.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -65,7 +66,8 @@ const back = F.bench(PLATE, { plateH: 8, footH: 5 });
 // ---------------------------------------------------------------- the track: ballast bed, two rails, sleepers
 {
   const bed = [k.insetPlan(LOOP, -7.5), k.insetPlan(LOOP, 7.5)];
-  back.push(`<path class="fe-bed" fill-rule="evenodd" d="${k.planOutline(bed[0], 0.01, P, 10)}${k.planOutline(bed[1], 0.01, P, 10)}"/>`);
+  // (the bed's tint steps aside while the 3-D layer is on: the rendered bed is its own colour)
+  back.push(`<path class="fe-bed" data-gl3-hide fill-rule="evenodd" d="${k.planOutline(bed[0], 0.01, P, 10)}${k.planOutline(bed[1], 0.01, P, 10)}"/>`);
   back.push(Ln(k.planOutline(bed[0], 0.01, P, 10) + k.planOutline(bed[1], 0.01, P, 10), { tone: "faint" }));
   const outer = k.insetPlan(LOOP, -3.2);
   const inner = k.insetPlan(LOOP, 3.2);
@@ -77,7 +79,8 @@ const back = F.bench(PLATE, { plateH: 8, footH: 5 });
     if (i % 2) continue;
     sleepers.push(k.lineOnTop(ringI[i], ringO[i], 0.6, P));
   }
-  back.push(Ln(sleepers.join(""), { tone: "lo" }));
+  // (the 3-D layer renders each sleeper as a body, so their ruled lines step aside while it is on)
+  back.push(`<g data-gl3-hide>${Ln(sleepers.join(""), { tone: "lo" })}</g>`);
   back.push(Ln(k.planOutline(outer, 0.6, P, 10) + k.planOutline(inner, 0.6, P, 10), { tone: "mid" }));
 }
 
@@ -144,7 +147,11 @@ box("dial.pedestal", { x: DIAL.x - 5, y: DIAL.y - 5, w: 10, d: 10, r: 1.5 }, 0, 
   turned("silo", F0, siloBody, { tone: "mid" }, { inner: Ln(bands, { tone: "faint" }), extra: SILO.glassSvg });
   void levelPts;
 }
-box("silo.apron", { x: SILO.x - 10, y: SILO.y + 18, w: 30, d: 8, r: 1 }, 0, 4, { tone: "lo" }, { steps: 2, bevel: 0.3 });
+const APRON = { x: SILO.x - 10, y: SILO.y + 18, w: 30, d: 8, r: 1 };
+box("silo.apron", APRON, 0, 4, { tone: "lo" }, { steps: 2, bevel: 0.3 });
+// for the 3-D layer only (see the scene below): the apron's rendered body, and the rail the drawn apron hides
+const APRON_GL = { ...APRON, d: LOOP.y - 4.2 - APRON.y };
+const RAIL_GL = `<g class="fe-gl3-only">${Ln(k.lineOnTop([APRON.x - 1.5, LOOP.y - 3.2], [APRON.x + APRON.w + 1.5, LOOP.y - 3.2], 0.6, P), { tone: "mid" })}</g>`;
 boomPost("boom.silo", BOOM_SILO, 4);
 
 // ---------------------------------------------------------------- the marrow press: base, columns, crown, ram, die, chute and tray, Hb counter
@@ -201,11 +208,182 @@ const svg = k.figureSvg({
   height: H,
   label:
     "A rail yard for iron. At the back: the gut dock, where pills drop into a hopper and a boom gate (ferroportin) lets absorbed iron out; the ferritin silo, the body's store, with its own export gate and a sight glass showing how full it is; and the marrow press, which stamps red discs and counts hemoglobin. Transferrin carts, each able to carry two iron ingots, run a loop in front. A hepcidin dial beside the dock sets both gates. An IV tanker drives up the back road straight to the silo.",
-  body: [...back, ...groups, `<g data-part="booms"></g>`, `<g data-part="carts"></g>`, `<g data-part="pill"></g>`, `<path class="iso-line" data-tone="hi" data-part="needle" data-free="" d="" style="stroke-width:1.1"/>`, `<g data-part="rider"></g>`],
+  body: [...back, ...groups, RAIL_GL, `<g data-part="booms"></g>`, `<g data-part="carts"></g>`, `<g data-part="pill"></g>`, `<path class="iso-line" data-tone="hi" data-part="needle" data-free="" d="" style="stroke-width:1.1"/>`, `<g data-part="rider"></g>`],
 });
 
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same yard, rendered
+// The kit's helpers have already noted every solid they drew. What the figure draws without them gets its body
+// here: the ruler strip, the track (bed, sleepers, rails), the road, the ram's rod, and everything the page redraws
+// each frame (boom arms, the dial's needle, the silo's level, discs, carts, the rider, the dose mark, the pill).
+// Those are built once in their rest pose; live.js moves them with gl.set / gl.move.
+//
+// Colourway (the brand's): warm white shells on a pale bench; sage for the ground works (track bed, platform,
+// apron, silo foot); graphite and rubber where things stand or roll; brushed metal for the working parts (rails,
+// columns, rod, ram, hopper, roof, tank). Three colours carry the figure's three keys: forest is iron (ingots, the
+// silo's level, the IV dose mark) and the day rider; brass is hepcidin (its dial and the two gates it sets); red is
+// red cells.
+const GL3W = gl3Wire();
+{
+  const FLOOR = { o: [0, 0, 0], a: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] };
+  const flat = (x, y, z = 0) => ({ ...FLOOR, o: [x, y, z] });
+  const slab = (n, plan, z0, z1, extra = {}, piece) => F.glNote(glPart.prism(n, FLOOR, k.roundedPlan(plan, 6), z0, z1, extra), piece);
+  // the helpers give repeated parts one name (four columns, four wheels): number them, so each can be addressed
+  {
+    const seen = new Map();
+    for (const part of F.GL) seen.set(part.n, (seen.get(part.n) || 0) + 1);
+    const at = new Map();
+    for (const part of F.GL) {
+      if (seen.get(part.n) < 2) continue;
+      const i = at.get(part.n) || 0;
+      at.set(part.n, i + 1);
+      part.n = `${part.n}.${i}`;
+    }
+  }
+  // the hopper is a funnel: hollow, so a pill drops into it (the drawing shows its mouth as a flat top)
+  F.GL.find((part) => part.n === "dock.hopper").prof = [[0, 3.2], [3, 3.2], [3.2, 4], [9, 10], [10, 10], [10, 9.1], [9.3, 9.1], [3.9, 3.3], [3.9, 0]];
+
+  // the timeline: a brushed strip let onto the plate, its rider at day 0, the IV dose mark
+  slab("ruler", RULER, 0, 0.8, { bevel: 0.12 });
+  slab("rider", { x: RULER.x - 1.6, y: RULER.y - 2.4, w: 3.2, d: RULER.d + 4.8, r: 0.8 }, 0.8, 2.4, { bevel: 0.25 }, "rider");
+  F.glNote(glPart.lathe("dose.iv", flat(RULER.x, RULER.y + RULER.d - 1.2), [[0.8, 1.4], [1.4, 1.4]], { bevel: 0.12 }));
+
+  // the track: each ring (bed, two rails) as two half-rings that meet on the straights at x = 0
+  const half = (plan, side) => {
+    const ring = k.roundedPlan(plan, 10); // four corner arcs of 11 points, counter-clockwise from the −y straight
+    const arcs = side > 0 ? ring.slice(0, 22) : ring.slice(22);
+    return side > 0 ? [[0, plan.y], ...arcs, [0, plan.y + plan.d]] : [[0, plan.y + plan.d], ...arcs, [0, plan.y]];
+  };
+  const band = (n, outBy, inBy, z0, z1, extra) => {
+    for (const side of [1, -1]) F.glNote(glPart.prism(`${n}.${side > 0 ? "e" : "w"}`, FLOOR, [...half(k.insetPlan(LOOP, -outBy), side), ...half(k.insetPlan(LOOP, -inBy), side).reverse()], z0, z1, extra));
+  };
+  band("track.bed", 7.5, -7.5, 0, 0.25, { bevel: 0.08 });
+  band("track.rail.o", 3.55, 2.85, 0.4, 0.8, { bevel: 0.1 });
+  band("track.rail.i", -2.85, -3.55, 0.4, 0.8, { bevel: 0.1 });
+  {
+    const ringO = k.ringOf(k.insetPlan(LOOP, -3.2), 10);
+    const ringI = k.ringOf(k.insetPlan(LOOP, 3.2), 10);
+    for (let i = 0; i < ringO.length; i += 2) {
+      const [a, b] = [ringI[i], ringO[i]];
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      const u = [(b[0] - a[0]) / len, (b[1] - a[1]) / len, 0];
+      F.glNote(glPart.prism(`track.sleeper${i / 2}`, { o: [a[0], a[1], 0], a: [0, 0, 1], u, v: [-u[1], u[0], 0] }, [[-0.9, -0.6], [len + 0.9, -0.6], [len + 0.9, 0.6], [-0.9, 0.6]], 0.25, 0.5, { bevel: 0.06 }));
+    }
+    // The drawing rules its sleepers at the ring's vertices, which lie on the bends only. A rendered track with
+    // bare straights reads as unfinished, so the render carries the same pitch along the two long straights.
+    const run = LOOP.w - 2 * LOOP.r; // each long straight
+    const lead = (Math.PI * LOOP.r) / 20; // the last ruled sleeper sits one arc step before a straight begins
+    const count = Math.round((run + lead) / (2 * lead));
+    for (const [y, dir] of [[LOOP.y, 1], [LOOP.y + LOOP.d, -1]]) {
+      for (let j = 1; j < count; j++) {
+        const x = -dir * (run / 2) + dir * (((run + lead) * j) / count - lead);
+        F.glNote(glPart.prism(`track.sleeper.s${dir > 0 ? "n" : "s"}${j}`, { o: [x, y - 3.2, 0], a: [0, 0, 1], u: [0, 1, 0], v: [-1, 0, 0] }, [[-0.9, -0.6], [7.3, -0.6], [7.3, 0.6], [-0.9, 0.6]], 0.25, 0.5, { bevel: 0.06 }));
+      }
+    }
+  }
+  // The silo's apron is drawn 8 deep, which carries it 1.2 over the track's outer rail; the drawing simply paints the
+  // carts over it. A rendered cart would run through it, so the body stops at the sleepers' ends (APRON_GL) and the
+  // length of rail the drawn apron covers is ruled again above it while the layer is on (RAIL_GL, in the SVG).
+  Object.assign(F.GL.find((part) => part.n === "silo.apron"), glPart.prism("silo.apron", FLOOR, k.roundedPlan(APRON_GL, 8), 0, 4));
+  // the back road
+  slab("road", { x: ROAD_X - 9, y: PLATE.y + 3, w: 18, d: -38 - (PLATE.y + 3), r: 1.5 }, 0, 0.2, { bevel: 0.06 });
+
+  // the two boom arms, closed (live.js turns them with the gate)
+  for (const [n, b] of [["boom.dock.arm", BOOM_DOCK], ["boom.silo.arm", BOOM_SILO]]) F.glNote(glPart.prism(n, { o: [b.x, b.y, b.z], a: [-1, 0, 0], u: [0, 1, 0], v: [0, 0, 1] }, [[-0.8, -0.7], [0.8, -0.7], [0.8, 0.7], [-0.8, 0.7]], 1.2, BOOM_LEN, { bevel: 0.18 }));
+
+  // the hepcidin dial: a white face inside the bezel, a hub, and the needle at zero
+  F.glNote(glPart.lathe("dial.face", flat(DIAL.x, DIAL.y), [[9.9, DIAL.r - 1.1], [10.04, DIAL.r - 1.1]], { bevel: 0 }));
+  F.glNote(glPart.lathe("dial.hub", flat(DIAL.x, DIAL.y), [[10, 1.1], [10.75, 1.1], [10.9, 0.7]], { bevel: 0.1 }));
+  {
+    const ang = -0.75 * Math.PI;
+    const u = [Math.sin(ang), -Math.cos(ang), 0];
+    F.glNote(glPart.prism("dial.needle", { o: [DIAL.x, DIAL.y, 10.12], a: [0, 0, 1], u, v: [-u[1], u[0], 0] }, [[-1.6, -0.4], [DIAL.r - 1.8, -0.14], [DIAL.r - 1.8, 0.14], [-1.6, 0.4]], 0, 0.32, { bevel: 0.05 }));
+  }
+
+  // the silo's sight glass: a glass strip standing proud of the wall, and the level inside it (full height here;
+  // live.js scales it to the ferritin level). The level's body is left pale: its green is the drawn bar, as ink.
+  {
+    const { ang, SG, r } = SILO.level;
+    const sector = (r0, r1, halfAng) => {
+      const pts = [];
+      for (let i = 0; i <= 6; i++) pts.push([SILO.x + r1 * Math.cos(ang - halfAng + (i / 6) * 2 * halfAng), SILO.y + r1 * Math.sin(ang - halfAng + (i / 6) * 2 * halfAng)]);
+      for (let i = 6; i >= 0; i--) pts.push([SILO.x + r0 * Math.cos(ang - halfAng + (i / 6) * 2 * halfAng), SILO.y + r0 * Math.sin(ang - halfAng + (i / 6) * 2 * halfAng)]);
+      return pts;
+    };
+    F.glNote(glPart.prism("silo.level", { ...FLOOR, o: [0, 0, SG.z0 + 1] }, sector(r - 0.3, r + 0.5, SG.half * 0.7), 0, SG.z1 - SG.z0 - 2, { bevel: 0.1 }));
+    F.glNote(glPart.prism("silo.sight", FLOOR, sector(r - 0.3, r + 1, SG.half), SG.z0, SG.z1, { bevel: 0.3 }));
+  }
+
+  // the press: the rod in two lengths (one fixed under the crown, one that travels with the ram and hides in the
+  // crown when the ram is up), the counter's window, and the tray's twelve discs
+  {
+    const [cx, cy] = [RAM.x + RAM.w / 2, RAM.y + RAM.d / 2];
+    F.glNote(glPart.lathe("press.rod.fixed", flat(cx, cy), [[34.2, 2.34], [46.5, 2.34]], { bevel: 0 }));
+    F.glNote(glPart.lathe("press.rod", flat(cx, cy), [[39.5, 2.4], [51.5, 2.4]], { bevel: 0 }), "ram");
+    F.glNote(glPart.panel("press.counter", [PRESS.x + 20, PRESS.y + PRESS.d + 0.06, 9], [1, 0, 0], [0, 0, -1], 11, 5.4));
+    const tray = { x: PRESS.x + 9, y: PRESS.y + PRESS.d + 8, z: 4 };
+    for (let i = 0; i < 12; i++) F.glNote(glPart.lathe(`disc${i}`, flat(tray.x + 3.6 + (i % 3) * 4.4, tray.y + 4.5), [[tray.z + Math.floor(i / 3) * 1.1, 1.9], [tray.z + Math.floor(i / 3) * 1.1 + 1, 1.9]], { bevel: 0.22 }));
+  }
+
+  // six carts at the origin, heading +x: a chassis, two cradles, two ingots (live.js places them round the loop)
+  for (let i = 0; i < 6; i++) {
+    const rect = (along, across) => [[-along, -across], [along, -across], [along, across], [-along, across]];
+    F.glNote(glPart.prism(`cart${i}.chassis`, FLOOR, rect(5.2, 3.2), 1.6, 4, { bevel: 0.3 }));
+    for (const side of [0, 1]) {
+      F.glNote(glPart.prism(`cart${i}.cradle${side}`, FLOOR, rect(1.9, 2.3), 4, 4.7, { bevel: 0.12 }));
+      F.glNote(glPart.prism(`cart${i}.ingot${side}`, FLOOR, rect(1.6, 1.5), 4.7, 6.3, { bevel: 0.25 }));
+    }
+  }
+
+  // the pill, above the hopper: a two-part capsule, one half in iron's colour (live.js drops it in)
+  {
+    const FP = { o: [DOCK.x + 12, DOCK.y + 12, DOCK_H + 24], a: [1, 0, 0], u: [0, 1, 0], v: [0, 0, 1] };
+    F.glNote(glPart.lathe("pill.iron", FP, [[0, 0.25], [0.3, 0.8, 1], [1, 1.15, 1], [2, 1.15]], { bevel: 0.05 }), "pill");
+    F.glNote(glPart.lathe("pill.cap", FP, [[2, 1.15], [3, 1.15, 1], [3.7, 0.8, 1], [4, 0.25]], { bevel: 0.05 }), "pill");
+  }
+}
+const GL3 = {
+  ...F.gl3Scene({
+    ground: -13,
+    materials: [
+      ["^stand\\.foot\\d\\.pad", "rubber"],
+      ["^stand\\.foot", "graphite"],
+      ["^stand\\.plate", "shell"],
+      ["^ruler", "alu"],
+      ["^rider|^dose", "forest"],
+      ["^track\\.bed", "sage"],
+      ["^track\\.sleeper", "slate"],
+      ["^track\\.rail", "steel"],
+      ["^road", "sage"],
+      ["^dock\\.hopper", "alu"],
+      ["^dock\\.platform", "sage"],
+      ["^boom\\.\\w+\\.post", "graphite"],
+      ["^boom\\.\\w+\\.hub", "nickel"],
+      ["^boom\\.\\w+\\.arm", "brass"],
+      ["^dial\\.base|^dial\\.needle", "graphite"],
+      ["^dial\\.face|^dial\\.pedestal", "shell"],
+      ["^dial", "brass"],
+      ["^silo\\.foot|^silo\\.apron", "sage"],
+      ["^silo\\.roof", "alu"],
+      ["^silo\\.sight", "glass"],
+      ["^press\\.column|^press\\.rod", "steel"],
+      ["^press\\.ram|^press\\.die|^press\\.chute", "alu"],
+      ["^press\\.tray", "satin"],
+      ["^disc", "blood"],
+      ["^tanker\\.chassis", "graphite"],
+      ["^tanker\\.wheel", "rubber"],
+      ["^tanker\\.tank", "steel"],
+      ["^cart\\d\\.cradle", "alu"],
+      ["^cart\\d\\.ingot|^pill\\.iron", "forest"],
+    ],
+  }),
+  ...GL3W.chunk,
+};
+
 const DATA = {
+  gl3: GL3,
   P,
+  W,
+  H,
   loop: LOOP,
   ruler: { ...RULER, perDay: RULER.w / M.DAYS },
   booms: { dock: BOOM_DOCK, silo: BOOM_SILO, len: BOOM_LEN },
@@ -220,8 +398,8 @@ const MODEL_SRC = readFileSync(join(HERE, "model.mjs"), "utf8").replace(/^export
 const latheSource = readFileSync(join(HERE, "../../.claude/skills/anatomy/kit/lathe.mjs"), "utf8").replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const LATHE = `const G = (() => {${latheSource}\nreturn { frameOf, prismOf, pointOf };})();\n`;
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
-const SCRIPT = `${LATHE}\n${MODEL_SRC}\n${LIVE}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${LATHE}\n${MODEL_SRC}\n${LIVE}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 
 const D = Object.fromEntries(M.MODES.map((m) => [m, M.daily(m)]));
 const r0 = (v) => Math.round(v);
@@ -256,6 +434,8 @@ writeFileSync(join(HERE, out), page({ title: "The depot with a gate", theme: THE
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `scale ${KS.toFixed(3)}`);
 A.auditOrExit(R, P, {});

@@ -1,6 +1,6 @@
 # Fig 3 · The depot with a gate
 
-**Size:** Figure (upper end): 33 recorded solids, 32 painted items, plus page-drawn carts (6 × chassis, 2 cradles, up to 2 ingots), booms, rider, discs, pill. About 110 parts counting sleepers, ticks and screws. SVG only.
+**Size:** Figure (upper end): 33 recorded solids, 32 painted items, plus page-drawn carts (6 × chassis, 2 cradles, up to 2 ingots), booms, rider, discs, pill. About 110 parts counting sleepers, ticks and screws. SVG, with the shared 3-D layer under it (see "3-D layer" below).
 
 **Mapping in one sentence:** a rail yard in which iron is ingots. A hepcidin dial sets two boom gates (ferroportin), at the gut dock and at the ferritin silo. Each pill dropped into the dock's hopper raises hepcidin for about a day, so daily pills half-close their own gate. Transferrin carts carry at most two ingots each to the marrow press, which stamps red discs and counts haemoglobin. The IV tanker skips the dock and fills the silo directly.
 
@@ -43,6 +43,36 @@ All in `reference/truth-pack.md` §3, "How Fig 3 uses these numbers".
 - `node build.mjs --light --audit` → `audit passed`, including the ram's rod sliding out of the crown, posed at both ends of its stroke.
 - `lines.mjs` → `line ends: 0` in both themes, normal and reduced motion.
 - No console errors; no sideways scroll at 390, 360 or 320. At 320 the route labels wrap to two lines inside their pills.
+
+## 3-D layer (shared/gl3, 2026-11-10)
+
+The yard renders under the SVG with the shared real-time layer; the SVG stays on top as ink. With `?gl=off` (or wherever the layer can't run) the drawing is as before: the static SVG is byte-identical apart from three hooks for the layer (`data-gl3-hide` on the bed's tint, a `data-gl3-hide` group round the sleepers' lines, one `.fe-gl3-only` group that is `display: none` until the layer is on), and the live SVG (reduced-motion still, all three routes) matched the previous build's exactly.
+
+**Scene: 146 parts.** The kit's helpers record 33 solids. `build.mjs` adds a body for everything else that is drawn as a solid:
+
+- drawn straight into `back`: the ruler strip, the track (bed in two half-rings, two rails, a sleeper per ruled line), the road;
+- redrawn by the page every frame: both boom arms, the dial's needle, the silo's level, twelve discs, six carts (chassis, two cradles, two ingots each), the day rider, the IV dose mark, the pill;
+- the ram's rod (the drawing clips one rod at the gland): a fixed length under the crown and a length that travels with the ram and hides in the crown when the ram is up.
+
+**How they move (`glPush` in `live.js`, once per `draw()`):** `gl.move("ram" | "tanker" | "rider" | "pill", …)` with the same world vector the SVG uses; `gl.set(name, { F })` for the boom arms, the needle and every cart part; the level is its full-height bar with the frame's axis scaled to the ferritin fraction; discs, ingots and the IV dose mark are shown or hidden. The tanker fades with `opacity` exactly as drawn and is taken out once it has gone.
+
+**Colourway.** Warm white shells on a white bench. Sage for the ground works (track bed, platform, apron, silo foot, road). Graphite and rubber where things stand or roll (feet, boom posts, dial base, tanker chassis and wheels), slate sleepers. Brushed metal for working parts: steel rails, columns, rod and tank; aluminium hopper, roof, ram, die, chute, cradles and ruler; nickel boom hubs. Three colours carry the three keys: **forest is iron** (ingots, half of the pill capsule, the IV dose mark; the silo's level gets its green from the drawn bar) and the day rider, like the scrubber's thumb; **brass is hepcidin** (the dial and the two gates it sets); **red is red cells** (`blood`).
+
+**Left as drawn (ink):** every tick, seam, screw and band; the dial's ticks and needle line (a thin rendered needle sits under it); the sight glass's tint, outline, ticks and green level bar (over a glass strip and a pale level body); the counter's window and digits (on a `paper` panel); the recheck band; the pill dose dots; the rails' lines. Hidden while the layer is on: the bed's tint and the sleepers' ruled lines (both are bodies now).
+
+**Where the render departs from the drawing, and why:**
+
+1. *Hopper.* Drawn with a flat top; rendered hollow, so the pill drops into its mouth and out of sight instead of fading on a lid. For the first 0.6 s the rendered pill follows the drawn one exactly; it then keeps falling while the drawn one fades at the rim.
+2. *Sleepers on the straights.* The drawing rules sleepers at the ring's vertices, which lie on the bends only. The render carries the same pitch along the two long straights (20 more).
+3. *Silo apron.* Drawn 8 deep, which carries it 1.2 over the outer rail; the drawing paints carts over it. Rendered 5.8 deep, so carts pass in front of it instead of through it. The stretch of rail the drawn apron covers is ruled again above it while the layer is on (`.fe-gl3-only`).
+4. *Pill.* A two-part capsule (forest and white) inside the drawn prism's outline.
+5. Carts have no wheels in the drawing and none in the render.
+
+**Needed from shared code:** nothing. Worked around inside the figure: repeated names (`press.column`, `tanker.wheel`) are numbered in `F.GL` so each wheel can be faded; a show-only-while-on class lives in `figure.css` (gl3.css has only `data-gl3-hide`).
+
+**Checked:** all three routes at days 0.25, 1, 2.25, 3, 7, 20, 30, 40, 50 in Cream and Forest night, the pill drop frame by frame, the tanker in, parked and fading out, 390 px both themes, the embed element (`data-gl3="on"`, 146 parts), `node build.mjs --light --audit` → `audit passed`, `node scripts/verify.mjs 03-iv-iron` → `verify: passed`.
+
+**Known, and not from the layer:** the line-end check is timing-sensitive on this figure in Cream. From about day 1 it reports the rider's top line as floating (1.08 px from anything); the build before the layer reports the same at the same day, and both report 0 at day 0.75. `verify.mjs` checks at 1.5 s (about day 0.6), so it passes unless the machine is so loaded that the page has run further.
 
 ## Embed
 

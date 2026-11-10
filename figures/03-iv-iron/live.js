@@ -79,7 +79,7 @@ function mount(fig) {
     const x = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
     return x - Math.floor(x);
   };
-  function cartsSvg(phase, p, laps) {
+  function cartsOf(phase, p, laps) {
     const list = [];
     for (let i = 0; i < CARTS; i++) {
       const u = phase + i / CARTS;
@@ -89,10 +89,13 @@ function mount(fig) {
       const c = [at.x, at.y];
       // ingots: each of the two cradles is filled with probability p (redrawn each lap at the dock)
       const n = (hash(i, lap + laps) < p ? 1 : 0) + (hash(i + 17, lap + laps) < p ? 1 : 0);
-      list.push({ depth: depthOf([c[0], c[1], 0], P), c, t, n });
+      list.push({ i, depth: depthOf([c[0], c[1], 0], P), c, t, n });
     }
-    list.sort((a, b) => a.depth - b.depth);
-    return list
+    return list;
+  }
+  function cartsSvg(list) {
+    return [...list]
+      .sort((a, b) => a.depth - b.depth)
       .map(({ c, t, n }) => {
         let svgc = solidSvg(extrude(rect(c, t, 5.2, 3.2), 1.6, 2.4, P, { bevel: 0.3 }), { tone: "mid" });
         for (const k of [-1, 1]) {
@@ -104,14 +107,15 @@ function mount(fig) {
       })
       .join("");
   }
-  const boomSvg = (b, open) => {
+  const boomFrame = (b, open) => {
     const a = (open * 78 * Math.PI) / 180;
-    const F = G.frameOf([b.x, b.y, b.z], [-Math.cos(a), 0, Math.sin(a)], [0, 1, 0], [Math.sin(a), 0, Math.cos(a)]);
-    return solidSvg(G.prismOf(F, [[-0.8, -0.7], [0.8, -0.7], [0.8, 0.7], [-0.8, 0.7]], 1.2, DATA.booms.len, P), { tone: "hi", crease: "lo" });
+    return G.frameOf([b.x, b.y, b.z], [-Math.cos(a), 0, Math.sin(a)], [0, 1, 0], [Math.sin(a), 0, Math.cos(a)]);
   };
+  const boomSvg = (b, open) => solidSvg(G.prismOf(boomFrame(b, open), [[-0.8, -0.7], [0.8, -0.7], [0.8, 0.7], [-0.8, 0.7]], 1.2, DATA.booms.len, P), { tone: "hi", crease: "lo" });
+  const dialAngle = (H) => -0.75 * Math.PI + Math.min(1, H / 2) * 1.5 * Math.PI;
   const dialNeedle = (H) => {
     const { x, y, r } = DATA.dial;
-    const ang = -0.75 * Math.PI + Math.min(1, H / 2) * 1.5 * Math.PI;
+    const ang = dialAngle(H);
     return lineOnTop([x - Math.sin(ang) * 1.6, y + Math.cos(ang) * 1.6], [x + Math.sin(ang) * (r - 1.8), y - Math.cos(ang) * (r - 1.8)], 10.1, P);
   };
   const levelPath = (f) => {
@@ -163,6 +167,71 @@ function mount(fig) {
   let ramPhase = 0;
   const speed = (h) => (h < 72 ? 10 : 90); // model hours per second: slow for the first three days, then fast
 
+  // ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same yard, rendered
+  // under this SVG. Until the chunk has arrived every call is a no-op and the SVG is the whole figure. Each frame
+  // the state the drawing was just given is pushed to the rendered solids: the two movers the build recorded (ram,
+  // tanker) by the same world vector, and a frame for every solid the page redraws.
+  let glShown = {}; // what was last sent for the on/off parts (cleared when the layer arrives)
+  const gl = gl3Attach(fig, {
+    scene: DATA.gl3,
+    P,
+    W: DATA.W,
+    H: DATA.H,
+    file: DATA.gl3.file,
+    v: DATA.gl3.v,
+    redraw: () => {
+      glShown = {};
+      draw();
+    },
+  });
+  const glShow = (name, visible) => {
+    if (glShown[name] === visible) return;
+    if (gl.set(name, { visible })) glShown[name] = visible;
+  };
+  const UP = [0, 0, 1];
+  const TANKER = DATA.gl3.parts.filter((part) => part.p === "tanker").map((part) => part.n);
+  function glPush({ g, H, day, fer, discs, carts, tankerY, tankerFade, ramZ, pillZ }) {
+    if (!gl.on) return;
+    gl.set("boom.dock.arm", { F: boomFrame(DATA.booms.dock, g) });
+    gl.set("boom.silo.arm", { F: boomFrame(DATA.booms.silo, g) });
+    {
+      const ang = dialAngle(H);
+      const u = [Math.sin(ang), -Math.cos(ang), 0];
+      gl.set("dial.needle", { F: { o: [DATA.dial.x, DATA.dial.y, 10.12], a: UP, u, v: [-u[1], u[0], 0] } });
+    }
+    // the level: the full-height bar, squeezed along its axis to the fraction shown
+    gl.set("silo.level", { F: { o: [0, 0, DATA.silo.SG.z0 + 1], a: [0, 0, Math.max(0.004, Math.min(1, fer / 500))], u: [1, 0, 0], v: [0, 1, 0] } });
+    for (let i = 0; i < 12; i++) glShow(`disc${i}`, i < discs);
+    gl.move("rider", [day * DATA.ruler.perDay, 0, 0]);
+    glShow("dose.iv", mode === "iv");
+    for (const { i, c, t, n } of carts) {
+      const v = [-t[1], t[0], 0];
+      gl.set(`cart${i}.chassis`, { F: { o: [c[0], c[1], 0], a: UP, u: [t[0], t[1], 0], v } });
+      for (const side of [0, 1]) {
+        const k = side ? 1 : -1;
+        const F = { o: [c[0] + t[0] * 2.4 * k, c[1] + t[1] * 2.4 * k, 0], a: UP, u: [t[0], t[1], 0], v };
+        gl.set(`cart${i}.cradle${side}`, { F });
+        const on = n > side;
+        if (on) gl.set(`cart${i}.ingot${side}`, { F });
+        glShow(`cart${i}.ingot${side}`, on);
+      }
+    }
+    gl.move("tanker", [0, tankerY, 0]);
+    // the tanker fades as it leaves, as drawn; once gone it is taken out (it would still throw a shadow)
+    if (glShown.tankerFade !== tankerFade) {
+      for (const name of TANKER) {
+        glShow(name, tankerFade > 0.01);
+        if (tankerFade > 0.01) gl.set(name, { opacity: tankerFade });
+      }
+      glShown.tankerFade = tankerFade;
+    }
+    gl.move("ram", [0, 0, ramZ]);
+    glShow("pill.iron", pillZ !== null);
+    glShow("pill.cap", pillZ !== null);
+    if (pillZ !== null) gl.move("pill", [0, 0, pillZ - (DATA.hopper[2] + 14)]);
+    gl.render();
+  }
+
   function draw() {
     const s = SIM[mode];
     const g = sample(s.gate, t);
@@ -174,9 +243,11 @@ function mount(fig) {
     nodes.needle.setAttribute("d", dialNeedle(H));
     nodes.level.setAttribute("d", levelPath(Math.min(1, fer / 500)));
     nodes.hb.textContent = String(Math.round(hb));
-    nodes.discs.innerHTML = discsSvg(Math.max(0, Math.min(12, Math.round((hb - PARAMS.hb0) / 2.2))));
+    const discs = Math.max(0, Math.min(12, Math.round((hb - PARAMS.hb0) / 2.2)));
+    nodes.discs.innerHTML = discsSvg(discs);
     nodes.rider.innerHTML = riderSvg(day);
-    nodes.carts.innerHTML = cartsSvg(phase, sample(s.tsat, t), laps);
+    const carts = cartsOf(phase, sample(s.tsat, t), laps);
+    nodes.carts.innerHTML = cartsSvg(carts);
     // the tanker: drives in over the first 10 h, unloads, leaves by hour 60
     let away = 1;
     if (mode === "iv") away = t < 10 ? 1 - t / 10 : t < 40 ? 0 : Math.min(1, (t - 40) / 20);
@@ -196,7 +267,8 @@ function mount(fig) {
     });
     // a pill drops into the hopper at each dose
     const age = clock - pillAt;
-    if (age >= 0 && age < 0.9) {
+    const pillOn = age >= 0 && age < 0.9;
+    if (pillOn) {
       const [hx, hy, hz] = DATA.hopper;
       const z = hz + 14 - 14 * Math.min(1, age / 0.6) ** 2;
       nodes.pill.innerHTML = solidSvg(G.prismOf(G.frameOf([hx - 2, hy, z], [1, 0, 0], [0, 1, 0], [0, 0, 1]), [[-1.1, -1.1], [1.1, -1.1], [1.1, 1.1], [-1.1, 1.1]], 0, 4, P), { tone: "hi" });
@@ -210,6 +282,8 @@ function mount(fig) {
     weekLabel.textContent = `Week ${Math.floor(day / 7)}`;
     if (Math.abs(Number(range.value) - day) > 0.24) range.value = String(Math.round(day * 4) / 4);
     stage.setAttribute("aria-valuenow", String(Math.round(day)));
+    // the render: the pill keeps falling into the hopper's mouth while the drawn one fades at the rim
+    glPush({ g, H, day, fer, discs, carts, tankerY: -DATA.tanker.travel * ease, tankerFade: Math.max(0, 1 - Math.max(0, ease - 0.7) / 0.3), ramZ, pillZ: pillOn ? DATA.hopper[2] + 14 - 14 * (age / 0.6) ** 2 : null });
   }
   const describe = () => {
     const s = SIM[mode];

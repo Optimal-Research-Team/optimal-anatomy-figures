@@ -10,6 +10,9 @@
 .fe-red .iso-fill, .fe-red .iso-top { fill: var(--fe-red); }
 .fe-red .iso-shade { fill: var(--fe-red-side); }
 .fe-red .iso-edge { stroke: var(--fe-red-side); }
+/* drawn only while the 3-D layer is on (build.mjs: the stretch of rail the drawn apron covers) */
+.fe-gl3-only { display: none; }
+.iso-stage[data-gl3="on"] .fe-gl3-only { display: inline; }
 .fe-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .fe-par { display: block; margin-top: 6px; }
 .fe-par:first-child { margin-top: 0; }
