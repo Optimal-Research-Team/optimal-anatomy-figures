@@ -13,9 +13,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { figkit, k, G, A } from "../../shared/figkit.mjs";
+import { figkit, k, G, A, glPart } from "../../shared/figkit.mjs";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { MANNEQUIN } from "../../shared/mannequin.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -68,6 +69,20 @@ const { R, at, S, Ln, Dots, path3, planeMatrix, put, box, cyl, turned, pin, pris
 const KS = G.scaleOf(P);
 const back = [];
 
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): helpers for the parts the kit's helpers don't record
+const GL3W = gl3Wire();
+const FLOOR_F = F.vframe(0, 0, 0);
+const rectOf = (u0, u1, v0, v1) => [[u0, v0], [u1, v0], [u1, v1], [u0, v1]];
+// A surface the SVG draws on in colour (a screen): a paper-white panel with the drawn rect's round corners, a hair
+// inside its outline (so the panel's bright edge sits under the screen's own dark fill) and a hair proud of the body.
+const paperPanel = (name, o, ex, ey, w, h, r, inset = 0.45) =>
+  glPart.prism(name, G.frameOf(o, G.cross3(ex, ey), ex, ey), F.roundRect(inset, w - inset, inset, h - inset, Math.max(0.1, r - inset)), -0.4, 0.03, { m: "paper", bevel: 0 });
+// Light the page draws as ink (laser lines, landing marks, the knee glow) can't multiply onto a black belt or a dark
+// page, so the layer carries it as unlit parts; the page colours and moves them (live.js) and hides its own ink.
+const LIT = { m: "paper", shadow: false, bevel: 0 };
+const PX = 1 / KS; // one SVG pixel, in cm
+const THIN = { slat: 0.44, laser: 1.2 * PX, beam: 0.8 * PX }; // widths of the thin parts (cm); the page fattens them on a small or low-density stage
+
 // ---------------------------------------------------------------- floor shadow, feet, housing, rear caps and roller
 back.push(`<path class="iso-halo" d="${k.haloOf({ x: -118, y: -51, w: 240, d: 102, r: 8 }, 0, 0.1, P)}"/>`);
 for (const x of [-108, -10, 84]) for (const y of [-44, 44]) cyl("stand.foot", x, y, 3.2, 0, 7, { tone: "lo" }, { steps: 20 });
@@ -86,7 +101,7 @@ turned("roller", G.frameOf([-104, -29, 15.5], [0, 1, 0], [1, 0, 0], [0, 0, 1]), 
 // ---------------------------------------------------------------- belt (slats, landing marks and the plumb spot drawn by the page) and step rails
 box("belt", { x: BELT.x, y: -BELT.half, w: BELT.x1 - BELT.x, d: BELT.half * 2, r: 0.5 }, 22, BELT_Z - 22, { tone: "lo" }, {
   steps: 2,
-  extra: `<path class="cr-slats iso-line" data-tone="faint" data-part="slats" d=""/><g data-part="marks"></g>`,
+  extra: `<path class="cr-slats iso-line" data-tone="faint" data-part="slats" data-gl3-hide d=""/><g data-part="marks" data-gl3-hide></g>`,
 });
 const TREAD = [33.5, 37.5, 41.5, 45.5];
 for (const side of [-1, 1]) {
@@ -108,6 +123,23 @@ for (const side of [-1, 1]) {
   back.push(`<path class="cr-zero" d="${k.planOutline({ x: RUN_X - 0.8, y: strip.y, w: 1.6, d: strip.d, r: 0.2 }, RAIL_Z + 0.3, P, 1)}"/>`);
 }
 
+// 3-D layer: what the page redraws on the deck every frame. The rider's body sits at x = 0 on the rail (piece
+// "rider", moved by the page); the belt's seams are thin strips the page slides; the plumb line across the belt, its
+// spot, the beam down to it and the landing marks are light.
+F.glNote(glPart.prism("rider", FLOOR_F, k.roundedPlan({ x: -1.8, y: BELT.half + 1 - 0.8, w: 3.6, d: 4.6 + 1.6, r: 0.6 }, 8), RAIL_Z, RAIL_Z + 2.3, { bevel: 0.25 }), "rider");
+const SLATS = Math.ceil((BELT.x1 - BELT.x) / 12) + 1;
+for (let i = 0; i < SLATS; i++) F.glNote(glPart.prism(`belt.slat${i}`, FLOOR_F, rectOf(-THIN.slat / 2, THIN.slat / 2, -BELT.half + 0.6, BELT.half - 0.6), BELT_Z - 0.1, BELT_Z + 0.03, { bevel: 0, shadow: false }));
+F.glNote(glPart.prism("fx.laser", FLOOR_F, rectOf(-THIN.laser / 2, THIN.laser / 2, -BELT.half + 0.4, BELT.half - 0.4), BELT_Z - 0.1, BELT_Z + 0.06, LIT));
+F.glNote(glPart.ball("fx.spot", [RUN_X, 0, BELT_Z + 0.05], 0.75, LIT));
+F.glNote(glPart.lathe("fx.beam", G.frameOf([RUN_X, 0, BELT_Z], [0, 0, 1], [1, 0, 0], [0, 1, 0]), [[0, THIN.beam / 2], [1, THIN.beam / 2]], LIT));
+const MARKS = 8;
+for (let i = 0; i < MARKS; i++) F.glNote(glPart.prism(`fx.mark${i}`, FLOOR_F, k.roundedPlan({ x: -1.2 * PX, y: -4.6 - 1.2 * PX, w: 2.4 * PX, d: 9.2 + 2.4 * PX, r: 1.2 * PX }, 4), BELT_Z - 0.1, BELT_Z + 0.05, LIT));
+// the knee's load glow: a disc facing the camera, behind the knee ball (the page sets its place, size and strength)
+const VIEW = G.viewOf(P);
+const GLOW = { a: VIEW, u: G.unit3(G.cross3(VIEW, [0, 0, 1])) };
+GLOW.v = G.cross3(GLOW.a, GLOW.u);
+for (const side of ["R", "L"]) F.glNote(glPart.lathe(`fx.knee${side}`, G.frameOf([RUN_X, 0, BELT_Z + 40], GLOW.a, GLOW.u, GLOW.v), [[0, 1], [0.05, 1]], LIT));
+
 // ---------------------------------------------------------------- front: motor hood, display column and display, depth camera
 const hood = box("hood", { x: BELT.x1, y: -43.5, w: 26, d: 87, r: 4 }, 22, 9, { tone: "mid" }, {
   bevel: 0.6,
@@ -127,12 +159,20 @@ const hood = box("hood", { x: BELT.x1, y: -43.5, w: 26, d: 87, r: 4 }, 22, 9, { 
   const panel = `<g data-part="screen" transform="${m}"><rect class="cr-screen" x="0" y="0" width="${sw}" height="${sh}" rx="1.2"/><g data-part="screen-body"></g><rect class="iso-line" data-tone="mid" fill="none" x="0" y="0" width="${sw}" height="${sh}" rx="1.2"/></g>`;
   const lower = Ln([72, 76, 80].map((z) => path3([[DISPLAY.x - 0.03, -24, z - 0.5], [DISPLAY.x - 0.03, 24, z - 0.5], [DISPLAY.x - 0.03, 24, z + 0.5], [DISPLAY.x - 0.03, -24, z + 0.5]], true)).join(""), { tone: "faint" });
   box("display", DISPLAY, DISPLAY.z0, DISPLAY.z1 - DISPLAY.z0, { tone: "mid" }, { bevel: 0.8, extra: lower + panel });
+  F.glNote(paperPanel("display.screen", [DISPLAY.x, SCREEN.y0, SCREEN.z1], [0, 1, 0], [0, 0, -1], sw, sh, 1.2));
   // the depth camera: a module under the screen, two apertures and a pilot dot, looking at the runner
   const lens = (y, z, r) => Ln(G.circleOf(G.frameOf([96.97, y, z], [-1, 0, 0], [0, 1, 0], [0, 0, 1]), 0, r, P), { tone: "mid" });
   box("camera", { x: 97, y: -8.5, w: 3, d: 17, r: 1.2 }, 101, 13, { tone: "hi", crease: "lo" }, {
     steps: 2,
-    extra: [-4.2, 4.2].map((y) => `<path class="cr-lens" d="${G.circleOf(G.frameOf([96.97, y, 107.5], [-1, 0, 0], [0, 1, 0], [0, 0, 1]), 0, 2.6, P)}"/>${lens(y, 107.5, 2.6)}`).join("") + Dots([at([96.97, 0, 103.6])], { size: 0.8, tone: "lit" }),
+    extra: [-4.2, 4.2].map((y) => `<path class="cr-lens" data-gl3-hide d="${G.circleOf(G.frameOf([96.97, y, 107.5], [-1, 0, 0], [0, 1, 0], [0, 0, 1]), 0, 2.6, P)}"/>${lens(y, 107.5, 2.6)}`).join("") + `<g data-gl3-hide>${Dots([at([96.97, 0, 103.6])], { size: 0.8, tone: "lit" })}</g>`,
   });
+  // 3-D layer: the two apertures as bezels with dark glass, and the pilot light
+  for (const y of [-4.2, 4.2]) {
+    const Fl = G.frameOf([97, y, 107.5], [-1, 0, 0], [0, 1, 0], [0, 0, 1]);
+    F.glNote(glPart.lathe(`camera.bezel${y > 0 ? "L" : "R"}`, Fl, [[-0.4, 2.6], [0.3, 2.6]], { bevel: 0.12 }));
+    F.glNote(glPart.lathe(`camera.lens${y > 0 ? "L" : "R"}`, Fl, [[0.3, 2.05], [0.42, 2.05]], { bevel: 0.04 }));
+  }
+  F.glNote(glPart.ball("camera.pilot", [96.98, 0, 103.6], 0.5, { shadow: false }));
 }
 
 // ---------------------------------------------------------------- uprights, handrails and the side touch panel
@@ -169,6 +209,7 @@ const stalk = cyl("console.stalk", CONSOLE.x, CONSOLE.y, 1.4, RAIL.z + RAIL.h, 1
   const m = planeMatrix(corner, [0, 1, 0], G.mul3(up, -1));
   const face = `<g transform="${m}"><rect class="cr-screen" x="0.8" y="0.8" width="22.4" height="13.6" rx="0.8"/><text class="cr-digits" data-part="cadence" x="12" y="10.4" font-size="8" text-anchor="middle">165</text><text class="cr-unit" x="12" y="13.4" font-size="2.2" text-anchor="middle">steps/min</text></g>`;
   prism("console", Ft, [[-12, -8.4], [12, -8.4], [12, 8.4], [-12, 8.4]], 0, 2, { tone: "mid" }, { extra: face, meta: { seated: true, cut: [stalk] } });
+  F.glNote(paperPanel("console.screen", G.add3(G.add3(corner, [0, 0.8, 0]), G.mul3(up, -0.8)), [0, 1, 0], G.mul3(up, -1), 22.4, 13.6, 0.8));
 }
 
 // ---------------------------------------------------------------- the bounce gauge on the far step rail
@@ -189,6 +230,14 @@ const stalk = cyl("console.stalk", CONSOLE.x, CONSOLE.y, 1.4, RAIL.z + RAIL.h, 1
   GAUGE.z0 = z0;
   GAUGE.z1 = z1;
   GAUGE.plateY = plateY + 0.82;
+  // 3-D layer: the carriage the page redraws every frame, at z = 0 (piece "carriage", lifted by the page), and its
+  // laser to the runner's side. The drawing paints the carriage over the scale plate, so its body ends a hair
+  // proud of the plate's face.
+  F.glNote(glPart.prism("gauge.carriage", FLOOR_F, k.roundedPlan({ x: GAUGE.x - 2.6, y: GAUGE.y - 2.6, w: 5.2, d: 5.2 + 0.5, r: 0.8 }, 8), -1.6, 1.6, { bevel: 0.3 }), "carriage");
+  const g0 = [GAUGE.x + 2.7, GAUGE.y + 1, 0];
+  const g1 = [RUN_X - 2, -6, 0];
+  GAUGE.beam = G.frameAlong(g0, G.unit3(G.sub3(g1, g0)));
+  F.glNote(glPart.lathe("fx.gbeam", GAUGE.beam, [[0, THIN.beam / 2], [G.len3(G.sub3(g1, g0)), THIN.beam / 2]], LIT), "carriage");
 }
 
 // ---------------------------------------------------------------- assemble: back items, page-drawn slots, the runner, then the near uprights and rail
@@ -209,7 +258,55 @@ const svg = k.figureSvg({
   ],
 });
 
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same solids, rendered
+// The treadmill in the brand's colourway (no maker's finish): warm white shells, sage uprights (forest paint sinks
+// into the Forest night page; sage reads on both), a rubber belt running over its roller, slate step rails (dark
+// enough for a deck, pale enough that the drawn treads still read), graphite handrails, feet and console, brushed
+// metal for the rail caps, the gauge post and the stalk, and a forest carriage on the gauge. The mannequin is posed
+// by the page (maple, satin nickel joints).
+for (const part of F.GL) {
+  // the big shells get a rounder edge than the kit's default, so they catch the studio's key light
+  if (/^(deck$|deck\.cap|hood|column|display$)/.test(part.n)) part.bevel = 0.9;
+  else if (/^(front\.)?(rail|railcap|upright)[LR]$/.test(part.n)) part.bevel = 0.6;
+  else if (/^deck\.rail/.test(part.n)) part.bevel = 0.3;
+}
+// the belt runs on over the rear roller: its body reaches the roller's crown, so belt and roller read as one loop
+Object.assign(F.GL.find((part) => part.n === "belt"), glPart.prism("belt", FLOOR_F, k.roundedPlan({ x: -104, y: -BELT.half, w: BELT.x1 + 104, d: BELT.half * 2, r: 0.5 }, 4), 22, BELT_Z, { bevel: 0.08 }));
+const GL3 = {
+  ...F.gl3Scene({
+    ground: 0,
+    // a long, low machine: the default occlusion radius (4.5 % of its span) reaches too far for the creases between
+    // its shells and turns grainy at the phone quality level, so it is held to 5 cm and eased a little
+    look: { aoRadius: 5, ao: 0.8 },
+    materials: [
+      ["^stand\\.foot", "graphite"],
+      ["^deck\\.rail", "slate"],
+      ["^belt\\.slat", "slate"],
+      ["^belt|^roller", "rubber"],
+      ["upright[LR]$", "sage"],
+      ["railcap[LR]$", "alu"],
+      ["rail[LR]$", "graphite"],
+      ["^console\\.stalk", "steel"],
+      ["^console", "graphite"],
+      ["^camera\\.bezel", "nickel"],
+      ["^camera\\.lens", "smoke"],
+      ["^camera\\.pilot", "leaf"],
+      ["^gauge\\.(base|cap)", "graphite"],
+      ["^gauge\\.post", "alu"],
+      ["^gauge\\.carriage", "forest"],
+    ],
+  }),
+  ...GL3W.chunk,
+};
+
 const DATA = {
+  gl3: GL3,
+  W,
+  H,
+  glow: GLOW,
+  slats: SLATS,
+  marks: MARKS,
+  thin: THIN,
   P,
   B,
   beltZ: BELT_Z,
@@ -227,8 +324,8 @@ const VIEW_SRC = readFileSync(join(ROOT, "shared/mannequin-view.js"), "utf8");
 const latheSource = strip(readFileSync(join(ROOT, ".claude/skills/anatomy/kit/lathe.mjs"), "utf8"));
 const LATHE = `const G = (() => {${latheSource}\nreturn { frameOf, frameAlong, prismOf, pointOf, solidOf, sphereOf, circleOf };})();\n`;
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
-const SCRIPT = `${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
-const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
+const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 
 const pc = (v) => `${Math.round(v * 100)}%`;
 const CAPTION = [
@@ -264,6 +361,8 @@ writeFileSync(join(HERE, out), page({ title: "The runner rig", theme: THEME, bod
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `scale ${KS.toFixed(3)}`, `H ${H}`, `com ${comRange.map((v) => v.toFixed(1)).join("–")}`);
 A.auditOrExit(R, P, {});

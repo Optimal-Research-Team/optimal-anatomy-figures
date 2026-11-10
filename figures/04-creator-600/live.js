@@ -21,7 +21,9 @@ function mount(fig) {
     if (parent) parent.appendChild(n);
     return n;
   };
-  const view = mannequinView(nodes.runner, P, { between: ["plumb"] });
+  // the 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => frame && render() });
+  const view = mannequinView(nodes.runner, P, { between: ["plumb"], gl, key: "runner", materialOf: (p) => (p.name === "emitter" ? "graphite" : null) });
   const Z = DATA.beltZ;
   const base = [DATA.runX, 0, Z];
   const V = beltOf(); // cm/s
@@ -63,8 +65,8 @@ function mount(fig) {
       if (!st.glow) {
         // under the ball: first in the part's own group
         const host = g.parentNode;
-        st.ring = el("circle", { class: "mq-glow-ring" });
-        st.glow = el("circle", { class: "mq-glow" });
+        st.ring = el("circle", { class: "mq-glow-ring", "data-gl3-hide": "" });
+        st.glow = el("circle", { class: "mq-glow", "data-gl3-hide": "" });
         host.insertBefore(st.ring, host.firstChild);
         host.insertBefore(st.glow, host.firstChild);
       }
@@ -136,7 +138,7 @@ function mount(fig) {
     // carriage on the post, a laser from it to the runner's side, hold marks for the last stride's top and bottom
     const car = { x: g.x - 2.6, y: g.y - 2.6, w: 5.2, d: 5.2, r: 0.8 };
     let s = solidSvg(slabOf(car, z - 1.6, 3.2, P, 2, 0.3), { tone: "hi", className: "cr-carriage" });
-    s += lineSvg(pathOf([iso([g.x + 2.7, g.y + 1, z], P), iso([DATA.runX - 2, -6, z], P)]), { tone: "lit", className: "cr-beam", free: true });
+    s += `<g data-gl3-hide>${lineSvg(pathOf([iso([g.x + 2.7, g.y + 1, z], P), iso([DATA.runX - 2, -6, z], P)]), { tone: "lit", className: "cr-beam", free: true })}</g>`;
     const window = 120 / cadence;
     let top = -Infinity;
     let bot = Infinity;
@@ -215,6 +217,77 @@ function mount(fig) {
     }
   }
 
+  // ---------------------------------------------------------------- the 3-D layer's copy of what the page redraws
+  // The rider and the gauge's carriage are solids (moved as pieces); the belt's seams are strips slid along the belt.
+  // Laser light, landing marks and the knee's glow are ink in the drawing, and ink can't show on a black belt or a
+  // dark page, so the layer carries them as unlit parts in their own colours and the drawing's copies step aside
+  // ([data-gl3-hide]). Everything here is a no-op until the layer has arrived.
+  const LASER = 0x3fd45f;
+  const HEAT = 0xff8a5f;
+  const UP = { a: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] };
+  const flat = (x, y, z) => ({ o: [x, y, z], ...UP });
+  let glLit = false;
+  let glBeam = 0;
+  function glPush(J, parts, pose, loads) {
+    if (!gl.on) {
+      glLit = false;
+      return;
+    }
+    if (!glLit) {
+      glLit = true;
+      glBeam = 0;
+      for (const n of ["fx.laser", "fx.spot", "fx.beam", "fx.gbeam"]) gl.set(n, { color: LASER });
+      for (let i = 0; i < DATA.marks; i++) gl.set(`fx.mark${i}`, { color: HEAT, opacity: 0.99, visible: false });
+      for (const k of ["R", "L"]) gl.set(`fx.knee${k}`, { color: HEAT, opacity: 0.5, visible: false });
+      gl.set("camera.pilot", { emissive: 0x7fe08a, intensity: 2.4 });
+      const beam = view.nodes.get("beam");
+      if (beam) beam.g.setAttribute("data-gl3-hide", "");
+    }
+    // thin parts keep at least a device pixel and a bit of width, so a small or low-density stage doesn't break them into dashes
+    const st = gl.stats();
+    const perCm = P.scale * Math.sqrt(1.6) * (st.cssW / DATA.W) * st.dpr; // device pixels per cm
+    const fat = (cm) => Math.max(1, 1.15 / (cm * perCm));
+    const fSlat = fat(DATA.thin.slat);
+    const fLaser = fat(DATA.thin.laser);
+    const fBeam = fat(DATA.thin.beam);
+    if (fBeam !== glBeam) {
+      glBeam = fBeam;
+      const b = DATA.gauge.beam;
+      gl.set("fx.gbeam", { F: { o: b.o, a: b.a, u: b.u.map((v) => v * fBeam), v: b.v.map((v) => v * fBeam) } });
+    }
+    gl.move("rider", [rider, 0, 0]);
+    gl.move("carriage", [0, 0, Z + pose.com]);
+    const gap = 12;
+    const off = ((beltAt % gap) + gap) % gap;
+    for (let i = 0; i < DATA.slats; i++) {
+      const x = DATA.belt.x1 - off - i * gap;
+      gl.set(`belt.slat${i}`, x > DATA.belt.x + 0.5 ? { visible: true, F: { o: [x, 0, 0], a: UP.a, u: [fSlat, 0, 0], v: UP.v } } : { visible: false });
+    }
+    const px = J.pelvis[0];
+    gl.set("fx.laser", { F: { o: [px, 0, 0], a: UP.a, u: [fLaser, 0, 0], v: UP.v } });
+    gl.set("fx.spot", { F: flat(px, 0, Z + 0.05) });
+    gl.set("fx.beam", { F: { o: [px, 0, Z], a: [0, 0, J.pelvis[2] - 10.4 - Z], u: [fBeam, 0, 0], v: [0, fBeam, 0] } });
+    for (let i = 0; i < DATA.marks; i++) {
+      const mk = marks[i];
+      const x = mk ? mk.x0 - (beltAt - mk.at) : 0;
+      const a = mk ? Math.max(0, 1 - (clock - mk.t) / 1.2) : 0;
+      gl.set(`fx.mark${i}`, mk && x >= DATA.belt.x + 2 && a > 0.01 ? { visible: true, opacity: Math.min(0.99, a), F: flat(x, mk.y, 0) } : { visible: false });
+    }
+    // the knee's glow: a disc facing the camera, just behind the knee ball, sized and faded as the drawing's
+    const g = DATA.glow;
+    for (const k of ["R", "L"]) {
+      const ball = parts.find((p) => p.name === `knee${k}`);
+      const load = loads[k];
+      if (!ball || load <= 0.02) {
+        gl.set(`fx.knee${k}`, { visible: false });
+        continue;
+      }
+      const r = (ball.r + 1.6 + 5.5 * load) / Math.sqrt(1.6);
+      const back = ball.r + 0.5;
+      gl.set(`fx.knee${k}`, { visible: true, opacity: 0.8 * Math.min(1, load), F: { o: [ball.c[0] - g.a[0] * back, ball.c[1] - g.a[1] * back, ball.c[2] - g.a[2] * back], a: g.a, u: g.u.map((v) => v * r), v: g.v.map((v) => v * r) } });
+    }
+  }
+
   // ---------------------------------------------------------------- one frame
   function render() {
     const pose = poseAt(phi, cadence, B);
@@ -231,6 +304,8 @@ function mount(fig) {
     gaugeSvg(pose.com);
     screenDraw(J, loads);
     if (nodes.cadence) nodes.cadence.textContent = String(Math.round(cadence));
+    glPush(J, parts, pose, loads);
+    gl.render();
     return pose;
   }
 
