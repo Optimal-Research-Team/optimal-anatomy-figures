@@ -4,6 +4,7 @@
 //   - phones at 390 / 360 / 320 in both themes: plate shot + "no sideways scroll" check,
 //   - reduced motion at 390 in both themes,
 //   - desktop (1280 wide) in both themes,
+//   - figures with the 3-D layer (shared/gl3): the shots above show it on; the line check runs with ?gl=off,
 //   - console clean on every run.
 // Shots land in figures/<dir>/shots/. Prints one summary table and exits 1 on any failure.
 //
@@ -14,7 +15,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const argv = process.argv.slice(2);
@@ -53,12 +54,12 @@ const t = tag ? `-${tag}` : "";
 
 const rows = [];
 let failed = false;
-function drive(name, file, steps, flags) {
+function drive(name, file, steps, flags, query = "") {
   const actions = join(tmp, `${name}.json`);
   writeFileSync(actions, JSON.stringify(steps));
   let out = "";
   try {
-    out = execFileSync("node", [join(S, "drive.mjs"), join(cwd, file), "--actions", actions, ...flags], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    out = execFileSync("node", [join(S, "drive.mjs"), query ? pathToFileURL(join(cwd, file)).href + query : join(cwd, file), "--actions", actions, ...flags], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   } catch (err) {
     out = `${err.stdout ?? ""}${err.stderr ?? ""}`;
     if (!/line ends:/.test(out)) out += "\n(drive failed)";
@@ -69,7 +70,8 @@ const want = (what) => !only || only === what;
 
 for (const theme of ["light", "dark"]) {
   if (want("lines")) {
-    const out = drive(`lines-${theme}`, page[theme], [["wait", 1500], ...preSteps, ["lines", `shots/tmp/lines-${theme}.png`]], ["--width", "1280", "--height", "1100"]);
+    // the line check is about the drawing, so it runs on the SVG alone (with the 3-D layer on, the solids' edges are hidden)
+    const out = drive(`lines-${theme}`, page[theme], [["wait", 1500], ...preSteps, ["lines", `shots/tmp/lines-${theme}.png`]], ["--width", "1280", "--height", "1100"], "?gl=off");
     const m = out.match(/line ends: (\d+)/);
     const ok = m && m[1] === "0" && /console: clean/.test(out);
     failed ||= !ok;

@@ -78,5 +78,10 @@ export function assessorSvg(P, { at, heading, tilt = 32, part = "tablet", extraG
   const screenSvg = `<g transform="${transform}"><rect class="as-screen" x="0" y="0" width="${sw.toFixed(2)}" height="${sh.toFixed(2)}" rx="0.9"/><g data-part="${part}"></g><rect class="iso-line" data-tone="mid" fill="none" x="0" y="0" width="${sw.toFixed(2)}" height="${sh.toFixed(2)}" rx="0.9"/></g>`;
   const halo = `<path class="iso-halo" d="${k.haloOf({ x: at[0] - 16, y: at[1] - 16, w: 32, d: 32, r: 16 }, 0, 0.1, P)}"/>`;
   const svg = halo + list.map(({ p }) => (p.name === "tablet" ? draw(p).replace("</g>", `${screenSvg}</g>`) : draw(p))).join("");
-  return { svg, screen: { w: sw, h: sh }, J, facingAway };
+  // for the 3-D layer (shared/gl3): the same solids, and the screen's plane (the SVG draws the plot on it)
+  const r3 = (x) => Math.round(x * 1000) / 1000;
+  const frame3 = (Fq) => ({ o: Fq.o.map(r3), a: Fq.a.map(r3), u: Fq.u.map(r3), v: Fq.v.map(r3) });
+  const gl = parts.map((p) => ({ name: p.name, kind: p.kind, wood: !!p.wood, ...(p.kind === "ball" ? { c: p.c.map(r3), r: p.r } : p.kind === "prism" ? { F: frame3(p.F), poly: p.poly, s0: p.s0, s1: p.s1 } : { F: frame3(p.F), profile: p.profile }) }));
+  const glScreen = { o: G.add3(corner, G.mul3(normal, 0.05)).map(r3), ex: ex.map(r3), ey: ey.map(r3), w: r3(sw), h: r3(sh) };
+  return { svg, screen: { w: sw, h: sh }, J, facingAway, gl, glScreen };
 }

@@ -1,0 +1,22 @@
+/* The shared 3-D layer (shared/gl3): the canvas under the drawing, and the drawing as its ink pass.
+   Nothing here applies until host.js sets data-gl3="on" on the stage (after the layer's first frame). */
+.iso-stage[data-gl3]{position:relative}
+.gl3-canvas{position:absolute;left:0;top:0;width:100%;height:100%;display:block;pointer-events:none;opacity:0;transition:opacity .5s ease}
+.iso-stage[data-gl3="on"]>.gl3-canvas{opacity:1}
+/* the SVG multiplies over the render: white leaves the render as it is, ink darkens it */
+.iso-stage[data-gl3="on"]>svg{position:relative;mix-blend-mode:multiply}
+/* solids: the render is the body now. Fills go white (they still hide what is behind them, in the drawing's own
+   order), and the drawn shading, edges and ground shadow step aside. Anything inside [data-gl3-keep] stays as drawn
+   (a small moving marker the layer has no solid for). */
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-fill{fill:#fff!important;stroke:none!important}
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-shade,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-top{display:none}
+.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-edge,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-crease,.iso-stage[data-gl3="on"] .iso-solid:not([data-gl3-keep] *)>.iso-bevel{stroke-opacity:0}
+.iso-stage[data-gl3="on"] .iso-halo{display:none}
+.iso-stage[data-gl3="on"] .tb-body{fill:#fff!important}
+.iso-stage[data-gl3="on"] .tb-shine,.iso-stage[data-gl3="on"] .tb-shade{display:none}
+.iso-stage[data-gl3="on"] .tb-ring{stroke-opacity:0}
+.iso-stage[data-gl3="on"] .iso-wire-end{fill:#fff!important;stroke-opacity:0}
+/* hide a drawn element only while the layer is on (a drawn shadow, a drawn highlight the render now makes) */
+.iso-stage[data-gl3="on"] [data-gl3-hide]{display:none}
+/* in Forest night the stage is a Cream island for the ink (host.js adds the classes): no ground of its own */
+.iso-stage[data-gl3-theme]{background:transparent;color:inherit}

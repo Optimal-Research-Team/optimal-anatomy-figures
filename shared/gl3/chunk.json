@@ -1,0 +1,12 @@
+{
+  "file": "optimal-gl3.js",
+  "three": "0.186.1",
+  "esbuild": "0.25.10",
+  "format": "iife",
+  "global": "OptimalGL3",
+  "bytes": 611578,
+  "gzipBytes": 157578,
+  "sha256": "695996a0adaa723b",
+  "sources": "850f3a171dc1a9dd",
+  "built": "2026-11-10T22:43:07.910Z"
+}

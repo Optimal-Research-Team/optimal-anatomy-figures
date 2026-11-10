@@ -8,9 +8,48 @@ import { tubePieces, tubeSvg } from "../.claude/skills/anatomy/kit/tube.mjs";
 
 export { k, G, A, tubePieces, tubeSvg };
 
+// ---------------------------------------------------------------- the 3-D layer's copy of every solid (shared/gl3)
+// Each helper below also notes the true solid it drew, in world units, for the real-time renderer: a prism
+// ({ k: "p", F, poly, s0, s1 }), a turned body ({ k: "l", F, prof }), a ball ({ k: "b", c, r }) or a tube
+// ({ k: "t", pts, r }), with the part's name and its mover (`p`, the piece). `gl3Scene()` gives each one a material
+// by name and returns the scene for DATA.gl3.
+const r3 = (v) => Math.round(v * 1000) / 1000;
+const v3 = (a) => a.map(r3);
+export const glFrame = (Fr) => ({ o: v3(Fr.o), a: v3(Fr.a), u: v3(Fr.u), v: v3(Fr.v) });
+const FLOOR_F = { o: [0, 0, 0], a: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0] };
+export const glPart = {
+  prism: (n, Fr, poly, s0, s1, extra = {}) => ({ n, k: "p", F: glFrame(Fr), poly: poly.map(([x, y]) => [r3(x), r3(y)]), s0: r3(Math.min(s0, s1)), s1: r3(Math.max(s0, s1)), ...extra }),
+  lathe: (n, Fr, profile, extra = {}) => ({ n, k: "l", F: glFrame(Fr), prof: profile.map((q) => (q[2] ? [r3(q[0]), r3(q[1]), 1] : [r3(q[0]), r3(q[1])])), ...extra }),
+  ball: (n, c, r, extra = {}) => ({ n, k: "b", c: v3(c), r: r3(r), ...extra }),
+  tube: (n, pts, r, extra = {}) => ({ n, k: "t", pts: pts.map(v3), r: r3(r), ...extra }),
+  /** A flat panel the SVG draws on (a screen): corner o, edges ex and ey (unit vectors), w × h. Rendered paper-white. */
+  panel: (n, o, ex, ey, w, h, extra = {}) => {
+    const nrm = [ex[1] * ey[2] - ex[2] * ey[1], ex[2] * ey[0] - ex[0] * ey[2], ex[0] * ey[1] - ex[1] * ey[0]];
+    return { n, k: "q", F: { o: v3(o), a: v3(nrm), u: v3(ex), v: v3(ey) }, w: r3(w), h: r3(h), m: "paper", ...extra };
+  },
+};
+/**
+ * Give every recorded part a material: `materials` is a list of [pattern, preset]; the first match on the name wins.
+ * `skip` (a RegExp) leaves parts out; `ground` is the floor's height; `look` tunes the render for this figure
+ * ({ exposure, env, ao, aoRadius, cast, contact, contactHeight, pool }, each a multiplier or a value in cm);
+ * `bounds` ([[x0,y0,z0],[x1,y1,z1]]) widens the lit volume when parts are added after mount.
+ */
+export function gl3SceneOf(parts, { materials = [], fallback = "shell", skip = null, ground, look, bounds } = {}) {
+  const rules = materials.map(([pattern, preset]) => [pattern instanceof RegExp ? pattern : new RegExp(pattern), preset]);
+  const out = [];
+  for (const part of parts) {
+    if (skip && skip.test(part.n)) continue;
+    const hit = part.m ? null : rules.find(([re]) => re.test(part.n));
+    out.push({ ...part, m: part.m || (hit ? hit[1] : fallback) });
+  }
+  return { parts: out, ...(ground !== undefined ? { ground } : {}), ...(look ? { look } : {}), ...(bounds ? { bounds } : {}) };
+}
+
 export function figkit(P) {
   const R = A.recorder(P);
   const record = R.solid;
+  const GL = [];
+  const glNote = (desc, piece) => GL.push(piece && piece !== "stand" ? { ...desc, p: piece } : desc);
   const at = (p) => k.iso(p, P);
   const S = (paths, style) => k.solidSvg(paths, style);
   const Ln = (d, style) => k.lineSvg(d, style);
@@ -37,11 +76,13 @@ export function figkit(P) {
   }
   function box(name, plan, z0, h, style = {}, { steps = 3, bevel = 0, inner = "", extra = "", bias = 0, piece, move, ground = false, attrs, meta = {} } = {}) {
     const shape = record(A.slab(plan, z0, h, { name, ground, ...meta }, steps));
+    glNote(glPart.prism(name, FLOOR_F, k.roundedPlan(plan, 8), z0, z0 + h), piece);
     put(name, [plan.x + plan.w / 2, plan.y + plan.d / 2, z0 + h / 2], S(k.slabOf(plan, z0, h, P, steps, bevel), { tone: "mid", ...style, inner }) + extra, [shape], { bias, piece, move, attrs });
     return shape;
   }
   function cyl(name, cx, cy, r, z0, h, style = {}, { steps = 32, bevel = 0, inner = "", extra = "", bias = 0, piece, move, attrs, meta = {} } = {}) {
     const shape = record(A.cylinder(cx, cy, r, z0, h, { name, ...meta }));
+    glNote(glPart.lathe(name, { ...FLOOR_F, o: [cx, cy, 0] }, [[z0, r], [z0 + h, r]]), piece);
     put(name, [cx, cy, z0 + h / 2], S(k.cylinder(cx, cy, r, z0, h, P, steps, bevel), { tone: "mid", ...style, inner }) + extra, [shape], { bias, piece, move, attrs });
     return shape;
   }
@@ -50,12 +91,14 @@ export function figkit(P) {
     const paths = G.solidOf(profile, F, P, opts);
     const mid = (profile[0][0] + profile[profile.length - 1][0]) / 2;
     const shape = record(A.solid(F, profile, { name, ...(radius ? { radius } : {}), ...meta }));
+    glNote(glPart.lathe(name, F, profile), piece);
     put(name, G.add3(F.o, G.mul3(F.a, mid)), before + S(paths, { tone: "mid", ...style, inner }) + extra, [shape], { bias, piece, move, attrs });
     return shape;
   }
   const pin = (name, F, s0, s1, r, style = {}, opts = {}) => turned(name, F, [[s0, r], [s1, r]], style, opts);
   function prism(name, F, poly, s0, s1, style = {}, { extra = "", inner = "", bias = 0, piece, move, attrs, before = "", ref, meta = {} } = {}) {
     const shape = record(A.prism(F, poly, s0, s1, { name, ...meta }));
+    glNote(glPart.prism(name, F, poly, s0, s1), piece);
     const cx = poly.reduce((a, p) => a + p[0], 0) / poly.length;
     const cy = poly.reduce((a, p) => a + p[1], 0) / poly.length;
     const centre = ref ?? G.add3(G.add3(G.add3(F.o, G.mul3(F.a, (s0 + s1) / 2)), G.mul3(F.u, cx)), G.mul3(F.v, cy));
@@ -64,6 +107,7 @@ export function figkit(P) {
   }
   function ball(name, c, r, style = {}, { bias = 0, extra = "", piece, move, attrs, meta = {} } = {}) {
     const shape = record(A.ball(c, r, { name, ...meta }));
+    glNote(glPart.ball(name, c, r), piece);
     put(name, c, S(G.sphereOf(c, r, P, { steps: r > 3 ? 72 : 32 }), { tone: "mid", ...style }) + extra, [shape], { bias, piece, move, attrs });
     return shape;
   }
@@ -78,6 +122,7 @@ export function figkit(P) {
   function cable(name, points, r = 0.9, { tone = "mid", bend = 4, maxLength = 14, bias = 0.05, rings } = {}) {
     const route = G.fillet(points, Math.max(bend, r * 2.6), 10, { P, tube: r });
     R.route(name, route, r, { limp: true, piece: "stand" });
+    glNote(glPart.tube(name, route, r));
     CABLES.push(name);
     tubePieces(route, r, P, { maxLength, spacing: Math.max(0.6, Math.min(1.6, r)), ...(rings ? { rings } : {}) }).forEach((piece, index) =>
       put(`${name}:${index}`, piece.mid, tubeSvg(piece, { tone }), [A.tube(piece.points, piece.radii)], { bias, attrs: ` data-route="${name}"` }),
@@ -98,6 +143,12 @@ export function figkit(P) {
     back.push(Ln(screws.map(([x, y]) => k.ring(x, y, 2.2, 0, P, 16)).join(""), { tone: "lo" }));
     back.push(Dots(screws.map(([x, y]) => at([x, y, 0])), { size: 0.5 }));
     record(A.slab(PLATE, -plateH, plateH, { name: "stand.plate", ground: true }, 8));
+    glNote(glPart.prism("stand.plate", FLOOR_F, k.roundedPlan(PLATE, 8), -plateH, 0, { bevel: 0.6 }));
+    k.corners(PLATE, 22).forEach(([x, y], i) => {
+      glNote(glPart.lathe(`stand.foot${i}.pad`, { ...FLOOR_F, o: [x, y, 0] }, [[-plateH - footH, 7], [-plateH - footH + 1.6, 7]]));
+      glNote(glPart.lathe(`stand.foot${i}`, { ...FLOOR_F, o: [x, y, 0] }, [[-plateH - footH + 1.6, 5.4], [-plateH, 5.4]]));
+    });
+    if (label) glNote(glPart.prism("stand.label", FLOOR_F, k.roundedPlan(label, 3), 0, 0.8, { bevel: 0.1 }));
     if (label) {
       back.push(S(k.slabOf(label, 0, 0.8, P, 3), { tone: "lo", crease: "none" }));
       back.push(Ln(k.planOutline(k.insetPlan(label, 1.4), 0.8, P, 3), { tone: "faint" }));
@@ -113,5 +164,18 @@ export function figkit(P) {
     return R.items.map((item) => `<g class="it" data-name="${item.name}"${item.piece !== "stand" ? ` data-move="${item.piece}"` : ""}${item.attrs ?? ""}>${item.svg}</g>`);
   }
 
-  return { R, record, at, S, Ln, Dots, path3, vframe, xframe, yframe, roundRect, faceY, faceX, byDepth, planeMatrix, put, box, cyl, turned, pin, prism, ball, stud, cable, CABLES, bench, assemble };
+  /**
+   * Record a static mannequin (shared/assessor.mjs returns its parts as `gl`) as solids named `<prefix>.<part>`:
+   * maple for the turned wood, satin nickel for the ball joints, `materialOf(part)` for anything it holds.
+   */
+  const glFigure = (prefix, parts, materialOf) => {
+    for (const q of parts) {
+      const m = (materialOf && materialOf(q)) || (q.wood ? "wood" : q.kind === "ball" ? "nickel" : "shell");
+      const n = `${prefix}.${q.name}`;
+      glNote(q.kind === "ball" ? glPart.ball(n, q.c, q.r, { m }) : q.kind === "prism" ? glPart.prism(n, q.F, q.poly, q.s0, q.s1, { m, bevel: 0.35 }) : glPart.lathe(n, q.F, q.profile, { m, bevel: 0.35 }));
+    }
+  };
+  /** The scene for DATA.gl3: every solid the helpers drew (plus anything pushed onto `GL`), with materials by name. */
+  const gl3Scene = (opts = {}) => gl3SceneOf(GL, opts);
+  return { R, record, at, S, Ln, Dots, path3, vframe, xframe, yframe, roundRect, faceY, faceX, byDepth, planeMatrix, put, box, cyl, turned, pin, prism, ball, stud, cable, CABLES, bench, assemble, GL, glNote, glFigure, gl3Scene };
 }

@@ -12,10 +12,11 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { figkit, k, G, A } from "../../shared/figkit.mjs";
+import { figkit, k, G, A, glPart } from "../../shared/figkit.mjs";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { MANNEQUIN } from "../../shared/mannequin.mjs";
 import { assessorSvg } from "../../shared/assessor.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -193,7 +194,35 @@ const svg = k.figureSvg({
   body: [...back, ...groups, `<g data-part="power"></g>`, `<g data-part="runner"></g>`, AS.svg],
 });
 
-const DATA = { P, B, W, H, mask: { base: MASK.base, face: MASK.face, axis: MASK.axis }, bike: { bb: BB, fly: FLY, cover: { x: BB[0], y: 11.43, z: BB[2], r: 6.2 }, crank: M.BIKE.crank, hipX: M.BIKE.hip[0] }, screen: AS.screen };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same solids, rendered
+// The bike in the brand's colourway (no maker's finish): white shells, a forest frame, graphite feet, rubber where
+// hands and seat go. The flywheel cover and the crank cover stay white because the figure draws on them.
+const GL3W = gl3Wire();
+F.glFigure("as", AS.gl, (q) => (q.name === "tablet" ? "graphite" : null));
+F.glNote(glPart.panel("as.screen", AS.glScreen.o, AS.glScreen.ex, AS.glScreen.ey, AS.glScreen.w, AS.glScreen.h));
+const GL3 = {
+  ...F.gl3Scene({
+    ground: 0,
+    materials: [
+      ["^stand\\.", "graphite"],
+      ["^fly\\.post", "graphite"],
+      ["^fly\\.housing", "shell"],
+      ["^crank\\.cover", "shell"],
+      ["^bb\\.stub", "steel"],
+      ["^bb\\.house|^drive\\.case", "satin"],
+      ["^frame\\.knob", "graphite"],
+      ["^frame\\.|^riser", "forest"],
+      ["^seat\\.clamp", "graphite"],
+      ["^seat\\.", "alu"],
+      ["^saddle|^hood|^drop", "rubber"],
+      ["^plug", "graphite"],
+      ["^handlebar", "alu"],
+    ],
+  }),
+  ...GL3W.chunk,
+};
+
+const DATA = { gl3: GL3, P, B, W, H, mask: { base: MASK.base, face: MASK.face, axis: MASK.axis }, bike: { bb: BB, fly: FLY, cover: { x: BB[0], y: 11.43, z: BB[2], r: 6.2 }, crank: M.BIKE.crank, hipX: M.BIKE.hip[0] }, screen: AS.screen };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
 const MODEL_SRC = strip(readFileSync(join(HERE, "model.mjs"), "utf8"));
 const MANNEQUIN_SRC = strip(readFileSync(join(ROOT, "shared/mannequin.mjs"), "utf8"));
@@ -201,8 +230,8 @@ const VIEW_SRC = readFileSync(join(ROOT, "shared/mannequin-view.js"), "utf8") + 
 const latheSource = strip(readFileSync(join(ROOT, ".claude/skills/anatomy/kit/lathe.mjs"), "utf8"));
 const LATHE = `const G = (() => {${latheSource}\nreturn { frameOf, frameAlong, prismOf, pointOf, solidOf, sphereOf, circleOf, arcOf };})();\n`;
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
-const SCRIPT = `${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
-const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(ROOT, "shared/assessor.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${LATHE}\n${MANNEQUIN_SRC}\n${MODEL_SRC}\n${VIEW_SRC}\n${LIVE}`;
+const CSS = readFileSync(join(ROOT, "shared/mannequin.css"), "utf8") + readFileSync(join(ROOT, "shared/assessor.css"), "utf8") + readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 
 const T35 = M.testOf(35);
 const CAPTION = [
@@ -237,6 +266,8 @@ writeFileSync(join(HERE, out), page({ title: "The ramp and the mask", theme: THE
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `scale ${KS.toFixed(3)}`, `H ${H}`, `facing away ${AS.facingAway}`);
 A.auditOrExit(R, P, {});

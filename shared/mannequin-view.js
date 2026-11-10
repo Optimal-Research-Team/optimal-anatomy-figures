@@ -5,7 +5,7 @@
 // Order: far arm, far leg, anything the figure slots "between" (a plumb line),
 // trunk, near leg, near arm; inside each, back to front by depth, joint balls
 // nudged forward so they sit over the ends of the segments they join.
-function mannequinView(host, P, { between = [] } = {}) {
+function mannequinView(host, P, { between = [], gl = null, key = "mq", materialOf = null } = {}) {
   const NS = "http://www.w3.org/2000/svg";
   const nodes = new Map();
   let lastOrder = "";
@@ -55,6 +55,7 @@ function mannequinView(host, P, { between = [] } = {}) {
    * decorate(part, extraGroup, state): optional, draws dots, glows and the like into the part's group.
    */
   function draw(parts, J, decorate) {
+    if (gl) gl.figure(key, parts, materialOf); // the 3-D layer (shared/gl3) poses the same solids
     const near = depthOf(J.hipL, P) >= depthOf(J.hipR, P) ? "L" : "R";
     const far = near === "L" ? "R" : "L";
     const groups = [`arm${far}`, `leg${far}`, ...between, "trunk", `leg${near}`, `arm${near}`];
