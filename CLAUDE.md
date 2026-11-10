@@ -13,14 +13,16 @@ Interactive isometric explainer figures for Optimal Health (Barrie, ON), built w
 3. **Medical accuracy.** No diagnosis, no promised outcomes, typical patterns labelled as typical. Stay consistent with the compliance-reviewed Menopause Protocol. Peter owns the regulatory call on explainers. Your job is to make them *correct*.
 4. **Phone first.** About 80% of visitors are on phones. Verify at 390 / 360 / 320 px before desktop, with ≥44 px tap targets and no hover-only behaviour. When phone and desktop fixes conflict, phone wins.
 5. **Both themes ship:** Cream (`data-theme="light"`, primary) and Forest night (default), using `shared/optimal-theme.css` with `class="iso optimal"`.
-6. **No 3D mode** on these figures (it's beta and they go on public phone pages). At most one WebGL layer per Figure-size piece, and the SVG must read without it.
+6. **No 3D mode** on these figures (it's beta and they go on public phone pages). At most one WebGL layer per Figure-size piece, and the SVG must read without it. That one layer is `shared/gl3` (since Nov 10): it renders the figure's own solids, or the figure's own 3-D scene, under the SVG, and the SVG stays the figure wherever it can't run. Read `shared/gl3/README.md` before touching it.
 7. Never copy a reference photo or another brand's design. Take finish and proportion only. The VO2 images in `reference/equipment/*-STOCK.*` are stock photos, not Optimal's equipment.
 
 ## Layout
 ```
 .claude/skills/anatomy/   vendored skill: SKILL.md, kit/, examples/, references/, scripts/
 figures/<nn-slug>/        build.mjs, model.mjs, geometry/art modules, NOTES.md, shots/
-shared/                   optimal-theme.css, mannequin.mjs (built in Fig 4)
+shared/                   optimal-theme.css, mannequin.mjs (built in Fig 4), figkit.mjs, page.mjs
+shared/gl3/               the real-time 3-D layer every figure shares (README.md, src/gl3.js, host.js, gl3.css, wire.mjs)
+reveals/<slug>/           the take-apart pages (E1–E4), built with the anatomy-reveal skill; reveals/gl3-turn.js puts them on shared/gl3
 reference/                truth-pack.md, site-copy.md, brand.md, equipment/ photos
 scripts/                  setup-cloud.sh, build-all.mjs
 dist/                     build output (gitignored), published by GitHub Pages
@@ -38,6 +40,8 @@ node scripts/export-embeds.mjs --out <dir>      # copy the 15 embed scripts + ma
 node handoff/qa/check-embeds.mjs <site URL>     # QA the figures on a running site (see ENGINEERING_HANDOFF.md)
 node scripts/package-handoff.mjs --tag handoff-YYYY-MM-DD   # the release zip for engineering (handoff/package/, git-ignored)
 bash figures/a2-hypothalamus/gl/build-gl.sh      # rebuild A2's 3-D chunk after editing gl/ (commit gl/hypothalamus-3d.js + gl/chunk.json)
+bash shared/gl3/build-gl3.sh                     # rebuild the shared 3-D chunk after editing shared/gl3/src (commit optimal-gl3.js + chunk.json, then rebuild the figures)
+(cd reveals/<slug> && node object/build.mjs --light && node object/build.mjs)   # rebuild a take-apart page, then its figures/e*/build.mjs
 node .claude/skills/anatomy/scripts/capture.mjs <page.html> --out shots/x.png   # see references/verify.md
 ```
 
