@@ -72,3 +72,14 @@
 .a7-cap-light { fill: var(--a7-cap-light); }
 .a7-cap-edge { fill: none; stroke: var(--a7-cap-edge); stroke-width: 1; }
 .a7-canal { fill: var(--a7-fat-x); stroke: var(--a7-bone-edge); stroke-width: 0.6; stroke-opacity: 0.5; }
+
+/* the 3-D layer (shared/gl3, gl-scene.js): the leg is its own lit scene, so what stays in the SVG (the glow's halo,
+   the monitor) is drawn normally over the render, not multiplied into it */
+.a7-stage.iso-stage[data-gl3="on"] > svg { mix-blend-mode: normal; }
+/* the drawn leg fades out as the rendered one fades in (the layer's own rule would drop it at once, a blink of empty
+   stage), then stops painting; with reduced motion the two swap in one step, no fade */
+.a7-stage.iso-stage[data-gl3="on"] [data-gl3-hide] { display: inline; opacity: 0; visibility: hidden; transition: opacity 0.45s ease, visibility 0s 0.45s; }
+@media (prefers-reduced-motion: reduce) {
+  .a7-stage.iso-stage[data-gl3="on"] [data-gl3-hide] { transition: none; }
+  .a7-stage.iso-stage > .gl3-canvas { transition: none; }
+}

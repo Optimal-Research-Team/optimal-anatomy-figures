@@ -76,6 +76,33 @@ Peter's decision: every A-piece goes 3-D. The organ pieces (A2, A4, A6, A7) don'
   - `shots/reduced-390-*.png`.
 - Round-by-round comparison: `review/a7-rounds-desktop.png`, `review/a7-rounds-phone.png`.
 
+## Round 3 (2026-11-10): the same leg as a real-time 3-D model (`shared/gl3`)
+
+The drawing above is unchanged and is still the figure wherever the layer can't run (`?gl=off`, no WebGL 2, Save-Data, small devices, a lost context). With the layer on, `gl-scene.js` builds the same hemisected leg as a lit model under the SVG, in the same camera and world; the drawn leg fades out (`data-gl3-hide`) and the SVG keeps the amber halo and the monitor on top.
+
+**What is modelled (28 meshes, about 27 k triangles; about 18 k on phones; two small lamps):**
+- **The far half:** a real half-tube of skin swept round the same 46 chords `live.js` pairs for the drawing (one more is interpolated between each pair), re-posed every frame. The thigh's cut top is the drawing's cross-section painted onto a flat cap (same art, from the same numbers).
+- **The cut face, in low relief.** Every piece is the drawing's own outline (same control points, same Catmull-Rom), raised a few units off the soft tissue with a rounded edge, in the drawing's paint order (later = higher): hamstrings and quadriceps 4, gastrocnemius 4.6, calf 5.2, tibia 9, femur 9.8, cartilage 10.6 to 11.3, menisci 10.9, fat pad 11.5, tendons 12.4, kneecap 13.2. The key light rakes the face from above, so the relief shows as lit edges, walls and soft shadows.
+- **Each raised piece is slid across the face by its height** (`SLIDE` in `gl-scene.js`), so that in this fixed camera its face lands exactly where the drawing has it. Every outline, joint line and contact of the reviewed drawing is kept to the pixel (checked by overlaying `?gl=off`); the relief only adds what the camera and light see of its sides.
+- **Bone:** compact rim and spongy bone as fine pores (denser toward the joint, drawn along the load lines), painted at build time into a colour and a relief texture per bone; nothing is fetched. The **marrow canals are real**: a channel in the femur that runs out of the thigh's cut, a pocket through the tibia's face, with the yellow marrow lying 2.8 units below the bone's face, so their walls take light and shadow correctly at every bend.
+- **Muscle:** the drawing's fascicle lines (plus two finer between each pair) as grooves, the belly swelling slightly inside its sheath.
+- **Cartilage** as a wet bead on femur, tibia and kneecap; **menisci** as wedges; **cruciates and the hamstring tendon** as cords with rounded ends; **quadriceps and patellar tendons** as fibrous bands; the **fat pad** with lobules.
+
+**What moves, and from what:** nothing in the scene has a pose of its own. `draw()` in `live.js` hands over the very points it used for the SVG: `theta` (tibia, `bendAt`), `alpha` (the kneecap on its fixed-length tendon), both tendon centre lines, the fat pad's, calf's and ligaments' control points, the skin chords, and `load` (`pfAt`). The contact under the kneecap is a bead that glows with `load / 1.15` (the drawing's own scale) plus a small lamp that warms the bone round it; the tendons' fibre lines show at `0.3 + 0.6 × load`, as in the drawing. Reduced motion: one still, swapped in without a fade.
+
+**Differences from the drawing (deliberate, small):**
+- The skin's edge on the cut face follows the far half's chords, so the leg is one solid. The drawing's closed outline overshoots those chords at the thigh's top corners and rounds the shin's end; in 3-D both ends are cut square. No structure is lost.
+- Pieces at the thigh's top end square in the plane of the cut, so the top few units of femur, quadriceps and hamstrings show their end from above instead of their face.
+- No ground shadow: the leg floats as in the drawing (a floor shadow would be cut off by the monitor).
+
+**Needed from the shared layer (worked around here, worth adding there):**
+- A way to size the key light's shadow for a small scene. The default map is about one texel per unit, far too coarse for relief a few units deep, and its 16-bit depth over the default range made the soft shadows grainy. `tuneShadow()` finds the key light on the root's parent and gives it a tighter frustum and depth range and a 2048 map (1024 on phones). If the layer changes shape this is skipped and its default stays.
+- `stats()` reports only the last pass (1 call, 1 triangle), so the counts above come from walking the scene.
+
+**Tried and dropped:** a floor shadow under the leg (`look.cast`). It fell as one wide grey slab between the leg and the monitor and ran into the canvas edge; the leg floats, as in the drawing.
+
+**Verification (2026-11-11):** `node scripts/verify.mjs a7-knee` passed (390 / 360 / 320, both themes, reduced, desktop, lines). With `?gl=off` the live SVG is the previous build's, node for node, in every step-rate state and both themes (the only difference is the two `<g data-gl3-hide>` wrappers; compared after lifting them), and the plate's text is identical. The render was overlaid on the drawing at mid-stance: bones, cartilage, tendons, ligaments, fat pad and kneecap coincide.
+
 ## Embed
 
 ```html

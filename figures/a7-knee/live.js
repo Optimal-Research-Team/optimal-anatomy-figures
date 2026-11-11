@@ -18,6 +18,10 @@ function mount(fig) {
   const { CF, RC, PCTS, mon: MON } = DATA;
   const RAD = Math.PI / 180;
   const RP = RC + 20; // kneecap centre's distance from the condyle centre
+  // The 3-D layer (shared/gl3): the same leg as a lit model under this SVG (gl-scene.js). Until it arrives every call
+  // is a no-op and the drawing is the figure; when it is on, the drawn leg hides ([data-gl3-hide]) and the halo and
+  // the monitor stay on top. It is posed from the same numbers as the drawing, every frame (see the end of draw()).
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, island: false, redraw: () => draw(), build: (ctx) => a7Scene(ctx, DATA) });
 
   function smoothP(points, closed = true, k = 1) {
     const n = points.length;
@@ -102,9 +106,7 @@ function mount(fig) {
   }
   const NL = 46;
   const NPHI = 36;
-  function drawFar(back, front) {
-    const A = byLength(sampleCR(back), NL);
-    const B = byLength(sampleCR(front), NL);
+  function drawFar(A, B) {
     const lv = A.map((a, i) => {
       const b = B[i];
       const h = [(b[0] - a[0]) / 2, (b[1] - a[1]) / 2];
@@ -208,18 +210,22 @@ function mount(fig) {
     set("glow", "cy", f1(gc[1]));
     set("glow", "opacity", (0.9 * Math.min(1, load / 1.15)).toFixed(2));
     // soft parts that span both bones
-    set("fatpad", "d", smoothP([patLocal(alpha, [-10, 24]), pt.pts[8].map((v, i) => v + (CF[i] - v) * 0.12), W([46, 104]), W([40, 74]), [CF[0] + (RC + 3) * Math.cos((alpha + 40) * RAD), CF[1] + (RC + 3) * Math.sin((alpha + 40) * RAD)]]));
+    const fat = [patLocal(alpha, [-10, 24]), pt.pts[8].map((v, i) => v + (CF[i] - v) * 0.12), W([46, 104]), W([40, 74]), [CF[0] + (RC + 3) * Math.cos((alpha + 40) * RAD), CF[1] + (RC + 3) * Math.sin((alpha + 40) * RAD)]];
+    set("fatpad", "d", smoothP(fat));
     const acl = [W([16, 66]), [270, CF[1] - 12]];
     const pcl = [W([-40, 68]), [318, CF[1] - 6]];
     set("acl", "d", `M${f1(acl[0][0])} ${f1(acl[0][1])}Q${f1((acl[0][0] + acl[1][0]) / 2 - 4)} ${f1((acl[0][1] + acl[1][1]) / 2)} ${f1(acl[1][0])} ${f1(acl[1][1])}`);
     set("pcl", "d", `M${f1(pcl[0][0])} ${f1(pcl[0][1])}Q${f1((pcl[0][0] + pcl[1][0]) / 2 + 6)} ${f1((pcl[0][1] + pcl[1][1]) / 2)} ${f1(pcl[1][0])} ${f1(pcl[1][1])}`);
     const ho = [CF[0] + RC * Math.cos(195 * RAD), CF[1] + RC * Math.sin(195 * RAD)];
-    set("gastro", "d", smoothP([[ho[0] - 2, ho[1] - 12], [ho[0] + 14, ho[1] + 6], W([-44, 112]), W([-62, 170]), W([-86, 168]), W([-72, 112])]));
+    const gastro = [[ho[0] - 2, ho[1] - 12], [ho[0] + 14, ho[1] + 6], W([-44, 112]), W([-62, 170]), W([-86, 168]), W([-72, 112])];
+    set("gastro", "d", smoothP(gastro));
     set("hamt", "d", `M214 214Q${f1((214 + W([-58, 112])[0]) / 2 - 10)} ${f1((214 + W([-58, 112])[1]) / 2 + 10)} ${f1(W([-58, 112])[0])} ${f1(W([-58, 112])[1])}`);
     const frontEdge = [[414, -14], [418, 110], [404, 200], patLocal(alpha, [32, -14]), patLocal(alpha, [30, 22]), W([84, 128]), W([70, 200]), W([62, 256])];
     const backEdge = [[170, -14], [172, 70], [182, 180], [214, CF[1] + 26], W([-92, 118]), W([-112, 190]), W([-108, 256])];
     set("skin", "d", smoothP([[170, -14], ...frontEdge, ...[...backEdge].reverse().slice(0, -1)], true, 0.9));
-    drawFar(backEdge, frontEdge);
+    const farA = byLength(sampleCR(backEdge), NL);
+    const farB = byLength(sampleCR(frontEdge), NL);
+    if (!gl.on) drawFar(farA, farB); // hidden while the 3-D layer is on, and by far the costliest part of the drawing
     // monitor
     const xOf = (p) => MON.x0 + p * (MON.x1 - MON.x0);
     const yOf = (v) => MON.y0 - (v / MON.max) * (MON.y0 - MON.y1);
@@ -233,6 +239,25 @@ function mount(fig) {
     set("cursor", "transform", `translate(${f1(xOf(phi))} 0)`);
     set("mdot", "cx", f1(xOf(phi)));
     set("mdot", "cy", f1(yOf(load)));
+    // the 3-D layer: the same pose, from the same points
+    if (gl.on) {
+      const ht = W([-58, 112]);
+      gl.update({
+        theta,
+        alpha,
+        load,
+        qt: qt.pts,
+        pt: pt.pts,
+        fat,
+        gastro,
+        acl: [acl[0], [(acl[0][0] + acl[1][0]) / 2 - 4, (acl[0][1] + acl[1][1]) / 2], acl[1]],
+        pcl: [pcl[0], [(pcl[0][0] + pcl[1][0]) / 2 + 6, (pcl[0][1] + pcl[1][1]) / 2], pcl[1]],
+        hamt: [[214, 214], [(214 + ht[0]) / 2 - 10, (214 + ht[1]) / 2 + 10], ht],
+        back: farA,
+        front: farB,
+      });
+      gl.render();
+    }
   }
 
   // ---------------------------------------------------------------- input, tour, loop

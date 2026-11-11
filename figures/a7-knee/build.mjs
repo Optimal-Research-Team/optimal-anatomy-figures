@@ -16,6 +16,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as F4 from "../04-creator-600/model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -70,9 +71,12 @@ const fascicles = (from, to, n, bow) => {
   }
   return d;
 };
-const quadFib = fascicles([[326, -14], [394, -14]], [[338, 200], [372, 196]], 9, 8);
-const hamFib = fascicles([[186, -14], [252, -14]], [[206, 222], [238, 226]], 9, -6);
-const calfFib = fascicles([[-50, 92], [-40, 100]], [[-86, 254], [-40, 254]], 7, -10);
+const FIB = { quad: [[[326, -14], [394, -14]], [[338, 200], [372, 196]], 9, 8], ham: [[[186, -14], [252, -14]], [[206, 222], [238, 226]], 9, -6], calf: [[[-50, 92], [-40, 100]], [[-86, 254], [-40, 254]], 7, -10] };
+const quadFib = fascicles(...FIB.quad);
+const hamFib = fascicles(...FIB.ham);
+const calfFib = fascicles(...FIB.calf);
+const CANAL_F = [[268, -40], [306, -40], [310, 70], [301, 128], [287, 142], [273, 128], [264, 70]]; // marrow canal, femur shaft
+const CANAL_T = [[-22, 249], [22, 249], [25, 205], [17, 172], [0, 162], [-17, 172], [-27, 205]]; // marrow canal, tibia shaft (tibia frame)
 
 // ---------------------------------------------------------------- tibia (drawn in its own frame: origin CF, x forward, y down its shaft)
 const TIBIA = [[-58, 70], [-30, 67], [0, 66], [30, 67], [56, 70], [62, 80], [54, 102], [62, 118], [50, 140], [40, 200], [36, 252], [-36, 252], [-42, 200], [-52, 126], [-62, 88]];
@@ -88,7 +92,7 @@ const tibiaG = `<g data-part="tibia">
   <clipPath id="a7-calfclip"><path d="${smooth(CALF, true, 1)}"/></clipPath>
   <path class="a7-calf" d="${smooth(CALF, true, 1)}"/><path class="a7-fasc" clip-path="url(#a7-calfclip)" d="${calfFib}"/>
   <path class="a7-bone" d="${smooth(TIBIA, true, 0.8)}" fill="url(#a7-boneg)"/>
-  <path class="a7-canal" d="${smooth([[-22, 249], [22, 249], [25, 205], [17, 172], [0, 162], [-17, 172], [-27, 205]], true, 0.9)}"/>
+  <path class="a7-canal" d="${smooth(CANAL_T, true, 0.9)}"/>
   <path class="a7-hatch" d="${tHatch}"/>
   <path class="a7-cart" d="M-54 69Q0 63 52 69"/>
   <path class="a7-men" d="M56 72L30 68L56 58Z"/><path class="a7-men" d="M-60 72L-34 68L-60 56Z"/>
@@ -166,13 +170,29 @@ const septum = (deg) => {
   return `M${f1(a[0])} ${f1(a[1])}Q${f1((a[0] + b[0]) / 2 + 6)} ${f1((a[1] + b[1]) / 2 + 4)} ${f1(b[0])} ${f1(b[1])}`;
 };
 let capDots = "";
+const capDotPts = [];
 for (let q = 0; q < 70; q++) {
   const deg = 4 + rng() * 172;
   const f = 0.3 + rng() * 0.52;
   const p = polar(deg, f);
   if (Math.hypot(p[0] - FEM.x, p[1] / 0.95) < FEM.r + 5) continue;
   capDots += `M${f1(p[0] - 1.1)} ${f1(p[1])}a1.1 0.9 0 1 0 2.2 0a1.1 0.9 0 1 0 -2.2 0Z`;
+  capDotPts.push(p);
 }
+// the same cross-section, as data for the 3-D scene (gl-scene.js paints it onto the thigh's cut top)
+const septumPts = (deg) => {
+  const a = [FEM.x + FEM.r * Math.cos(deg * RAD), FEM.r * 0.95 * Math.sin(deg * RAD)];
+  const b = polar(deg + 6, 0.86);
+  return [a, [(a[0] + b[0]) / 2 + 6, (a[1] + b[1]) / 2 + 4], b];
+};
+const CAP3 = {
+  dots: capDotPts,
+  mus: [[polar(22, 0.55), 22, 15, 20], [polar(92, 0.82), 10, 7, 0], [polar(122, 0.8), 7, 5, 30], [polar(150, 0.62), 17, 12, -25], [polar(166, 0.6), 13, 9, -10]],
+  septa: [septumPts(58), septumPts(132)],
+  art: [[polar(76, 0.5), 4.6, 4.2]],
+  vein: [[[polar(76, 0.5)[0] - 9, polar(76, 0.5)[1] + 2], 5.6, 4.6], [polar(104, 0.9), 3.4, 3]],
+  nerve: [[polar(158, 0.34), 6, 4.4]],
+};
 const CAP = `<g class="a7-cap" transform="${CAP_M}">
 <path class="a7-cap-skin" d="${half(TOPC.r)}"/>
 <path class="a7-cap-fat" d="${half(TOPC.r - 4, RD - 4)}"/>
@@ -196,11 +216,12 @@ const svg = `<svg class="iso-svg a7-svg" viewBox="0 0 ${VW} ${VH}" role="img" ar
   <linearGradient id="a7-boneg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="a7-bg0"/><stop offset="1" class="a7-bg1"/></linearGradient>
   <radialGradient id="a7-glowg" cx="50%" cy="50%" r="50%"><stop offset="0" class="a7-gl0"/><stop offset="1" class="a7-gl1"/></radialGradient>
 </defs>
-<g transform="${FRONT_M}"><g class="a7-far" data-part="far"></g></g>
-${CAP}
+<g data-gl3-hide><g transform="${FRONT_M}"><g class="a7-far" data-part="far"></g></g>
+${CAP}</g>
 <g class="a7-slab" transform="${FRONT_M}"><g clip-path="url(#a7-cutclip)">
 <defs><clipPath id="a7-cutclip"><rect x="-300" y="${TOPC.y}" width="1200" height="1200"/></clipPath><clipPath id="a7-hamclip"><path d="${smooth(HAM, true, 1)}"/></clipPath><clipPath id="a7-quadclip"><path d="${smooth(QUAD, true, 1)}"/></clipPath>
 </defs>
+<g data-gl3-hide>
 <path class="a7-skin" data-part="skin"/>
 <path class="a7-ham" d="${smooth(HAM, true, 1)}"/><path class="a7-fasc" clip-path="url(#a7-hamclip)" d="${hamFib}"/>
 <path class="a7-quad" d="${smooth(QUAD, true, 1)}"/><path class="a7-fasc" clip-path="url(#a7-quadclip)" d="${quadFib}"/>
@@ -208,7 +229,7 @@ ${CAP}
 <path class="a7-hamt" data-part="hamt"/>
 ${tibiaG}
 <path class="a7-bone" d="${smooth(FEMUR, true, 0.7)}" fill="url(#a7-boneg)"/>
-<path class="a7-canal" d="${smooth([[268, -40], [306, -40], [310, 70], [301, 128], [287, 142], [273, 128], [264, 70]], true, 0.9)}"/>
+<path class="a7-canal" d="${smooth(CANAL_F, true, 0.9)}"/>
 <path class="a7-hatch" d="${hatch}"/>
 <path class="a7-cart" d="${smooth(femurCart, false, 1)}"/>
 <path class="a7-lig" data-part="acl"/><path class="a7-lig" data-part="pcl"/>
@@ -217,6 +238,7 @@ ${tibiaG}
 <path class="a7-tendon" data-part="qtendon"/><path class="a7-tendon" data-part="ptendon"/>
 <path class="a7-fibres" data-part="tfibres"/>
 <g data-part="patella"><ellipse class="a7-pat-cart" cx="-5" cy="0" rx="12" ry="27"/><ellipse class="a7-pat" cx="5" cy="0" rx="15" ry="31" fill="url(#a7-boneg)"/><path class="a7-hatch" d="M-2 -18l10 8M0 -2l12 -6M-2 12l11 6M4 -24l6 14M2 4l9 12"/></g>
+</g>
 <circle data-part="glow" class="a7-glow" r="44" fill="url(#a7-glowg)" opacity="0"/>
 </g></g>
 ${monitor()}
@@ -229,10 +251,24 @@ const LINES = [
   "10 % more steps at the same pace: on average about 14 % less peak force under the kneecap.",
 ];
 const PCTS = [-10, 0, 5, 10];
-const DATA = { CF, RC, PCTS, lines: LINES, mon: MON, far: { w: WD1.map((v) => +v.toFixed(4)), A: 62, E: 24, dep: DEP, round: ROUND } };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same leg, modelled and lit
+// gl-scene.js builds the scene from the very outlines drawn above (same world: x = section x, y toward the viewer,
+// z up; same camera PB), so what stays in the SVG (the glow's halo, the monitor) lands on it to the pixel.
+const GL3W = gl3Wire();
+const r2 = (v) => (Array.isArray(v) ? v.map(r2) : typeof v === "number" ? +v.toFixed(2) : v);
+const span3 = (i) => [Math.min(...BOUNDS3.map((p) => p[i])), Math.max(...BOUNDS3.map((p) => p[i]))];
+const GL3 = {
+  parts: [],
+  ground: Math.floor(span3(2)[0]) - 14,
+  bounds: r2([[span3(0)[0], DEP - RD, span3(2)[0]], [span3(0)[1], DEP + 4, span3(2)[1]]]),
+  look: { cast: 0, contact: 0, pool: 0, aoRadius: 9, ao: 1.0, env: 0.72, exposure: 0.86 },
+  ...GL3W.chunk,
+};
+const GEO = r2({ dep: DEP, round: ROUND, topc: TOPC, rd: RD, fem: FEM, femur: FEMUR, quad: QUAD, ham: HAM, calf: CALF, tibia: TIBIA, canalF: CANAL_F, canalT: CANAL_T, fib: FIB, cap: CAP3 });
+const DATA = { CF, RC, PCTS, lines: LINES, mon: MON, far: { w: WD1.map((v) => +v.toFixed(4)), A: 62, E: 24, dep: DEP, round: ROUND }, P: PB, W: VW, H: VH, gl3: GL3, geo: GEO };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "../04-creator-600/model.mjs"), "utf8"))}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "../04-creator-600/model.mjs"), "utf8"))}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 const c0 = F4.TRUTH.cadence0;
 const CAPTION = [
   `Each time a running foot lands, the knee bends and the thigh muscles brake it. They pull the kneecap hard into its groove at the front of the thigh bone, where thick cartilage takes the force. The deeper the bend, the harder the press.`,
@@ -264,5 +300,6 @@ writeFileSync(join(HERE, out), page({ title: "The kneecap's load", theme: THEME,
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  GL3W.copyTo(join(HERE, "embed")); // the 3-D chunk sits next to the embed script
 }
 console.log("wrote", out, PCTS.map((p) => `${p}%: ${F4.cadenceOf(p).toFixed(0)} spm, PF ${(100 * F4.kneeOf(F4.cadenceOf(p))).toFixed(0)}%`).join(" · "));
