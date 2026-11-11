@@ -17,6 +17,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -121,7 +122,7 @@ function rounded(poly, rmax = 10) {
   return d + "Z";
 }
 /** Capillaries in the walls: red cells cut across, along each wall's middle line, never two in one spot. */
-function capillariesOf(cells, u0, u1, v0, v1, keep = () => true) {
+function capillariesOf(cells, u0, u1, v0, v1, keep = () => true, note = null) {
   const pts = [];
   for (const { poly } of cells) {
     const cx = poly.reduce((s, p) => s + p[0], 0) / poly.length;
@@ -147,12 +148,15 @@ function capillariesOf(cells, u0, u1, v0, v1, keep = () => true) {
   let ven = "";
   pts.forEach(([x, y], i) => {
     const r = 2.7 + ((i * 7) % 5) * 0.12;
+    if (note) note.push(+x.toFixed(1), +y.toFixed(1), i % 4 === 1 ? 1 : 0);
     if (i % 4 === 1) ven += dot(x, y, r);
     else art += dot(x, y, r);
   });
   return `<path class="b5-cap-a" d="${art}"/><path class="b5-cap-v" d="${ven}"/>`;
 }
 const foam = (cells) => cells.map((c) => rounded(c.poly)).join("");
+// what the 3-D scene (gl-scene.js) needs from the drawing: the same points, noted as they are drawn
+const CAPS = { front: [], top: [], end: [] };
 
 // ---------------------------------------------------------------- the camera
 const VB = { pad: 10 };
@@ -243,11 +247,14 @@ const ductBot = C[1] - R + 10;
 const ductRings = [];
 for (let y = ductTop + 12; y < ductBot - 4; y += 15) ductRings.push(`M${DUCT.x - DUCT.r + 2} ${f1(y)}Q${DUCT.x} ${f1(y + 7)} ${DUCT.x + DUCT.r - 2} ${f1(y)}`);
 let knobs = "";
+const KNOB_YS = [];
+for (let y = ductTop + 9; y < ductBot - 6; y += 17) KNOB_YS.push(y);
 for (let y = ductTop + 9; y < ductBot - 6; y += 17) for (const s of [-1, 1]) knobs += `M${f1(DUCT.x + s * (DUCT.r + 4.5) - 3.4)} ${f1(y)}a3.4 2.4 0 1 0 6.8 0a3.4 2.4 0 1 0 -6.8 0Z`;
 const DUCT_PATH = Array.from({ length: 25 }, (_, i) => [DUCT.x, +(ductTop - 6 + ((ductBot + 18 - ductTop) * i) / 24).toFixed(1)]);
 // the sac's own wall in section: flattened lining nuclei, a surfactant cell bulging in, the capillary
 let rimNuclei = "";
-for (const th of [205, 248, 292, 318, 344]) {
+const RIM_NUC = [205, 248, 292, 318, 344];
+for (const th of RIM_NUC) {
   const x = C[0] + (R + 2.5) * Math.cos(th * RAD);
   const y = C[1] + (R + 2.5) * Math.sin(th * RAD);
   rimNuclei += `<ellipse cx="${f1(x)}" cy="${f1(y)}" rx="6.2" ry="1.8" transform="rotate(${f1(th + 90)} ${f1(x)} ${f1(y)})"/>`;
@@ -260,14 +267,16 @@ const t2Body = smooth(Array.from({ length: 9 }, (_, i) => {
   return [t2c[0] + Math.cos(a) * m, t2c[1] + Math.sin(a) * m * 0.92];
 }), true, 0.9);
 let t2Gran = "";
+const T2_GRAN = [];
 for (let g = 0; g < 5; g++) {
   const a = rng() * 2 * Math.PI;
   const m = 2 + rng() * 5;
+  T2_GRAN.push([+(Math.cos(a) * m).toFixed(2), +(Math.sin(a) * m).toFixed(2)]);
   t2Gran += dot(t2c[0] + Math.cos(a) * m, t2c[1] + Math.sin(a) * m, 1.4);
 }
-const FRONT = `<path class="b5-tissue" fill-rule="evenodd" d="M${X0} ${YT}H${X1}V${YB}H${X0}Z${dot(C[0], C[1], R)}M${DUCT.x - DUCT.r} ${YT}H${DUCT.x + DUCT.r}V${f1(ductBot)}H${DUCT.x - DUCT.r}Z"/>
+const FRONT = `<g data-gl3-hide><path class="b5-tissue" fill-rule="evenodd" d="M${X0} ${YT}H${X1}V${YB}H${X0}Z${dot(C[0], C[1], R)}M${DUCT.x - DUCT.r} ${YT}H${DUCT.x + DUCT.r}V${f1(ductBot)}H${DUCT.x - DUCT.r}Z"/>
 <g mask="url(#b5-frontmask)"><path class="b5-air" d="${foam(frontCells)}" fill="url(#b5-cav)"/></g>
-${capillariesOf(frontCells, X0, X1, YT, YB, keepFront)}
+${capillariesOf(frontCells, X0, X1, YT, YB, keepFront, CAPS.front)}
 <path class="b5-duct" d="M${DUCT.x - DUCT.r} ${YT - 1}H${DUCT.x + DUCT.r}V${f1(ductBot)}H${DUCT.x - DUCT.r}Z" fill="url(#b5-trough)"/>
 <path class="a5-duct-ring" d="${ductRings.join("")}"/>
 <path class="b5-knob" d="${knobs}"/>
@@ -284,7 +293,7 @@ ${capillariesOf(frontCells, X0, X1, YT, YB, keepFront)}
 <path data-part="air" class="a5-o2" clip-path="url(#a5-air)"/>
 <path data-part="fly" class="a5-o2 a5-o2-fly"/>
 <g data-part="cellsFront"></g>
-<path data-part="co20" class="a5-co2"/><path data-part="co21" class="a5-co2 a5-co2-b"/><path data-part="co22" class="a5-co2 a5-co2-c"/>
+<path data-part="co20" class="a5-co2"/><path data-part="co21" class="a5-co2 a5-co2-b"/><path data-part="co22" class="a5-co2 a5-co2-c"/></g>
 <circle class="a5-track" data-part="track" r="12" cx="-40" cy="-40"/>`;
 
 // ---------------------------------------------------------------- the bowl: the inside of the opened sac, in true projection
@@ -328,27 +337,32 @@ for (let i = 0; i < NF; i++) {
   });
   pave += smooth(tangentPatch(Ld, lam, blob), true, 0.9);
 }
-const mac = smooth(tangentPatch(-38, 18, Array.from({ length: 11 }, (_, q) => {
+const MAC_BODY = Array.from({ length: 11 }, (_, q) => {
   const a = (q / 11) * 2 * Math.PI;
   const m = 13 * (q % 3 === 0 ? 1.35 : 0.8 + rng() * 0.2);
   return [Math.cos(a) * m, Math.sin(a) * m];
-})), true, 0.85);
-const macNuc = smooth(tangentPatch(-38, 18, [[-4.5, -2], [-1, -4], [3.6, -2.7], [5, 1], [1.8, 3.2], [-1.8, 1.4], [-4.5, 2.7]]), true, 0.9);
+});
+const mac = smooth(tangentPatch(-38, 18, MAC_BODY), true, 0.85);
+const MAC_NUC = [[-4.5, -2], [-1, -4], [3.6, -2.7], [5, 1], [1.8, 3.2], [-1.8, 1.4], [-4.5, 2.7]];
+const macNuc = smooth(tangentPatch(-38, 18, MAC_NUC), true, 0.9);
 const t2Bowl = smooth(tangentPatch(24, -30, Array.from({ length: 8 }, (_, q) => {
   const a = (q / 8) * 2 * Math.PI;
   return [Math.cos(a) * 10, Math.sin(a) * 8.5];
 })), true, 0.9);
 let t2BowlGran = "";
+const T2B_GRAN = [];
 for (let g = 0; g < 6; g++) {
   const a = rng() * 2 * Math.PI;
   const m = 2 + rng() * 5;
+  T2B_GRAN.push([+(Math.cos(a) * m).toFixed(2), +(Math.sin(a) * m * 0.8).toFixed(2)]);
   const q = tangentPatch(24, -30, [[Math.cos(a) * m, Math.sin(a) * m * 0.8]])[0];
   t2BowlGran += dot(q[0], q[1], 1.3);
 }
-const pores = [[6, 40], [-20, -52]].map(([Ld, lam]) => smooth(tangentPatch(Ld, lam, Array.from({ length: 8 }, (_, q) => [Math.cos((q / 8) * 2 * Math.PI) * 4.2, Math.sin((q / 8) * 2 * Math.PI) * 3.4])), true, 0.9)).join("");
+const PORES = [[6, 40], [-20, -52]];
+const pores = PORES.map(([Ld, lam]) => smooth(tangentPatch(Ld, lam, Array.from({ length: 8 }, (_, q) => [Math.cos((q / 8) * 2 * Math.PI) * 4.2, Math.sin((q / 8) * 2 * Math.PI) * 3.4])), true, 0.9)).join("");
 const a0s = at(W3(A0[0], D, A0[1]))[0];
 const a1s = at(W3(A1[0], D, A1[1]))[0];
-const BOWL = `<g clip-path="url(#b5-opening)">
+const BOWL = `<g clip-path="url(#b5-opening)" data-gl3-hide>
 <path class="b5-bowl" d="${openingD}" fill="url(#b5-bowl)"/>
 <path class="a5-pave" d="${pave}"/>
 <path class="a5-net-edge b5-bowl-net" d="${bowlNet}"/><path class="a5-net b5-bowl-net" d="${bowlNet}"/>
@@ -362,16 +376,18 @@ const BOWL = `<g clip-path="url(#b5-opening)">
 const topCells = sectionOf(W3(0, 0, YT), [1, 0, 0], [0, 1, 0], X0, X1, 0, D);
 const keepTop = (x, v) => Math.hypot(x - DUCT.x, v - D) > DUCT.r + DUCT.sleeve + 3;
 let topKnobs = "";
+const TOP_KNOBS = [];
+for (let a = 200; a <= 340; a += 23) TOP_KNOBS.push(a);
 for (let a = 200; a <= 340; a += 23) {
   const x = DUCT.x + (DUCT.r + 4.5) * Math.cos(a * RAD);
   const v = D + (DUCT.r + 4.5) * Math.sin(a * RAD);
   topKnobs += `<ellipse cx="${f1(x)}" cy="${f1(v)}" rx="3.4" ry="2.4" transform="rotate(${f1(a + 90)} ${f1(x)} ${f1(v)})"/>`;
 }
-const TOP_FACE = `<g transform="${FB.planeMatrix(W3(0, 0, YT), [1, 0, 0], [0, 1, 0])}">
+const TOP_FACE = `<g data-gl3-hide transform="${FB.planeMatrix(W3(0, 0, YT), [1, 0, 0], [0, 1, 0])}">
 <mask id="b5-topmask" maskUnits="userSpaceOnUse" x="${X0 - 2}" y="-2" width="${L + 4}" height="${D + 4}"><rect x="${X0 - 2}" y="-2" width="${L + 4}" height="${D + 4}" fill="#fff"/><circle cx="${DUCT.x}" cy="${D}" r="${DUCT.r + DUCT.sleeve}" fill="#000"/></mask>
 <rect class="b5-tissue" x="${X0}" y="0" width="${L}" height="${D}"/>
 <g mask="url(#b5-topmask)"><path class="b5-air" d="${foam(topCells)}" fill="url(#b5-cav)"/></g>
-${capillariesOf(topCells, X0, X1, 0, D, keepTop)}
+${capillariesOf(topCells, X0, X1, 0, D, keepTop, CAPS.top)}
 <path class="b5-shaft" d="M${DUCT.x - DUCT.r} ${D}A${DUCT.r} ${DUCT.r} 0 0 1 ${DUCT.x + DUCT.r} ${D}Z" fill="url(#b5-shaft)"/>
 <g class="b5-knob">${topKnobs}</g>
 <rect class="b5-top-light" x="${X0}" y="0" width="${L}" height="${D}"/>
@@ -381,18 +397,18 @@ ${capillariesOf(topCells, X0, X1, 0, D, keepTop)}
 const endCells = sectionOf(W3(X1, D, 0), [0, -1, 0], [0, 0, -1], 0, D, YT, YB);
 const VR = vWidth / 2;
 const keepEnd = (u, y) => Math.hypot(u, y - vAtEdge[1]) > VR + 16;
-const END_FACE = `<g transform="${FB.planeMatrix(W3(X1, D, 0), [0, -1, 0], [0, 0, -1])}">
+const END_FACE = `<g data-gl3-hide transform="${FB.planeMatrix(W3(X1, D, 0), [0, -1, 0], [0, 0, -1])}">
 <mask id="b5-endmask" maskUnits="userSpaceOnUse" x="-2" y="${YT - 2}" width="${D + 4}" height="${HF + 4}"><rect x="-2" y="${YT - 2}" width="${D + 4}" height="${HF + 4}" fill="#fff"/><circle cx="0" cy="${f1(vAtEdge[1])}" r="${f1(VR + 14)}" fill="#000"/></mask>
 <rect class="b5-tissue" x="0" y="${YT}" width="${D}" height="${HF}"/>
 <g mask="url(#b5-endmask)"><path class="b5-air" d="${foam(endCells)}" fill="url(#b5-cav)"/></g>
-${capillariesOf(endCells, 0, D, YT, YB, keepEnd)}
+${capillariesOf(endCells, 0, D, YT, YB, keepEnd, CAPS.end)}
 <path class="a5-art-tube" d="M0 ${f1(vAtEdge[1] - VR)}A${f1(VR)} ${f1(VR)} 0 0 1 0 ${f1(vAtEdge[1] + VR)}Z"/>
 <path class="b5-cap-a" d="${dot(4.5, vAtEdge[1] - 3, 3.3)}${dot(7, vAtEdge[1] + 5, 3)}"/>
 <rect class="b5-end-shade" x="0" y="${YT}" width="${D}" height="${HF}"/>
 </g>`;
 
-const shadow = `<path class="b5-shadow" d="${p3([[-8, -6, 0], [L + 12, -6, 0], [L + 12, D + 16, 0], [-8, D + 16, 0]])}"/>`;
-const edges = `<path class="b5-edge" d="${p3([W3(X0, 0, YT), W3(X1, 0, YT), W3(X1, D, YT), W3(X0, D, YT)])}${p3([W3(X1, 0, YT), W3(X1, 0, YB), W3(X1, D, YB)], false)}${p3([W3(X0, D, YT), W3(X0, D, YB), W3(X1, D, YB), W3(X1, D, YT)], false)}"/>`;
+const shadow = `<path class="b5-shadow" data-gl3-hide d="${p3([[-8, -6, 0], [L + 12, -6, 0], [L + 12, D + 16, 0], [-8, D + 16, 0]])}"/>`;
+const edges = `<path class="b5-edge" data-gl3-hide d="${p3([W3(X0, 0, YT), W3(X1, 0, YT), W3(X1, D, YT), W3(X0, D, YT)])}${p3([W3(X1, 0, YT), W3(X1, 0, YB), W3(X1, D, YB)], false)}${p3([W3(X0, D, YT), W3(X0, D, YB), W3(X1, D, YB), W3(X1, D, YT)], false)}"/>`;
 const FRONT_M = FB.planeMatrix(W3(0, D, 0), [1, 0, 0], [0, 0, -1]);
 
 // ---------------------------------------------------------------- the monitor (flat, under the block)
@@ -451,10 +467,29 @@ const LINES = [
   "Running: about a third of a second in the capillary, still longer than loading takes.",
   "All out: cells arrive emptier and leave sooner. In healthy lungs they still fill before they go.",
 ];
-const DATA = { C, R, path: PATH, i0: I0, i1: I1, step, plot: { ...PLOT }, lines: LINES, a0x: A0[0], a1x: A1[0], top: [DUCT.x, C[1] - R + 14], duct: DUCT_PATH, pivot };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same block, modelled and lit
+// gl-scene.js builds the scene in the page from the drawing's own geometry: the foam's seeds, the sac, the duct, the
+// vessels' path and every noted point, all in the block's world units (x along, y back into the lung, z up).
+const GL3W = gl3Wire();
+const r1 = (v) => +v.toFixed(1);
+const G3 = {
+  L, D, HF, X0, YB, YT, C, R, RING, RHO, TH0, TH1, sept: SEPT,
+  seeds: seeds.map((p) => p.map(r1)),
+  duct: { x: DUCT.x, r: DUCT.r, sleeve: DUCT.sleeve, knobs: KNOB_YS, topKnobs: TOP_KNOBS },
+  vessel: { in: [26, 16, 40, 32], out: [16, 26, 32, 42], cap: 13 }, // lumen and sheath widths along the arteriole and the venule, as drawn
+  net: { lats: NET_LATS, lons: NET_LONS, x0: +a0s.toFixed(2), x1: +a1s.toFixed(2) },
+  rimNuc: RIM_NUC,
+  t2: { th: T2.th, gran: T2_GRAN },
+  t2b: { at: [24, -30], gran: T2B_GRAN },
+  mac: { at: [-38, 18], body: MAC_BODY.map((p) => p.map(r1)), nuc: MAC_NUC },
+  pores: PORES,
+  caps: CAPS,
+};
+const GL3 = { parts: [], ground: -7, bounds: [[0, 0, 0], [L, D, HF]], look: { aoRadius: 15, contactHeight: 40, env: 0.72, exposure: 1.08, cast: 1.5, ao: 0.55 }, ...GL3W.chunk };
+const DATA = { gl3: GL3, g3: G3, P: PB, W, H, C, R, path: PATH, i0: I0, i1: I1, step, plot: { ...PLOT }, lines: LINES, a0x: A0[0], a1x: A1[0], top: [DUCT.x, C[1] - R + 14], duct: DUCT_PATH, pivot };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8") + GL3W.css;
 const rest = M.LUNG.states[0];
 const sIn = (s) => Math.round(100 * M.satOf(s.pv));
 const sOut = (s) => Math.round(100 * M.satOf(M.po2At(M.transitOf(s.co), s.pv)));
@@ -489,5 +524,7 @@ writeFileSync(join(HERE, out), page({ title: "The air sac and the red cell", the
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `(${PATH.length} path points, arc ${I0}–${I1}, ${arcLen.toFixed(0)} px; ${seeds.length} sacs in the foam: ${frontCells.length} front, ${topCells.length} top, ${endCells.length} end; view ${W}×${H})`);

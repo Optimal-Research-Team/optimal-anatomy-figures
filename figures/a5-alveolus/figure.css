@@ -80,3 +80,7 @@
 .a5-par { display: block; margin-top: 6px; }
 .a5-par:first-child { margin-top: 0; }
 .a5-par small { font-size: 12.5px; color: var(--anatomy-muted); }
+/* The 3-D layer (shared/gl3) renders the block; the drawing over it is only the traced-cell ring and the monitor, drawn
+   as they are (not multiplied). The drawn block fades out as the render fades in under it. */
+.a5-stage.iso-stage[data-gl3="on"] > svg.a5-svg { mix-blend-mode: normal; }
+.a5-stage.iso-stage[data-gl3="on"] .a5-svg [data-gl3-hide] { display: inline; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.45s ease, visibility 0s 0.45s; }

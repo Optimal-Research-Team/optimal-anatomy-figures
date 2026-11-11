@@ -65,6 +65,21 @@ Peter's decision: retire flat anatomy, and A5 goes 3-D. Same camera as A1, A3, A
   - pores of Kohn link neighbouring alveoli;
   - pulmonary arterioles and venules run in connective tissue.
 
+## Round 3 (2026-11-10): the block as a real-time 3-D scene (`shared/gl3`)
+
+The same block, parts, model and motion, now modelled and lit by the shared WebGL layer under the SVG. The drawing above is unchanged and is still the figure wherever the layer can't run (`?gl=off`, no WebGL 2, Save-Data, a small device, a lost context). No number, word, control or interaction changed.
+
+- **How it is wired:** `build.mjs` hands `gl-scene.js` the drawing's own geometry (`DATA.g3`: the foam's 186 seeds, the sac, the duct, the vessels' path, every noted capillary, knob, nucleus and granule) and the kit projection (`DATA.P`). `live.js` calls `gl3Attach(…, { build: a5Scene })`, and `draw()` hands the scene the same state the drawing uses. With the layer on, the drawn block is `data-gl3-hide` (it fades out as the render fades in) and only the traced-cell ring and the monitor are drawn, over the render.
+- **Foam:** each air sac is its Voronoi cell shrunk by half a wall and rounded (a p-norm of its planes), so every opening on the three cut faces has a real hollow behind it. The cut faces are meshed from the same field (marching squares), so openings and hollows agree across the block's edges, and each opening's edge is rolled over. Hollows keep clear of the sac, the duct's sleeve and the vessels' sheaths. The hollows' walls carry a faint capillary mesh (desktop only).
+- **What differs from the drawing, on purpose:** an opening that would be a pin-hole, a slit or a shallow dish stays closed (they read as dirt in 3-D), and the block's three unseen sides are closed by a skin. So the render shows fewer, rounder air sacs than the drawing's sections (about 15 on the front against 34), with more solid tissue beside the vessels and under the sac. The gas dots keep their place on screen and take their depth along the line of sight, inside the sac. Cells fade in and out at the block's two ends, where the drawing clips them.
+- **The sac:** one half-turned surface (bowl, mouth, duct with entrance rings at the knobs' heights), a pavement of lining cells as a small canvas texture, the capillary net as tubes. The net's blue-to-red change is a 2-texel ramp that `netA` and `netB` slide, measured across the screen exactly as the drawing's gradient is.
+- **Vessels:** the arteriole, the traced capillary and the venule are one open gutter in the front face; the sac's own wall is meshed on a polar grid so the 1.5-unit wall between blood and air is exact. Red cells are biconcave discs (instances), coloured from the model as in the drawing.
+- **Breathing:** the whole scene scales about the block's centre by the same factor as the drawing's group, so the ring stays on its cell.
+- **Budget (desktop / phone):** 15 meshes (15 draw calls a pass); about 210k / 100k triangles in use (285k / 133k if every cell and gas-dot slot were filled). The phone build has a coarser grid, lighter hollows and fewer segments, and drops the two procedural patterns (the capillary mesh on the hollows, the mottle on cut tissue).
+- **Checks (2026-11-11):** `node scripts/verify.mjs a5-alveolus` passed (390 / 360 / 320, both themes, reduced motion, desktop; console clean; stage ends at `data-gl3="on"`). The ring sits on the traced cell at every effort. `?gl=off` matches the round-2 drawing (a pixel diff against a build of the last commit differs only in the gas dots, which are random). A lost context falls back to the drawing (`svg:lost`). The embed (`embed/test.html`) runs the layer in its shadow root. Reduced motion gives one still. `?a5debug` logs the mesh and triangle counts.
+- **Shots:** `shots/*.png` now show the layer on (Rest), `shots/desktop-max-*.png` All out. verify's captures run at a device pixel ratio of 1, so the render looks softer in them than on a phone.
+- **Not carried over / known limits:** the drawing's hairline outlines (block edges, rim strokes) are replaced by light and rolled edges; the sheath around each vessel is a tone on the cut face, with no outline of its own; fewer air sacs show than in the drawing (above).
+
 ## Verification (2026-10-12, 3-D, local)
 
 - `node scripts/verify.mjs a5-alveolus`: passed.

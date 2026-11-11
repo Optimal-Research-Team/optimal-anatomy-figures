@@ -57,11 +57,12 @@ function mount(fig) {
   let breath = 0;
   const inAir = (x, y, m = 16) => Math.hypot(x - C[0], y - C[1]) < R - m;
   function newAir(fromMouth) {
-    if (fromMouth) return { x: DATA.top[0] + rnd(-22, 22), y: DATA.top[1] + rnd(4, 14), vx: rnd(-26, 26), vy: rnd(40, 70) };
+    // d: how deep in the sac the dot floats (0 at the cut face, 1 at the far wall). Only the 3-D layer reads it.
+    if (fromMouth) return { x: DATA.top[0] + rnd(-22, 22), y: DATA.top[1] + rnd(4, 14), vx: rnd(-26, 26), vy: rnd(40, 70), d: Math.random() };
     for (;;) {
       const x = rnd(C[0] - R, C[0] + R);
       const y = rnd(C[1] - R, C[1] + R);
-      if (inAir(x, y, 20)) return { x, y, vx: rnd(-12, 12), vy: rnd(-12, 12) };
+      if (inAir(x, y, 20)) return { x, y, vx: rnd(-12, 12), vy: rnd(-12, 12), d: Math.random() };
     }
   }
   for (let i = 0; i < 46; i++) air.push(newAir(false));
@@ -150,11 +151,22 @@ function mount(fig) {
       const ux = (C[0] - p.x) / Math.hypot(C[0] - p.x, C[1] - p.y);
       const uy = (C[1] - p.y) / Math.hypot(C[0] - p.x, C[1] - p.y);
       const m = rnd(30, 80);
-      from = { x: p.x + ux * m + rnd(-20, 20), y: p.y + uy * m + rnd(-12, 12) };
+      from = { x: p.x + ux * m + rnd(-20, 20), y: p.y + uy * m + rnd(-12, 12), d: 0.3 };
     }
-    fly.push({ x0: from.x, y0: from.y, c, t: 0, dur: rnd(0.08, 0.14) });
-    if (Math.random() < 0.8 && co2.length < 90) co2.push({ x: p.x, y: p.y - 3, vx: (C[0] - p.x) * rnd(0.2, 0.5) + rnd(-15, 15), vy: (C[1] - p.y) * rnd(0.3, 0.6) - 18, age: 0, life: rnd(1.1, 1.8) });
+    fly.push({ x0: from.x, y0: from.y, d0: from.d, c, t: 0, dur: rnd(0.08, 0.14) });
+    if (Math.random() < 0.8 && co2.length < 90) co2.push({ x: p.x, y: p.y - 3, vx: (C[0] - p.x) * rnd(0.2, 0.5) + rnd(-15, 15), vy: (C[1] - p.y) * rnd(0.3, 0.6) - 18, age: 0, life: rnd(1.1, 1.8), d: 0.25 + 0.6 * Math.random() });
   }
+
+  // ---------------------------------------------------------------- the 3-D layer (shared/gl3)
+  // The same block, modelled and lit under this SVG (gl-scene.js). Until it has arrived every call is a no-op and the
+  // drawing is the figure; once it is on, the drawn block is hidden and only the traced-cell ring and the monitor are
+  // drawn here, on top. draw() hands the layer the same state the drawing uses.
+  const G3 = { s: 1, netA: 0, netB: 1, nCells: 0, cells: new Float32Array(72 * 6), nAir: 0, air: new Float32Array(64 * 3), nFly: 0, fly: new Float32Array(64 * 3), nCo2: 0, co2: new Float32Array(96 * 4), nDuct: 0, duct: new Float32Array(24 * 2) };
+  const gl = gl3Attach(fig, {
+    scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, island: false,
+    redraw: () => draw(),
+    build: (ctx) => a5Scene(ctx, DATA.g3, { path: P, i0, i1, ven: VEN, art: ART, debug: /[?&]a5debug/.test(location.search) }),
+  });
 
   // ---------------------------------------------------------------- drawing
   const dots = (list, r) => list.map((p) => `M${f1(p[0] - r)} ${f1(p[1])}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`).join("");
@@ -184,41 +196,63 @@ function mount(fig) {
     const s = 1 + (0.012 + 0.011 * shown.tv) * vol;
     const [px, py] = DATA.pivot || C;
     set('[data-part="sac"]', "transform", `translate(${px} ${py}) scale(${s.toFixed(4)}) translate(${-px} ${-py})`);
-    // cells
-    let back = "";
-    let front = "";
-    for (const c of cells) {
-      const sv = cellSvg(c);
-      if (c.u >= i0 && c.u <= i1) front += sv;
-      else back += sv;
+    // the net turns red where the traced capillary does
+    const netA = Math.max(0, fracOf(0.02));
+    const netB = Math.min(1, fracOf(0.14) + 0.02);
+    const flyAt = (d) => {
+      const p = at(d.c.u);
+      const e = Math.min(1, d.t / d.dur) ** 1.6;
+      return [d.x0 + (p.x - d.x0) * e, d.y0 + (p.y - d.y0) * e, e];
+    };
+    const bucketOf = (g) => Math.min(2, Math.floor((g.age / g.life) * 3));
+    if (gl.on) {
+      // the block is rendered: the same cells, gas and breath go to the 3-D scene instead of the hidden drawing
+      const satIn = satOf(shown.pv);
+      G3.s = s;
+      G3.netA = netA;
+      G3.netB = netB;
+      G3.nCells = Math.min(72, cells.length);
+      for (let k = 0; k < G3.nCells; k++) {
+        const c = cells[k];
+        const p = at(c.u);
+        G3.cells.set([p.x, p.y, p.ang, p.sf, c.u < i0 ? 0 : Math.max(0, Math.min(1, (c.sat - satIn) / (FULL - satIn))), c.id], k * 6);
+      }
+      G3.nAir = Math.min(64, air.length);
+      for (let k = 0; k < G3.nAir; k++) G3.air.set([air[k].x, air[k].y, air[k].d ?? 0.5], k * 3);
+      G3.nFly = Math.min(64, fly.length);
+      for (let k = 0; k < G3.nFly; k++) {
+        const [x, y, e] = flyAt(fly[k]);
+        G3.fly.set([x, y, (fly[k].d0 ?? 0.3) * (1 - e)], k * 3);
+      }
+      G3.nCo2 = Math.min(96, co2.length);
+      for (let k = 0; k < G3.nCo2; k++) G3.co2.set([co2[k].x, co2[k].y, bucketOf(co2[k]), (co2[k].d ?? 0.5) * Math.min(1, co2[k].age / 0.9)], k * 4);
+      G3.nDuct = Math.min(24, duct.length);
+      for (let k = 0; k < G3.nDuct; k++) G3.duct.set(ductAt(duct[k].s, duct[k].o), k * 2);
+    } else {
+      // cells
+      let back = "";
+      let front = "";
+      for (const c of cells) {
+        const sv = cellSvg(c);
+        if (c.u >= i0 && c.u <= i1) front += sv;
+        else back += sv;
+      }
+      q('[data-part="cellsBack"]').innerHTML = back;
+      q('[data-part="cellsFront"]').innerHTML = front;
+      // oxygen and carbon dioxide
+      set('[data-part="air"]', "d", dots(air.map((a) => [a.x, a.y]), 3));
+      set('[data-part="fly"]', "d", dots(fly.map(flyAt), 3));
+      const buckets = [[], [], []];
+      for (const g of co2) buckets[bucketOf(g)].push([g.x, g.y]);
+      buckets.forEach((b, i) => set(`[data-part="co2${i}"]`, "d", dots(b, 2.6)));
+      set('[data-part="ductair"]', "d", dots(duct.map((p) => ductAt(p.s, p.o)), 2.6));
+      set('[data-part="netA"]', "offset", netA.toFixed(3));
+      set('[data-part="netB"]', "offset", netB.toFixed(3));
     }
-    q('[data-part="cellsBack"]').innerHTML = back;
-    q('[data-part="cellsFront"]').innerHTML = front;
-    // oxygen and carbon dioxide
-    set('[data-part="air"]', "d", dots(air.map((a) => [a.x, a.y]), 3));
-    set(
-      '[data-part="fly"]',
-      "d",
-      dots(
-        fly.map((d) => {
-          const p = at(d.c.u);
-          const e = Math.min(1, d.t / d.dur) ** 1.6;
-          return [d.x0 + (p.x - d.x0) * e, d.y0 + (p.y - d.y0) * e];
-        }),
-        3,
-      ),
-    );
-    const buckets = [[], [], []];
-    for (const g of co2) buckets[Math.min(2, Math.floor((g.age / g.life) * 3))].push([g.x, g.y]);
-    buckets.forEach((b, i) => set(`[data-part="co2${i}"]`, "d", dots(b, 2.6)));
-    set('[data-part="ductair"]', "d", dots(duct.map((p) => ductAt(p.s, p.o)), 2.6));
     // the traced cell's ring
     const tr = tracked && cells.includes(tracked) ? at(tracked.u) : null;
     set('[data-part="track"]', "cx", tr ? f1(tr.x) : -60);
     set('[data-part="track"]', "cy", tr ? f1(tr.y) : -60);
-    // the net turns red where the traced capillary does
-    set('[data-part="netA"]', "offset", Math.max(0, fracOf(0.02)).toFixed(3));
-    set('[data-part="netB"]', "offset", Math.min(1, fracOf(0.14) + 0.02).toFixed(3));
     // the monitor
     const satIn = satOf(shown.pv);
     let d = "";
@@ -248,6 +282,8 @@ function mount(fig) {
       dot.setAttribute("cy", f1(yOf(tracked.u < i0 ? satIn : tracked.sat)));
       dot.setAttribute("opacity", 1);
     } else dot.setAttribute("opacity", 0);
+    gl.update(G3);
+    gl.render();
   }
 
   // ---------------------------------------------------------------- input, tour, loop
