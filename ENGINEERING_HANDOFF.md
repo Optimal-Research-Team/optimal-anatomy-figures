@@ -1,7 +1,7 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
-**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b")
-**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-10-24` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-24), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
+**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b"; every figure in real-time 3-D added 2026-11-11)
+**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-11` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-11), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -19,9 +19,56 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `DEV_TODO.md` | The task list, in order, with owners and sizes. |
 | `handoff/placements.json` | Machine-readable map: every figure, its script, size, reserved heights, approval state, and every placement (route, file, anchor, priority). |
 | `handoff/site/` | Drop-in files for `src/components/optimal-figures/`: `OptimalFigure.tsx`, `optimalFigures.ts`, `optimal-figures.css`. |
-| `scripts/export-embeds.mjs` | Copies the 15 built scripts, and A2's lazy 3-D chunk `hypothalamus-3d.js`, into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha; the chunk is listed under A2's `chunks`). |
+| `scripts/export-embeds.mjs` | Copies the 15 built scripts, the shared 3-D chunk `optimal-gl3.js` (also into `reveals/`) and A2's own chunk `hypothalamus-3d.js`, into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha; the chunk is listed under A2's `chunks`). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
-| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-10-24` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-10-24), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
+| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-11-11` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-11), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
+
+## Added Nov 11: every figure in real-time 3-D (one shared layer)
+
+**Peter, Nov 10:** make all the visualizations much nicer, to the standard of real 3-D models. Each figure now renders its own object (the machine, the block of tissue) as a lit 3-D model under its drawing: materials, studio light, soft shadows, ambient occlusion. The drawing stays on top for the fine ink (ticks, labels, screens, hit targets), and it is still the first paint and the fallback. The interactions, numbers and words are unchanged.
+
+| What | Before | Now |
+|---|---|---|
+| Figs 1–6 (the machines) | isometric drawing | the same solids, rendered: white shells, forest and sage paint, graphite, rubber, brushed metal, glass; maple mannequins with nickel joints |
+| A1, A3, A5, A6, A7, A8, A9 (tissue) | hand-drawn block | a 3-D scene of the same anatomy in the same camera, driven by the same model state |
+| A2, A4 | already real-time 3-D | unchanged, byte-identical |
+| E1–E3 on the site (and E4 in the gallery) | take-apart drawing that turns | the same parts as lit 3-D bodies while they turn and come apart; decals and screens kept as drawn |
+
+**What you ship**
+
+- `optimal-gl3.js` (633 KB, 164 KB gzip), **in two places**:
+  - `public/figures/optimal-gl3.js`: the 13 figures that use it load it lazily from the embed script's own folder (`<embed folder>/optimal-gl3.js?v=<sha>`), once per page view however many figures are on the page.
+  - `public/figures/reveals/optimal-gl3.js`: each framed machine page loads it from its own folder. The frame is `sandbox="allow-scripts"` as before; a script from the same folder needs nothing more.
+- The 13 changed embed scripts and the 3 changed machine pages. `scripts/export-embeds.mjs` writes all of it, and the manifest lists the chunk under each figure's `chunks` and each machine's `chunks`.
+- Cache `/figures/*` as you already do (DEV_TODO task 3). The chunk is requested with `?v=<sha>`, so a new build is a new URL.
+
+**What does not change**
+
+- No site code: `OptimalFigure.tsx`, `EquipmentReveal.tsx`, `optimalFigures.ts`, placements and the private patch are as they were.
+- No layout: the layer is one canvas laid under the figure's own SVG, inside the same stage. Card heights are the same as the Oct 24 embeds (compared old against new at 358 and 760 px, desktop and phone), so `FIGURE_RESERVE` and `REVEAL_RESERVE` stand.
+- No new origins, no storage, no network beyond that one same-folder script. The chunk's build fails if it contains a fetch, XHR, beacon or storage call.
+
+**When the layer does not run** (the figure stays on its approved drawing, silently):
+
+- no WebGL 2, or a software renderer;
+- Save-Data or a 2G connection, under 3 GB of device memory, or under 4 cores;
+- the WebGL context is lost (the drawing comes back);
+- `gl="off"` on the element (`<optimal-fig-vo2max gl="off">`), or `?gl=off` on a gallery page;
+- `optimal-gl3.js` is missing: the embed tries once and stays on the drawing.
+
+While a figure animates, the layer watches its own frame rate. After two slow stretches in a row it steps down once (lighter occlusion), then again (no occlusion, lower pixel ratio). It never steps up during a page view.
+
+**Performance, measured on a Mac with a GPU (not yet on a real phone):** the machines hold 55–60 fps at desktop size; the tissue scenes 45–60 fps at desktop size and 60 fps at phone size. A real mid-range Android check is on the task list.
+
+**QA**
+
+- `node handoff/qa/check-embeds.mjs <site URL>`: every figure with the layer reports `(3-D on)`; the second pass (WebGL off) reports `(SVG fallback)` and fails if the chunk was downloaded anyway. `svg:load` in the output means `optimal-gl3.js` isn't deployed next to the embed scripts.
+- `python3 scripts/measure-reserves.py` (after `node scripts/build-all.mjs`): every card against `FIGURE_RESERVE`.
+- By eye: open a page, wait for the figure, compare with the same URL plus `gl="off"` on the element. The model must sit exactly under the labels; every control must move both.
+
+**For the clinic TV** (not the site): the TV plays the same embeds and gets the layer with its next `npm run figures`. The equipment films (MP4) are pre-rendered and keep the drawn look.
+
+**Source and docs:** `shared/gl3/` in this repo; `shared/gl3/README.md` explains how a figure adopts the layer. The take-apart pages use `reveals/gl3-turn.js`.
 
 ## Added Oct 24: the three machines in 3-D, on the page
 

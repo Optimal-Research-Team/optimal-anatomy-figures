@@ -1,4 +1,4 @@
-# Optimal figures: engineering handoff, Oct 24 2026 (replaces the Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
+# Optimal figures: engineering handoff, Nov 11 2026 (replaces the Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
 
 **For:** Jeremy, and anyone integrating the anatomy figures into `BeOptimal/beoptimal-landing`.
 
@@ -6,7 +6,23 @@
 
 Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) and `DEV_TODO.md` (the task list, newest changes first).
 
-## What changed since the Oct 23 package (`handoff-2026-10-23`)
+## What changed since the Oct 24 package (`handoff-2026-10-24`)
+
+**Every figure now renders as a real-time 3-D model** (Peter, Nov 10: "video game standard"). One new file does it for all of them. No site code changes.
+
+1. **One more file to ship, in two places: `optimal-gl3.js`** (633 KB, 164 KB gzip).
+   - `public/figures/optimal-gl3.js`, next to the embed scripts. Thirteen figures load it lazily from their own folder, once per page view, when a figure comes near the viewport.
+   - `public/figures/reveals/optimal-gl3.js`, next to the three framed machine pages. Each framed page loads it from its own folder.
+   - Both are in this release's `embeds/`, and `scripts/export-embeds.mjs` writes both.
+2. **Re-copy 13 embed scripts and the 3 machine pages.** Figs 1–6 and A1, A3, A5, A6, A7, A8, A9 changed (each grew 24–83 KB). `optimal-fig-hypothalamus.js`, `hypothalamus-3d.js` and `optimal-fig-heart.js` are **byte-identical** to the Oct 24 ones: A2 and A4 were already real-time 3-D.
+3. **No site code changes.** Placements, `FIGURE_RESERVE`, `REVEAL_RESERVE`, `OptimalFigure.tsx`, `EquipmentReveal.tsx` and the private patch are unchanged. The layer draws under each figure's own drawing, in the same box: every card measures the same height as before (old and new embeds compared at 358 and 760 px, desktop and phone).
+4. **The drawing is still the first paint and the fallback.** A figure stays on its approved drawing with no WebGL 2, a software renderer, Save-Data or 2G, under 3 GB of memory, under 4 cores, a lost context, `gl="off"` on the element, or if `optimal-gl3.js` isn't deployed. Nothing breaks if you ship the embeds first and the chunk later.
+5. **QA:** `handoff/qa/check-embeds.mjs` now reports the layer on every figure ("3-D on") and, in a second pass with WebGL off, that each falls back to its drawing without downloading the chunk. New: `scripts/measure-reserves.py` re-measures every card against `FIGURE_RESERVE`.
+6. **Approval:** the new look is live in the gallery as "Real-time 3-D · awaiting Peter's OK". The Oct 24 package stays valid until he signs off; this one is ready when he does.
+
+See `ENGINEERING_HANDOFF.md`, "Added Nov 11", for how it works and what to check.
+
+## What changed in the Oct 24 package (vs `handoff-2026-10-23`)
 
 1. **The three machines in 3-D are now on the page** (Peter, Oct 24): the InBody 580, the Creator 600 (treadmill) and the KICKR Bike. Each shows inline on its service page, turnable and take-apart-able. See `ENGINEERING_HANDOFF.md`, "Added Oct 24".
    - **Ship `embeds/reveals/`** (three files) into `public/figures/reveals/`.
@@ -32,7 +48,7 @@ Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) 
 
 ## What changed between the Oct 12 and Oct 21 packages
 
-1. **All 15 embed scripts are new.** Use `embeds/` from the latest release (now `handoff-2026-10-24`), or re-run `scripts/export-embeds.mjs`. Don't use the Oct 12 copies.
+1. **All 15 embed scripts are new.** Use `embeds/` from the latest release (now `handoff-2026-11-11`), or re-run `scripts/export-embeds.mjs`. Don't use the Oct 12 copies.
    - **Oct 18:** readout names and units now match the clinic TV ("Step rate N/min", "Kneecap force", "Hemoglobin", mL).
    - **Oct 20:** a visual-bug sweep.
      - Tap targets are at least 44 px at 320 px wide.
@@ -64,7 +80,7 @@ Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) 
 | Slot reserves and the site component | `handoff/site/`: `optimalFigures.ts`, `OptimalFigure.tsx`, `optimal-figures.css` |
 | Placements | `handoff/placements.json`: every figure's route, anchor, size and priority |
 | QA | `handoff/qa/check-embeds.mjs`, the end-to-end QA against any running site |
-| Embed scripts | The **`handoff-2026-10-24` release** (`embeds/`: the 15 scripts, `hypothalamus-3d.js`, `reveals/` with the three machines in 3-D, and `manifest.json`), or re-run `node scripts/export-embeds.mjs --out <site>/public/figures`. Live copies: `https://optimal-research-team.github.io/optimal-anatomy-figures/<fig>/embed/optimal-fig-<slug>.js` (and `a2-hypothalamus/embed/hypothalamus-3d.js`) |
+| Embed scripts | The **`handoff-2026-11-11` release** (`embeds/`: the 15 scripts, `optimal-gl3.js`, `hypothalamus-3d.js`, `reveals/` with the three machines in 3-D and their copy of `optimal-gl3.js`, and `manifest.json`), or re-run `node scripts/export-embeds.mjs --out <site>/public/figures`. Live copies: `https://optimal-research-team.github.io/optimal-anatomy-figures/<fig>/embed/optimal-fig-<slug>.js` (and `a2-hypothalamus/embed/hypothalamus-3d.js`) |
 | Equipment films E1–E4 | `figures/e*/assets/` here, or the release zip's `equipment/` |
 | **The site integration patch** | **Private:** [Optimal-Research-Team/optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch). It's code from the private site repo, so it stays out of this public one. Ask Peter for access. It applies cleanly to `beoptimal-landing` `0f36c00` and `main` `0c0473c` (checked Oct 21), and hasn't been applied yet. |
 
@@ -77,5 +93,5 @@ Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) 
 
 ## How this package is made
 
-`node scripts/package-handoff.mjs --tag handoff-2026-10-24` builds every figure, exports the embeds, and assembles the folder and zip (docs, `site/`, `placements.json`, the QA script, `export-embeds.mjs`, `embeds/`, `equipment/`) in `handoff/package/` (git-ignored). The zip goes on the GitHub release; the site patch never does (it lives in the private repo).
+`node scripts/package-handoff.mjs --tag handoff-2026-11-11` builds every figure, exports the embeds, and assembles the folder and zip (docs, `site/`, `placements.json`, the QA script, `export-embeds.mjs`, `embeds/`, `equipment/`) in `handoff/package/` (git-ignored). The zip goes on the GitHub release; the site patch never does (it lives in the private repo).
 

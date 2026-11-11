@@ -7,8 +7,8 @@
 //   <tag>/export-embeds.mjs         scripts/export-embeds.mjs
 //   <tag>/qa/check-embeds.mjs       handoff/qa/check-embeds.mjs (+ viewport-shots.mjs, its screenshot helper)
 //   <tag>/site/                     handoff/site/ (drop-in component, loader, reserves)
-//   <tag>/embeds/                   the 15 embed scripts, their lazy chunks (A2: hypothalamus-3d.js), manifest.json,
-//                                   and reveals/ (E1–E3 framed for the site)
+//   <tag>/embeds/                   the 15 embed scripts, their lazy chunks (optimal-gl3.js, shared; A2: hypothalamus-3d.js),
+//                                   manifest.json, and reveals/ (E1–E3 framed for the site, with their copy of optimal-gl3.js)
 //   <tag>/equipment/<e*>/           web films, posters and take-apart pages for E1–E4
 //
 //   node scripts/package-handoff.mjs --tag handoff-2026-10-21b      # builds everything first
@@ -53,6 +53,12 @@ for (const dir of readdirSync(join(root, "figures")).filter((d) => /^e\d/.test(d
   const assets = join(root, "figures", dir, "assets");
   for (const f of existsSync(assets) ? readdirSync(assets) : []) if (/-web-.*\.mp4$|\.jpg$/.test(f)) copyFileSync(join(assets, f), join(to, f));
   for (const f of readdirSync(join(root, "dist", dir))) if (f.endsWith(".html")) copyFileSync(join(root, "dist", dir, f), join(to, f));
+  // the standalone pages load the shared 3-D layer's chunk from embed/ beside them
+  const chunk = join(root, "dist", dir, "embed", "optimal-gl3.js");
+  if (existsSync(chunk)) {
+    mkdirSync(join(to, "embed"), { recursive: true });
+    copyFileSync(chunk, join(to, "embed", "optimal-gl3.js"));
+  }
 }
 
 execFileSync("zip", ["-qr", `${name}.zip`, name, "-x", "*.DS_Store"], { cwd: base });
