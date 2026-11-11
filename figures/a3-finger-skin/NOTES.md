@@ -56,11 +56,40 @@
 - **Warmth:** in a flash `live.js` also flushes the top and end faces (`data-part="topwarm"` / `"sidewarm"`).
 - **Block depth:** 170 units, with a shadow under the block. Block styles are in `block.css`.
 
+## Real-time 3-D block (2026-11-11, `shared/gl3`)
+
+With the shared 3-D layer on, the block is a modelled scene (`gl-scene.js`, inlined by `build.mjs`) rendered under the SVG in the block's own projection and units. The drawn block carries `data-gl3-hide`; the monitor stays SVG on top. Wherever the layer can't run (`?gl=off`, no WebGL 2, Save-Data, small devices, a lost context) the drawing above is the figure, unchanged.
+
+- **Same anatomy, same positions, given depth.** World units are the section's px (x along the cut, y into the block, z up; the cut face is y = 170). What the drawing lays flat on the cut face runs at a depth behind it, set in one place (`A3D` in `gl-scene.js`) and used by both the tubes and `live.js`'s blood routes, so cells ride inside the vessels:
+  - deep arteriole about 38 units in; the drawn plexus lane about 10 in, with two more lanes behind it and cross-links (the plexus is a net, as the caption's "network of veins" says);
+  - each shunt is a helix (the drawn zigzag is its front view), from the arteriole forward and up to the plexus;
+  - capillary loops lean toward the cut face so each top stands just behind the cut in its papilla (deeper in, the epidermis round the papilla would hide it from this camera). The loops are also 15% narrower and 2 units lower than drawn, for the same reason;
+  - the four ascending arterioles run on to the loop they feed (the drawing stops them under the plexus; the route already continued);
+  - nerve about 6 units in, in front of the shunts as drawn, with a twig ending on each; the two glands 26 and 65 units in, each duct climbing to a pore on a ridge crest.
+- **Epidermis:** a solid slab. Ridged top with pores along the crests (ridges drift up to 11 units sideways toward the back; nil at the cut face). The cut faces are painted sections (horny layer, cells flattening upward, basal row). Dermal papillae run back as ridges under it.
+- **Dermis:** see-through. Everything inside mixes toward the dermis colour by the length of tissue between it and the viewer (closed form: the camera is fixed), clear for the first stretch, then hazing. Fat lobules are a cobbled bed across the whole floor.
+- **Vessels you look into** (arteriole, plexus, shunts): a flat backdrop of blood, the model's cells, then a wet see-through wall. Fine vessels (ascending arterioles, loops) are plain tubes and a passing cell shows as a bead.
+- **Driven by the same state** (`draw3` in `live.js` → `update` in `gl-scene.js`):
+  - `open` (Fig 1's louvre): plexus radius ×(7+7·open)/7 and venous → arterial colour by 0.15+0.6·open; shunt sleeve ×(7+6·open)/7; lumen ×(1.6+7.4·open)/1.6 and its colour by 0.4+0.6·open, the drawing's own widths and mixes. The sleeve's wall also thins to the eye as it relaxes.
+  - every blood cell of the model, at its place on its route; every nerve impulse;
+  - `warm` (skin / 2.7): the dermis and the epidermis flush, heat wisps rise off the whole top.
+- **Three small departures from the drawing's motion, on purpose:**
+  1. Glomus cells ride out with the sleeve as it relaxes (5.5 → 7.5 units from the centre line; the drawing's fixed 7.5 is where they stand open). Fixed, they floated clear of a shut shunt in 3-D.
+  2. A cell turns from arterial to venous colour as it passes through its loop (the drawing switches at the loop's foot).
+  3. Cells are scaled to the vessel they are in (the drawing draws one size).
+- **Reduced motion:** as before, one still (minute 1, or between flashes), rendered once.
+- **Cost:** 30 draw calls in the main pass. Desktop about 182k triangles plus about 200 per live cell (≈230k at the peak of a flash); touch devices about 89k plus 112 per cell (≈117k).
+- **Shared-layer notes:** the layer's `stats()` reports the last pass only (1 call), so the numbers above are counted from the scene. A bump map on the ridged top produced a single NaN pixel at phone size under the layer's MSAA; the top uses an albedo map only.
+
+### For review (anatomy, not changed here)
+- The drawing puts a dermal papilla directly under each ridge crest, so each sweat duct enters the epidermis through a papilla tip. Textbook fingertip skin has an epidermal (glandular) ridge under the crest, with the duct entering there and papillae either side. The 3-D model follows the drawing; worth a look if the figure gets a clinical read.
+
 ## Verification (2026-10-12, 3-D, local)
 
 - `node scripts/verify.mjs a3-finger-skin`: passed.
 - No console errors, and no sideways scroll at 390, 360 or 320 in either theme.
 - `lines.mjs`: 0.
+- 2026-11-11, with the 3-D layer: `node scripts/verify.mjs a3-finger-skin` passed (the stage ends at `data-gl3="on"` on every run, console clean; the line check runs on the drawing with `?gl=off`: 0). The embed test page runs the layer too. The shots below now show the rendered block.
 - Captures (about minute 0.8, in the flash): `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (the still at minute 1, the peak).
 
 ## Embed

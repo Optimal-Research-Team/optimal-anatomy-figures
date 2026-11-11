@@ -1,6 +1,8 @@
 // A3 live code: one hot flash in the finger's skin, driven by Fig 1's flashAt(t). `louvre`
 // opens the shunts (lumen widens, the nerve's squeeze stops, blood takes the shortcut into the
 // plexus); `skin` sets how warm the skin glows and the heat rising off it; the monitor plots it.
+// With the shared 3-D layer on (shared/gl3) the same state drives the modelled block in gl-scene.js:
+// each route below also carries its line in depth, so the cells ride inside the 3-D vessels.
 const DATA = __DATA__;
 
 function mount(fig) {
@@ -73,7 +75,7 @@ function mount(fig) {
     const b = m.pts[lo];
     const t = (x - m.acc[lo - 1]) / (m.acc[lo] - m.acc[lo - 1] || 1);
     const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-    return { x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t, tx: (b[0] - a[0]) / l, ty: (b[1] - a[1]) / l };
+    return { x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t, tx: (b[0] - a[0]) / l, ty: (b[1] - a[1]) / l, i: lo, f: t };
   };
 
   // ---------------------------------------------------------------- routes for blood
@@ -82,28 +84,55 @@ function mount(fig) {
   const upTo = (pts, x) => pts.filter((p) => p[0] <= x);
   const from = (pts, x) => pts.filter((p) => p[0] >= x);
   const route = (parts) => {
-    // parts: [points, kind]; each kind has its own speed; venous after a capillary bed
+    // parts: [points, kind, the same points in depth]; each kind has its own speed; venous after a capillary bed
     const pts = [];
+    const p3 = [];
     const marks = [];
-    for (const [p, kind] of parts) {
+    for (const [p, kind, d] of parts) {
       if (!p.length) continue;
       const start = pts.length;
       pts.push(...p);
+      p3.push(...d);
       marks.push({ start, kind });
     }
     const m = measure(pts);
+    m.p3 = p3;
     m.kinds = marks.map((k, i) => ({ kind: k.kind, from: m.acc[k.start], to: i + 1 < marks.length ? m.acc[marks[i + 1].start] : m.L }));
     return m;
   };
+  // the third dimension (gl-scene.js, A3D): how far behind the cut face each vessel runs. [sx, sy, depth] per point.
+  const artD = (pts) => pts.map((p) => [p[0], p[1], A3D.art(p[0])]);
+  const plexD = (pts) => pts.map((p) => [p[0], p[1], A3D.plex(p[0])]);
+  const LOOPS3 = DATA.loops.map((l) => {
+    const lx = (l.up[0][0] + l.down[2][0]) / 2;
+    return curve([...l.up, ...l.down]).map((p) => A3D.loop(p, lx, l.up[0][1], l.up[2][1]));
+  });
+  const AVAS3 = DATA.avas.map((pts, k) => pts.map((p, i) => [p[0], p[1], A3D.ava(DATA.avaX[k], i, pts.length - 1)]));
+  const FEEDS3 = [];
   const ROUTES = {
-    through: [route([[ART, "art"]])],
+    through: [route([[ART, "art", artD(ART)]])],
     caps: DATA.feeds.map((x, k) => {
-      const loop = DATA.loops.reduce((b, l) => (Math.abs(l.up[0][0] - x) < Math.abs(b.up[0][0] - x) ? l : b));
-      return route([[upTo(ART, x), "art"], [curve([[x, DATA.artY - 4], [x + 6, 270], [x - 4, 230], [x + 3, 200], [loop.up[0][0], loop.up[0][1]]]), "feed"], [curve([...loop.up, ...loop.down]), "cap"], [from(PLX, loop.down[2][0]), "plexV"]]);
+      const at = DATA.loops.reduce((b, l, i) => (Math.abs(l.up[0][0] - x) < Math.abs(DATA.loops[b].up[0][0] - x) ? i : b), 0);
+      const loop = DATA.loops[at];
+      const feed = curve([[x, DATA.artY - 4], [x + 6, 270], [x - 4, 230], [x + 3, 200], [loop.up[0][0], loop.up[0][1]]]);
+      const feed3 = feed.map((p, i) => [p[0], p[1], A3D.feed(x, i / (feed.length - 1), (loop.up[0][0] + loop.down[2][0]) / 2)]);
+      FEEDS3.push(feed3);
+      return route([[upTo(ART, x), "art", artD(upTo(ART, x))], [feed, "feed", feed3], [curve([...loop.up, ...loop.down]), "cap", LOOPS3[at]], [from(PLX, loop.down[2][0]), "plexV", plexD(from(PLX, loop.down[2][0]))]]);
     }),
-    shunts: DATA.avas.map((pts) => route([[upTo(ART, pts[0][0]), "art"], [pts, "ava"], [from(PLX, pts[pts.length - 1][0]), "plexA"]])),
+    shunts: DATA.avas.map((pts, k) => route([[upTo(ART, pts[0][0]), "art", artD(upTo(ART, pts[0][0]))], [pts, "ava", AVAS3[k]], [from(PLX, pts[pts.length - 1][0]), "plexA", plexD(from(PLX, pts[pts.length - 1][0]))]])),
   };
   const NERVE = measure(curve(DATA.nerve, 10));
+  NERVE.p3 = NERVE.pts.map((p) => [p[0], p[1], A3D.nerve(p[0])]);
+  const at3 = (m, p, c) => {
+    const a = m.p3[p.i - 1];
+    const b = m.p3[p.i];
+    return a[c] + (b[c] - a[c]) * p.f;
+  };
+  const LINES = { art: artD(ART), plex: plexD(PLX), loops: LOOPS3, avas: AVAS3, nerve: NERVE.p3, feeds: FEEDS3 };
+  const KIND = { art: 0, feed: 1, cap: 2, plexV: 3, ava: 4, plexA: 5 };
+  const G3 = { open: 0, warm: 0, now: 0, tick: 0, unit: 1, n: 0, cells: new Float32Array(8 * 640), ns: 0, spikes: new Float32Array(3 * 96) };
+  // the 3-D layer (shared/gl3): every call is a no-op until it has loaded; until then, and wherever it can't run, the SVG is the figure
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, island: false, redraw: () => draw(), build: a3Scene(DATA, LINES) });
 
   // ---------------------------------------------------------------- state
   let mode = 0;
@@ -145,6 +174,46 @@ function mount(fig) {
   function draw() {
     const fl = flashAt(t);
     const warm = Math.max(0, fl.skin) / TRUTH.skinRise;
+    if (gl.on) draw3(warm);
+    else drawBlock(warm);
+    drawMonitor(fl);
+    gl.render();
+  }
+  // the same state for the modelled block: the shunts' opening, the warmth, every cell and every impulse where it is now
+  function draw3(warm) {
+    G3.open = open;
+    G3.warm = warm;
+    G3.now = performance.now();
+    // how many of the block's units one device pixel covers (the hair-thin heat wisps never go below a pixel wide)
+    if (!(G3.tick++ % 40)) G3.unit = DATA.W / (svg.getBoundingClientRect().width || DATA.W) / (DATA.P.scale * Math.sqrt(1.6)) / Math.min(window.devicePixelRatio || 1, 2);
+    const n = Math.min(cells.length, 640);
+    for (let i = 0; i < n; i++) {
+      const c = cells[i];
+      const p = along(c.m, c.s);
+      const o = i * 8;
+      const b = G3.cells;
+      b[o] = at3(c.m, p, 0);
+      b[o + 1] = at3(c.m, p, 1);
+      b[o + 2] = at3(c.m, p, 2);
+      b[o + 3] = p.tx;
+      b[o + 4] = p.ty;
+      const k = c.m.kinds.find((kk) => c.s < kk.to) ?? c.m.kinds[c.m.kinds.length - 1];
+      b[o + 5] = (KIND[k.kind] ?? 0) + Math.min(0.999, Math.max(0, (c.s - k.from) / (k.to - k.from || 1))); // which stretch, and how far through it
+      b[o + 6] = c.j;
+      b[o + 7] = c.s;
+    }
+    G3.n = n;
+    const ns = Math.min(spikes.length, 96);
+    for (let i = 0; i < ns; i++) {
+      const p = along(NERVE, spikes[i].s);
+      G3.spikes[i * 3] = p.x;
+      G3.spikes[i * 3 + 1] = p.y;
+      G3.spikes[i * 3 + 2] = at3(NERVE, p, 2);
+    }
+    G3.ns = ns;
+    gl.update(G3);
+  }
+  function drawBlock(warm) {
     // vessels
     set("art", "d", tube(ART, 13));
     set("plex", "d", tube(PLX, 7 + 7 * open));
@@ -188,7 +257,8 @@ function mount(fig) {
       const p = along(NERVE, sp.s);
       return `M${f1(p.x - 2.6)} ${f1(p.y)}a2.6 2.6 0 1 0 5.2 0a2.6 2.6 0 1 0 -5.2 0`;
     }).join(""));
-    // monitor
+  }
+  function drawMonitor(fl) {
     const xOf = (tt) => MON.x0 + ((tt - MON.t0) / (MON.t1 - MON.t0)) * (MON.x1 - MON.x0);
     const yOf = (vv) => MON.y0 - (vv / MON.max) * (MON.y0 - MON.y1);
     let d = "";

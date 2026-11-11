@@ -14,6 +14,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import { TRUTH, flashAt } from "../01-menopause-thermostat/model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -209,7 +210,8 @@ function blockSvg(front) {
   const edges = `<path class="b3-edge" d="${p3([W3(sx1, 0, zt), W3(sx1, 0, 430), W3(sx1, D, 430)], false)}"/>`;
   const shadow = `<path class="b3-shadow" d="${p3([[-6, -6, 0], [BL.L + 10, -6, 0], [BL.L + 10, D + 14, 0], [-6, D + 14, 0]])}"/>`;
   const m = FB.planeMatrix(W3(0, D, 0), [1, 0, 0], [0, 0, -1]);
-  return `${shadow}<path class="b3-top" d="${topD}"/>${strips}<path class="b3-pores" d="${pores}"/>${topWarm}<g class="b3-side">${side}${sideWarm}</g>${edges}<g class="b3-front" transform="${m}">${front}</g>`;
+  // data-gl3-hide: with the 3-D layer on (shared/gl3) the block is modelled in gl-scene.js and this drawing steps aside
+  return `<g data-gl3-hide>${shadow}<path class="b3-top" d="${topD}"/>${strips}<path class="b3-pores" d="${pores}"/>${topWarm}<g class="b3-side">${side}${sideWarm}</g>${edges}<g class="b3-front" transform="${m}">${front}</g></g>`;
 }
 
 const FRONT_SVG = `<path data-part="heat" class="a3-heat"/>
@@ -249,10 +251,14 @@ ${blockSvg(FRONT_SVG)}
 ${monitor}
 </svg>`;
 
-const DATA = { loops: LOOPS.map((l) => ({ up: l.up, down: l.down })), avas: AVAS, plexus, artery, feeds: [78, 214, 352, 494], avaX: AVA_X, nerve: [[X0 - 4, 262], [90, 256], [170, 266], [250, 258], [330, 266], [410, 258], [500, 264], [X1 + 4, 258]], branches: NERVE_BR, surface: surface.map((p) => p.map(r1)), mon: MON, plexY: PLEX_Y, artY: ART_Y };
+// the 3-D layer (shared/gl3): this figure brings its own scene (gl-scene.js), in the block's own projection and units
+const GL3W = gl3Wire();
+const GL3 = { parts: [], ground: 0, bounds: [[0, 0, 0], [BL.L, BL.D, BL.H + 90]], look: { contact: 0.9, cast: 1.1, ao: 0.6, aoRadius: 7 }, ...GL3W.chunk };
+const BLOCK = { x0: X0, x1: X1, D: BL.D, base: 430, ridge: RIDGE, glands: [[98, 384], [384, 388]].map(([gx, gy], i) => [gx, gy, GLANDS[i].pore[0]]) };
+const DATA = { gl3: GL3, P: PB, W: 600, H: 630, block: BLOCK, dej: sample(yDEJ, X0, X1, 1).map((p) => p.map(r1)), loops: LOOPS.map((l) => ({ up: l.up, down: l.down })), avas: AVAS, plexus, artery, feeds: [78, 214, 352, 494], avaX: AVA_X, nerve: [[X0 - 4, 262], [90, 256], [170, 266], [250, 258], [330, 266], [410, 258], [500, 264], [X1 + 4, 258]], branches: NERVE_BR, surface: surface.map((p) => p.map(r1)), mon: MON, plexY: PLEX_Y, artY: ART_Y };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "../01-menopause-thermostat/model.mjs"), "utf8"))}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "../01-menopause-thermostat/model.mjs"), "utf8"))}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8") + GL3W.css;
 const CAPTION = [
   `Fingertips, palms and toes have a shortcut in their skin: coiled shunts (arteriovenous anastomoses) that join small arteries straight to the veins under the surface, skipping the capillaries. Each is wrapped in muscle, and a nerve keeps it squeezed shut most of the time.`,
   `In a hot flash the brain's heat-loss centre releases that squeeze. The shunts open, warm blood floods the veins just under the skin, and the finger's skin temperature rises about ${TRUTH.skinRise} °C within a minute while the heart beats about ${TRUTH.hrRise} beats a minute faster. The flash itself lasts a few minutes, but the finger stays warm for about half an hour.`,
@@ -283,5 +289,6 @@ writeFileSync(join(HERE, out), page({ title: "The finger's heat valves", theme: 
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  GL3W.copyTo(join(HERE, "embed")); // the 3-D chunk travels beside the embed script
 }
 console.log("wrote", out, `${LOOPS.length} capillary loops, ${AVAS.length} shunts`);
