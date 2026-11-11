@@ -49,3 +49,8 @@
 .b9-side-shade { fill: #000; opacity: 0.16; }
 .b9-edge { fill: none; stroke: var(--a9-fat-edge); stroke-width: 1; stroke-linejoin: round; }
 .b9-shadow { fill: rgba(0, 0, 0, 0.14); filter: blur(6px); }
+/* the 3-D layer (shared/gl3): the block is rendered whole, so what is left of the SVG draws normally over it.
+   The drawing and the render sit on the same lines, so the drawing fades out as the render fades in (no blink). */
+.a9-stage.iso-stage[data-gl3="on"] > svg { mix-blend-mode: normal; }
+.a9-stage.iso-stage[data-gl3="on"] [data-gl3-hide] { display: inline; opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0s linear 0.5s; }
+@media (prefers-reduced-motion: reduce) { .a9-stage.iso-stage[data-gl3="on"] [data-gl3-hide] { transition: none; } }

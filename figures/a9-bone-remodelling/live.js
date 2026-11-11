@@ -30,11 +30,13 @@ function mount(fig) {
   let dip = new Float32Array(NX); // permanent loss from finished sites, px
   const sites = [];
   let cementNew = [];
+  let scars = []; // what each finished site left behind (the same dips as `dip`, site by site): the 3-D scene's round scoops
   const estro = [];
   function reset() {
     day = 0;
     dip = new Float32Array(NX);
     sites.length = 0;
+    scars = [];
     cementNew = [];
   }
   function startSite(fill) {
@@ -68,6 +70,7 @@ function mount(fig) {
         });
         cementNew.push(pts);
         if (cementNew.length > 22) cementNew.shift();
+        scars.push({ x0: s.x0, w: s.w, d: left * s.depth });
         sites.splice(i, 1);
       }
     }
@@ -99,9 +102,35 @@ function mount(fig) {
     }
   }
 
+  // ---------------------------------------------------------------- the 3-D layer (shared/gl3)
+  // The same block as a lit 3-D model under the SVG (gl-scene.js), fed this code's own state every frame. Until it
+  // has loaded, and wherever it can't run, every call is a no-op and the drawing below is the figure.
+  const gl = gl3Attach(fig, {
+    scene: DATA.gl3,
+    P: DATA.P,
+    W: DATA.W,
+    H: DATA.H,
+    file: DATA.gl3.file,
+    v: DATA.gl3.v,
+    island: false,
+    redraw: () => draw(),
+    build: (ctx) => a9Scene(ctx, { ...DATA, STEP, NX, yBot, svg }),
+  });
+
   // ---------------------------------------------------------------- drawing
   function draw() {
     const y = profile();
+    if (!gl.on) drawSvg(y); // with the layer on, the drawing is hidden: it need not be redrawn
+    // readouts
+    const area = xs.reduce((sum, x, k) => sum + (yBot(x) - y[k]), 0);
+    out.yr.textContent = (day / 365).toFixed(1);
+    out.sites.textContent = String(sites.length);
+    const ch = 100 * (area / startArea - 1);
+    out.bone.textContent = Math.abs(ch) < 0.05 ? "100%" : `${(100 + ch).toFixed(1)}%`;
+    gl.update({ y, sites, scars, cementNew, estro });
+    gl.render();
+  }
+  function drawSvg(y) {
     const top = xs.map((x, k) => `${k ? "L" : "M"}${f1(x)} ${f1(y[k])}`).join("");
     const bottom = [...xs].reverse().map((x) => `L${f1(x)} ${f1(yBot(x))}`).join("");
     set("bone", `${top}${bottom}Z`);
@@ -183,12 +212,6 @@ function mount(fig) {
       }
       return d + "Z";
     }).join(""));
-    // readouts
-    const area = xs.reduce((sum, x, k) => sum + (yBot(x) - y[k]), 0);
-    out.yr.textContent = (day / 365).toFixed(1);
-    out.sites.textContent = String(sites.length);
-    const ch = 100 * (area / startArea - 1);
-    out.bone.textContent = Math.abs(ch) < 0.05 ? "100%" : `${(100 + ch).toFixed(1)}%`;
   }
   function smoothD(points) {
     const n = points.length;

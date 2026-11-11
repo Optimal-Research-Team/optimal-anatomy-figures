@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import * as M from "./model.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const THEME = process.argv.includes("--light") ? "light" : "dark";
@@ -149,7 +150,7 @@ for (let i = 0; i < 9; i++) {
 }
 const sideFace = `<g transform="${SIDE_M}">${marrowTexture(DEP, MB - MT, (y, r) => y + r > bTop - 4 && y - r < bBot + 4)}
 <rect class="a9-bone" x="0" y="${f1(bTop)}" width="${DEP}" height="${f1(bBot - bTop)}" fill="url(#a9-bone)"/>
-<path class="a9-lamellae" d="${sideLam}"/><path class="a9-lacuna" d="${sideLac}"/>
+<path class="a9-lamellae" data-a9="sideLam" d="${sideLam}"/><path class="a9-lacuna" data-a9="sideLac" d="${sideLac}"/>
 <rect class="b9-side-shade" width="${DEP}" height="${MB - MT}"/></g>`;
 const p3 = (pts, close = true) => FB.path3(pts, close);
 const blockShadow = `<path class="b9-shadow" d="${p3([[-6, -6, 0], [L + 10, -6, 0], [L + 10, DEP + 14, 0], [-6, DEP + 14, 0]])}"/>`;
@@ -162,6 +163,7 @@ const svg = `<svg class="iso-svg a9-svg" viewBox="0 0 600 470" role="img" aria-l
   <clipPath id="a9-boneclip"><path data-part="boneClip"/></clipPath>
   <clipPath id="a9-faceclip"><rect x="${X0}" y="${MT}" width="${L}" height="${MB - MT}"/></clipPath>
 </defs>
+<g data-gl3-hide>
 ${blockShadow}${topFace}${sideFace}
 <g class="a9-front" transform="${FRONT_M}"><g clip-path="url(#a9-faceclip)">
 <rect class="a9-marrow" x="0" y="36" width="600" height="384"/>
@@ -170,9 +172,9 @@ ${blockShadow}${topFace}${sideFace}
 <path class="a9-fat" d="${fat}"/>
 <path class="a9-bone" data-part="bone" fill="url(#a9-bone)"/>
 <g clip-path="url(#a9-boneclip)">
-  <path class="a9-lamellae" d="${lamellae}"/>
-  <path class="a9-cement" d="${cement}"/><path class="a9-cement a9-cement-new" data-part="cementNew"/>
-  <path class="a9-canal" d="${canal}"/><path class="a9-lacuna" d="${lacunae}"/>
+  <path class="a9-lamellae" data-a9="lam" d="${lamellae}"/>
+  <path class="a9-cement" data-a9="cem" d="${cement}"/><path class="a9-cement a9-cement-new" data-part="cementNew"/>
+  <path class="a9-canal" data-a9="canal" d="${canal}"/><path class="a9-lacuna" data-a9="lac" d="${lacunae}"/>
 </g>
 <path class="a9-osteoid" data-part="osteoid"/>
 <path class="a9-surface" data-part="surface"/>
@@ -183,16 +185,28 @@ ${blockShadow}${topFace}${sideFace}
 <path class="a9-estro" data-part="estro"/>
 </g></g>
 ${blockEdges}
+</g>
 </svg>`;
 
 const LINES = [
   "Before menopause: a few repair sites at a time. Each cavity an osteoclast digs is filled back in by osteoblasts, so the strut keeps its thickness.",
   "Around and after menopause: with little estrogen, more sites start at once, and each refill falls a little short. The strut slowly thins.",
 ];
-const DATA = { X0, X1, TOP, BOT, lines: LINES };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3)
+// The same block, modelled: gl-scene.js builds it in these world units (the section's px) in the kit's own camera
+// (PB), so it sits exactly where the drawing does. The drawing (everything in <g data-gl3-hide>) is the fallback.
+const GL3W = gl3Wire();
+const GL3 = {
+  parts: [],
+  ground: 0,
+  bounds: [[0, 0, 0], [L, DEP, MB - MT]],
+  look: THEME === "light" ? { exposure: 1.04, aoRadius: 9, cast: 1.3, contact: 0.9 } : { exposure: 1.0, aoRadius: 9, cast: 0.7, contact: 0.5 },
+  ...GL3W.chunk,
+};
+const DATA = { X0, X1, TOP, BOT, MT, MB, DEP, P: PB, W: 600, H: 470, gl3: GL3, lines: LINES };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + GL3W.css;
 const CAPTION = [
   `Bone is renewed all the time. At each repair site an osteoclast digs a small cavity over two or three weeks, and then osteoblasts spend about three months filling it with new bone. Estrogen keeps the diggers in check.`,
   `As estrogen falls around menopause, more sites open at once and the filling falls behind the digging. Bone loss speeds up from about a year before the final period and is fastest until about two years after. In one large study, women lost about 7 % of their spine bone density and about 6 % at the hip in those three years, and about 10 % at the spine over ten years.`,
@@ -223,5 +237,6 @@ writeFileSync(join(HERE, out), page({ title: "Digging and filling", theme: THEME
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  GL3W.copyTo(join(HERE, "embed")); // the 3-D chunk sits next to the embed script
 }
 console.log("wrote", out, `pre ${JSON.stringify(M.remodelOf(1))} post ${JSON.stringify(M.remodelOf(0))}`);
