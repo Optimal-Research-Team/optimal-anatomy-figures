@@ -148,6 +148,8 @@ for (const [route, slugs] of pages) {
     }
   }
   console.log(`${bad ? "✗" : "✓"} ${route}  ${result}  ${consoleLine}`);
+  // no console line means the driver's own output was cut short: show its tail so the cause is visible
+  if (consoleLine === "console: ?") console.log(`  (driver output ended with: ${log.trim().split("\n").slice(-3).join(" | ").slice(-400)})`);
   // pass 3: no WebGL, for pages with a WebGL-layer figure (A2's own layer, or the shared one, which reports
   // "(3-D on)" in pass 1): the SVG fallback mounts, draws and stays quiet
   if (slugs.some((s) => GL_FIGURES[s]) || /3-D on|3-D FAILED/.test(result)) {

@@ -6,6 +6,10 @@
 #   bash shared/gl3/build-gl3.sh                    # fetches three with npm pack
 #   THREE_PKG=/path/to/extracted/package bash …     # reuse an extracted three package
 #
+# three.js marks the page (window.__THREE__) and warns in the console when a second copy loads. A page can hold this
+# chunk and A2's own (hypothalamus-3d.js), in either order, so the chunk hides the mark while it loads and puts
+# back whatever was there: no warning either way, and A2's file stays untouched.
+#
 # Then audits the bundle (no storage or network APIs; the three.js MIT notice kept) and writes chunk.json.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -30,7 +34,8 @@ got="$(node -p "require('$PKG/package.json').version")"
 npx --yes "esbuild@${ESBUILD_VERSION}" src/gl3.js \
   --bundle --minify --format=iife --global-name=OptimalGL3 --target=es2020 --legal-comments=eof \
   --alias:three="$PKG/build/three.module.js" --alias:three-addons="$PKG/examples/jsm" \
-  --banner:js="/* optimal-gl3.js: the real-time 3-D layer shared by Optimal's figures. Loaded by each optimal-fig-*.js; serve it from the same folder. Built from shared/gl3 with three.js r${THREE_VERSION} (MIT, notice at the end). Generated; do not edit. */" \
+  --banner:js="/* optimal-gl3.js: the real-time 3-D layer shared by Optimal's figures. Loaded by each optimal-fig-*.js; serve it from the same folder. Built from shared/gl3 with three.js r${THREE_VERSION} (MIT, notice at the end). Generated; do not edit. */ window.__optimalGl3Mark = window.__THREE__; delete window.__THREE__;" \
+  --footer:js="if (window.__optimalGl3Mark === undefined) delete window.__THREE__; else window.__THREE__ = window.__optimalGl3Mark; delete window.__optimalGl3Mark;" \
   --outfile="$OUT" --log-level=warning
 
 if grep -nE "localStorage|sessionStorage|indexedDB|document\.cookie|serviceWorker|CacheStorage|fetch\(|XMLHttpRequest|sendBeacon|action=" "$OUT"; then
