@@ -16,6 +16,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M from "./model.mjs";
 import { simulate, PARAMS } from "../03-iv-iron/model.mjs";
 
@@ -113,7 +114,13 @@ while (tp.length < 56) {
 }
 const seen = new Set();
 let nodes = "";
-for (const [x, y] of tp) nodes += dot(x, y, 2.6 + rng() * 1.6);
+// the same lattice, fat cells, island cells and pulp cords as numbers, for the 3-D scene (gl-scene.js)
+const G3 = { nodes: [], struts: [], fat: [], islands: [], cords: [] };
+for (const [x, y] of tp) {
+  const r = 2.6 + rng() * 1.6;
+  nodes += dot(x, y, r);
+  G3.nodes.push([+x.toFixed(1), +y.toFixed(1), +r.toFixed(2)]);
+}
 tp.forEach((p, i) => {
   const near = tp.map((q, j) => [Math.hypot(q[0] - p[0], q[1] - p[1]), j]).filter(([, j]) => j !== i).sort((a, b) => a[0] - b[0]).slice(0, 3);
   for (const [d, j] of near) {
@@ -123,6 +130,7 @@ tp.forEach((p, i) => {
     const q = tp[j];
     const m = [(p[0] + q[0]) / 2 + (rng() - 0.5) * 12, (p[1] + q[1]) / 2 + (rng() - 0.5) * 12];
     trab += `M${f1(p[0])} ${f1(p[1])}Q${f1(m[0])} ${f1(m[1])} ${f1(q[0])} ${f1(q[1])}`;
+    G3.struts.push([p[0], p[1], m[0], m[1], q[0], q[1]].map((v) => +v.toFixed(1)));
   }
 });
 let fat = "";
@@ -132,21 +140,26 @@ for (let i = 0, n = 0; n < 9 && i < 400; i++) {
   const r = 6 + rng() * 5;
   if (inPoly(BONE, x, y) && ISLANDS.every((I) => Math.hypot(x - I.c[0], y - I.c[1]) > I.r + 18)) {
     fat += dot(x, y, r);
+    G3.fat.push([+x.toFixed(1), +y.toFixed(1), +r.toFixed(1)]);
     n++;
   }
 }
 /** An erythroblastic island: a central macrophage ringed by erythroblasts at increasing maturity. */
 function island({ c: [cx, cy], r }, n) {
-  let svg = `<path class="a6-nurse" d="${smooth(Array.from({ length: 8 }, (_, k) => {
+  const nurse = Array.from({ length: 8 }, (_, k) => {
     const a = (k / 8) * 2 * Math.PI;
     const m = r * 0.52 * (0.85 + rng() * 0.3);
     return [cx + Math.cos(a) * m, cy + Math.sin(a) * m];
-  }), true, 1)}"/><path class="a6-nurse-nuc" d="${dot(cx - 2, cy + 1, r * 0.2)}"/>`;
+  });
+  const g3 = { c: [cx, cy], r, nurse: nurse.map((p) => round(p, 1)), nuc: [cx - 2, cy + 1, +(r * 0.2).toFixed(2)], cells: [] };
+  G3.islands.push(g3);
+  let svg = `<path class="a6-nurse" d="${smooth(nurse, true, 1)}"/><path class="a6-nurse-nuc" d="${dot(cx - 2, cy + 1, r * 0.2)}"/>`;
   for (let k = 0; k < n; k++) {
     const a = (k / n) * 2 * Math.PI + 0.3;
     const x = cx + Math.cos(a) * r * 0.86;
     const y = cy + Math.sin(a) * r * 0.86;
     const mat = k / (n - 1); // early (big nucleus, blue) → late (small nucleus, red)
+    g3.cells.push([+x.toFixed(1), +y.toFixed(1), +mat.toFixed(2), +(7.2 - mat * 1.6).toFixed(2), +(4.6 - mat * 2.8).toFixed(2)]);
     svg += `<g class="a6-eb" data-mat="${mat.toFixed(2)}"><circle class="a6-eb-cyto" cx="${f1(x)}" cy="${f1(y)}" r="${f1(7.2 - mat * 1.6)}" style="--m:${mat.toFixed(2)}"/><circle class="a6-eb-nuc" cx="${f1(x + 0.6)}" cy="${f1(y - 0.4)}" r="${f1(4.6 - mat * 2.8)}"/></g>`;
   }
   return svg;
@@ -164,15 +177,23 @@ for (let i = 0; i < 46; i++) {
   const a = rng() * Math.PI;
   const L = 6 + rng() * 10;
   pulp += `M${f1(x - Math.cos(a) * L)} ${f1(y - Math.sin(a) * L)}Q${f1(x + 4)} ${f1(y - 3)} ${f1(x + Math.cos(a) * L)} ${f1(y + Math.sin(a) * L)}`;
+  G3.cords.push([x - Math.cos(a) * L, y - Math.sin(a) * L, x + 4, y - 3, x + Math.cos(a) * L, y + Math.sin(a) * L].map((v) => +v.toFixed(1)));
 }
 const WHITE = [[540, 210, 18], [548, 372, 16], [460, 382, 13]];
 const whiteSvg = WHITE.map(([x, y, r]) => `<circle class="a6-white" cx="${x}" cy="${y}" r="${r}"/><circle class="a6-art" cx="${x + 3}" cy="${y - 2}" r="3"/>`).join("");
-const macBody = smooth(Array.from({ length: 12 }, (_, k) => {
+const MAC_BODY = Array.from({ length: 12 }, (_, k) => {
   const a = (k / 12) * 2 * Math.PI;
   const m = MAC.r * (k % 4 === 1 ? 1.12 : 0.92 + rng() * 0.1);
   return [MAC.c[0] + Math.cos(a) * m, MAC.c[1] + Math.sin(a) * m];
-}), true, 1);
-const macNuc = smooth([[MAC.c[0] + 6, MAC.c[1] + 14], [MAC.c[0] + 20, MAC.c[1] + 8], [MAC.c[0] + 26, MAC.c[1] + 20], [MAC.c[0] + 18, MAC.c[1] + 32], [MAC.c[0] + 4, MAC.c[1] + 30]], true, 1);
+});
+const macBody = smooth(MAC_BODY, true, 1);
+const MAC_NUC = [[MAC.c[0] + 6, MAC.c[1] + 14], [MAC.c[0] + 20, MAC.c[1] + 8], [MAC.c[0] + 26, MAC.c[1] + 20], [MAC.c[0] + 18, MAC.c[1] + 32], [MAC.c[0] + 4, MAC.c[1] + 30]];
+const macNuc = smooth(MAC_NUC, true, 1);
+G3.white = WHITE;
+G3.macBody = MAC_BODY.map((p) => round(p, 1));
+G3.macNuc = MAC_NUC;
+G3.phago = [MAC.c[0] - 14, MAC.c[1] - 12, 13];
+G3.iv = { line: [[224, 18], [246, 58]], hub: [[216, 16], [232, 10], [242, 30], [226, 36]] };
 // ferritin granule slots inside the macrophage (filled in order by the page)
 const GRAN = [];
 for (let i = 0; GRAN.length < 46 && i < 4000; i++) {
@@ -272,30 +293,30 @@ const svg = `<svg class="iso-svg a6-svg" viewBox="0 0 600 ${VH}" role="img" aria
   <clipPath id="a6-boneclip"><path d="${smooth(BONE, true, 1)}"/></clipPath>
   <clipPath id="a6-spleenclip"><path d="${smooth(SPLEEN, true, 1)}"/></clipPath>
 </defs>
-<g transform="${FRONT_M}"><g class="a6-far" data-part="far"></g></g>
+<g transform="${FRONT_M}" data-gl3-hide><g class="a6-far" data-part="far"></g></g>
 <g class="a6-front" transform="${FRONT_M}">
-<path class="a6-ret" d="${tube(RET, 14, 12)}"/>
-<path class="a6-bone" d="${smooth(BONE, true, 1)}" fill="url(#a6-marrow)"/>
-<g clip-path="url(#a6-boneclip)">
+<path class="a6-ret" d="${tube(RET, 14, 12)}" data-gl3-hide/>
+<path class="a6-bone" d="${smooth(BONE, true, 1)}" fill="url(#a6-marrow)" data-gl3-hide/>
+<g clip-path="url(#a6-boneclip)" data-gl3-hide>
   <path class="a6-fat" d="${fat}"/>
   <path class="a6-trab" d="${trab}"/><path class="a6-trab-node" d="${nodes}"/>
   <path class="a6-sinus" d="${tube(sinus, 15, 18)}"/>
   ${island(ISLANDS[0], 9)}${island(ISLANDS[1], 7)}
 </g>
-<path class="a6-cortex" d="${smooth(BONE, true, 1)}"/>
-<path class="a6-spleen" d="${smooth(SPLEEN, true, 1)}" fill="url(#a6-pulp)"/>
-<g clip-path="url(#a6-spleenclip)"><path class="a6-cords" d="${pulp}"/>${whiteSvg}</g>
-<path class="a6-capsule" d="${smooth(SPLEEN, true, 1)}"/>
-<path class="a6-arc-edge" d="${tube(ARC, 34, 30)}"/>
-<g class="a6-iv" data-part="iv"><path class="a6-iv-line" d="M224 18L246 58"/><path class="a6-iv-hub" d="M216 16l16 -6l10 20l-16 6Z"/></g>
+<path class="a6-cortex" d="${smooth(BONE, true, 1)}" data-gl3-hide/>
+<path class="a6-spleen" d="${smooth(SPLEEN, true, 1)}" fill="url(#a6-pulp)" data-gl3-hide/>
+<g clip-path="url(#a6-spleenclip)" data-gl3-hide><path class="a6-cords" d="${pulp}"/>${whiteSvg}</g>
+<path class="a6-capsule" d="${smooth(SPLEEN, true, 1)}" data-gl3-hide/>
+<path class="a6-arc-edge" d="${tube(ARC, 34, 30)}" data-gl3-hide/>
+<g class="a6-iv" data-part="iv" data-gl3-hide><path class="a6-iv-line" d="M224 18L246 58"/><path class="a6-iv-hub" d="M216 16l16 -6l10 20l-16 6Z"/></g>
 ${ticks}
-<path class="a6-mac" d="${macBody}" fill="url(#a6-macg)"/>
-<circle class="a6-phago" cx="${MAC.c[0] - 14}" cy="${MAC.c[1] - 12}" r="13"/>
-<path class="a6-mac-nuc" d="${macNuc}"/>
-<path class="a6-gran" data-part="gran"/>
-<path class="a6-tf" data-part="tf"/>
-<path class="a6-ivp" data-part="ivp"/>
-<g data-part="cells"><path class="a6-c a6-c-pale" data-part="cPale"/><path class="a6-c a6-c-full" data-part="cFull"/><path class="a6-c a6-c-young" data-part="cYoung"/><path class="a6-c a6-c-old" data-part="cOld"/><path class="a6-pallor a6-pallor-pale" data-part="pPale"/><path class="a6-pallor a6-pallor-full" data-part="pFull"/><path class="a6-pallor a6-pallor-old" data-part="pOld"/><path class="a6-retic" data-part="retic"/></g>
+<path class="a6-mac" d="${macBody}" fill="url(#a6-macg)" data-gl3-hide/>
+<circle class="a6-phago" cx="${MAC.c[0] - 14}" cy="${MAC.c[1] - 12}" r="13" data-gl3-hide/>
+<path class="a6-mac-nuc" d="${macNuc}" data-gl3-hide/>
+<path class="a6-gran" data-part="gran" data-gl3-hide/>
+<path class="a6-tf" data-part="tf" data-gl3-hide/>
+<path class="a6-ivp" data-part="ivp" data-gl3-hide/>
+<g data-part="cells" data-gl3-hide><path class="a6-c a6-c-pale" data-part="cPale"/><path class="a6-c a6-c-full" data-part="cFull"/><path class="a6-c a6-c-young" data-part="cYoung"/><path class="a6-c a6-c-old" data-part="cOld"/><path class="a6-pallor a6-pallor-pale" data-part="pPale"/><path class="a6-pallor a6-pallor-full" data-part="pFull"/><path class="a6-pallor a6-pallor-old" data-part="pOld"/><path class="a6-retic" data-part="retic"/></g>
 </g>
 ${monitor}
 </svg>`;
@@ -304,10 +325,17 @@ const LINES = [
   "Untreated iron deficiency: the marrow is short of iron, so it makes too little hemoglobin and the cells come out small and pale. The spleen's stores are nearly empty.",
   "After IV iron: macrophages soak up the dose within days and their stores (ferritin) jump. New, fuller cells appear in about a week, but the arc of 120-day-old cells is replaced only as fast as the marrow works, so hemoglobin climbs over weeks.",
 ];
-const DATA = { far: { w: WD1, A: 62, E: 24, dep: DEP, bone: BONE, spleen: SPLEEN }, S, arc: ARC, ret: RET, mac: MAC, gran: GRAN, sinus: sinus.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]), mon: MON, lines: LINES, islands: ISLANDS };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same loop, modelled
+// No kit solids here: gl-scene.js builds the whole scene (bone, marrow, vessel, spleen, cells) in the cut face's own
+// coordinates, at the positions the drawing uses. The floor sits just under the transferrin return.
+const GL3W = gl3Wire();
+const B3 = [0, 1, 2].map((c) => BOUNDS3.map((p) => p[c]));
+const GROUND = -(Math.max(...RET.map((p) => p[1])) + 12);
+const GL3 = { parts: [], ground: GROUND, bounds: [[Math.min(...B3[0]), DEP - 80, GROUND], [Math.max(...B3[0]), DEP + 14, Math.max(...B3[2])]], look: { contactHeight: 60, aoRadius: 6.5, ao: 0.95, env: 0.85, cast: 0.8 }, ...GL3W.chunk };
+const DATA = { gl3: GL3, P: PB, W: 600, H: VH, g3: G3, far: { w: WD1, A: 62, E: 24, dep: DEP, bone: BONE, spleen: SPLEEN }, S, arc: ARC, ret: RET, mac: MAC, gran: GRAN, sinus: sinus.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)]), mon: MON, lines: LINES, islands: ISLANDS };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "../../shared/round-back.js"), "utf8")}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = `${readFileSync(join(HERE, "figure.css"), "utf8")}${GL3W.css}`;
 const ferPeak = Math.max(...fer);
 const ferPeakDay = fer.indexOf(ferPeak) * STEP;
 const CAPTION = [
@@ -341,5 +369,6 @@ writeFileSync(join(HERE, out), page({ title: "The red cell's 120 days", theme: T
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, `c0 ${S.c0.toFixed(1)} mg/d, cNorm ${S.cNorm.toFixed(1)}, ferritin peak ${ferPeak.toFixed(0)} on day ${ferPeakDay}, hb day 56 ${hb[N - 1].toFixed(1)}, arc ${arcLen.toFixed(0)} px, ${GRAN.length} granule slots`);

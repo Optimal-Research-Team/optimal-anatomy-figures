@@ -89,3 +89,6 @@
 .iso.optimal[data-theme="light"] { --a6-arc-in: #f7e1da; --a6-ret-in: #f6ecd2; }
 .a6-front .a6-arc-edge { fill: var(--a6-arc-in); }
 .a6-front .a6-ret { fill: var(--a6-ret-in); }
+
+/* with the 3-D layer on (shared/gl3) the scene is its own picture: the ticks and the monitor are drawn over it as they are, not multiplied */
+.a6-stage[data-gl3="on"] > svg.a6-svg { mix-blend-mode: normal; }

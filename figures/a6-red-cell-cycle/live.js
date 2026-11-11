@@ -92,6 +92,11 @@ function mount(fig) {
   };
   const dot = (x, y, r) => `M${f1(x - r)} ${f1(y)}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0`;
 
+  // ---------------------------------------------------------------- the 3-D layer (shared/gl3)
+  // The same loop as a real-time 3-D scene (gl-scene.js) under this SVG; the labels, ticks and the monitor stay
+  // drawn on top. Until the layer has loaded every call is a no-op and the drawing is the figure.
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, island: false, redraw: () => draw(), build: (ctx) => a6Scene(ctx, DATA) });
+
   // ---------------------------------------------------------------- state
   let treated = false;
   let t = 0;
@@ -118,47 +123,86 @@ function mount(fig) {
     }
     return list;
   }
-  function draw() {
-    const paths = { cPale: "", cFull: "", cYoung: "", cOld: "", pPale: "", pFull: "", pOld: "", retic: "" };
+  // One state for both pictures: where every cell, granule, transferrin and IV particle is right now. The drawing
+  // (drawArt) and the 3-D scene (gl.update) are both made from it, so they can't disagree.
+  const NOW = { cells: [], gran: 0, tf: [], ivp: [], iv: false, snap: false };
+  function place() {
+    const list = NOW.cells;
+    list.length = 0;
     const phago = [MAC.c[0] - 14, MAC.c[1] - 12];
     for (const c of cells(t)) {
       const h = hash(c.n);
       const lane = (Math.floor(h * 3) - 1) * 8.5 + (hash(c.n + 0.5) - 0.5) * 3;
-      let x, y, tx, ty, k = 1;
+      let x, y, tx, ty, k = 1, at = 1, e = 0, px, py, off = lane;
       if (c.age < 0) {
         const p = along(SIN, (c.age + 0.8) / 0.8);
-        x = p.x + (h - 0.5) * 6;
+        off = (h - 0.5) * 6;
+        x = p.x + off;
         y = p.y;
+        px = p.x;
+        py = p.y;
         tx = p.tx;
         ty = p.ty;
+        at = 0;
+        e = (c.age + 0.8) / 0.8;
       } else if (c.age <= 120) {
         const p = along(ARC, c.age / 120);
         x = p.x - p.ty * lane;
         y = p.y + p.tx * lane;
+        px = p.x;
+        py = p.y;
         tx = p.tx;
         ty = p.ty;
       } else {
         // into the spleen and the macrophage's phagosome
-        const e = Math.min(1, (c.age - 120) / 1.5);
+        e = Math.min(1, (c.age - 120) / 1.5);
         const end = along(ARC, 1);
         x = end.x + (phago[0] - end.x) * e;
         y = end.y + (phago[1] - end.y) * e;
+        px = end.x;
+        py = end.y;
         tx = end.tx;
         ty = end.ty;
         k = 1 - 0.55 * e;
+        at = 2;
         if (e >= 1) continue;
       }
       const made = cohortAt(S, c.born, treated);
       const young = c.age < 2;
       const old = c.age > 108;
       const pale = made < 0.9 * S.cNorm;
-      if (young) {
+      // kind: 0 made short of iron, 1 full, 2 reticulocyte, 3 old · at: 0 in the sinusoid, 1 on the arc, 2 on its way to the phagosome
+      list.push({ n: c.n, x, y, tx, ty, k, kind: young ? 2 : old ? 3 : pale ? 0 : 1, age: c.age, at, e, px, py, off });
+    }
+    NOW.gran = granulesOf(ferOf(t));
+    // transferrin back to the marrow
+    NOW.tf.length = 0;
+    for (const p of tf) {
+      const a = along(RET, p.u);
+      NOW.tf.push({ x: a.x - a.ty * p.o, y: a.y + a.tx * p.o, u: p.u, o: p.o });
+    }
+    // the IV complex circulating until the macrophages take it up
+    const ivMg = treated && t >= 0 ? seriesAt(S, "iv", t) : 0;
+    const nIv = Math.round((60 * ivMg) / 1000);
+    NOW.ivp.length = 0;
+    for (let i = 0; i < nIv; i++) {
+      const u = (hash(i + 0.3) + t * 0.45) % 1;
+      const a = along(ARC, u);
+      const o = (hash(i + 0.7) - 0.5) * 22;
+      NOW.ivp.push({ x: a.x - a.ty * o, y: a.y + a.tx * o, px: a.x, py: a.y, u, o, i });
+    }
+    NOW.iv = treated && t > -3 && t < 2;
+  }
+  function drawArt() {
+    const paths = { cPale: "", cFull: "", cYoung: "", cOld: "", pPale: "", pFull: "", pOld: "", retic: "" };
+    for (const { x, y, tx, ty, k, kind } of NOW.cells) {
+      if (kind === 2) {
         paths.cYoung += ell(x, y, 5.9 * k, 3.9 * k, tx, ty);
         paths.retic += dot(x - tx * 1.5, y - ty * 1.5, 0.8) + dot(x + tx * 2, y + ty * 2 + 0.6, 0.7);
-      } else if (old) {
+      } else if (kind === 3) {
         paths.cOld += ell(x, y, 4.6 * k, 3.5 * k, tx, ty);
         paths.pOld += ell(x, y, 1.6 * k, 1.2 * k, tx, ty);
-      } else if (pale) {
+      } else if (kind === 0) {
         paths.cPale += ell(x, y, 5.0, 3.3, tx, ty);
         paths.pPale += ell(x, y, 2.9, 1.9, tx, ty);
       } else {
@@ -167,27 +211,16 @@ function mount(fig) {
       }
     }
     for (const [k2, d] of Object.entries(paths)) set(k2, d);
-    // ferritin granules
+    set("gran", DATA.gran.slice(0, NOW.gran).map(([gx, gy]) => dot(gx, gy, 2.7)).join(""));
+    set("tf", NOW.tf.map((p) => dot(p.x, p.y, 3)).join(""));
+    set("ivp", NOW.ivp.map((p) => dot(p.x, p.y, 2.3)).join(""));
+    q('[data-part="iv"]').style.opacity = NOW.iv ? "1" : "0";
+  }
+  function draw() {
+    place();
+    // with the 3-D layer on, the drawn art is hidden (data-gl3-hide) and the scene shows the same state instead
+    if (!gl.on) drawArt();
     const fer = ferOf(t);
-    const n = granulesOf(fer);
-    set("gran", DATA.gran.slice(0, n).map(([gx, gy]) => dot(gx, gy, 2.7)).join(""));
-    // transferrin back to the marrow
-    set("tf", tf.map((p) => {
-      const a = along(RET, p.u);
-      return dot(a.x - a.ty * p.o, a.y + a.tx * p.o, 3);
-    }).join(""));
-    // the IV complex circulating until the macrophages take it up
-    const ivMg = treated && t >= 0 ? seriesAt(S, "iv", t) : 0;
-    const nIv = Math.round((60 * ivMg) / 1000);
-    let ivd = "";
-    for (let i = 0; i < nIv; i++) {
-      const u = (hash(i + 0.3) + t * 0.45) % 1;
-      const a = along(ARC, u);
-      const o = (hash(i + 0.7) - 0.5) * 22;
-      ivd += dot(a.x - a.ty * o, a.y + a.tx * o, 2.3);
-    }
-    set("ivp", ivd);
-    q('[data-part="iv"]').style.opacity = treated && t > -3 && t < 2 ? "1" : "0";
     // the monitor
     const xOf = (d) => MON.x0 + ((d - MON.d0) / (MON.d1 - MON.d0)) * (MON.x1 - MON.x0);
     const yF = (v) => MON.fer.y0 - (Math.min(v, MON.fer.max) / MON.fer.max) * (MON.fer.y0 - MON.fer.y1);
@@ -213,6 +246,9 @@ function mount(fig) {
     out.day.textContent = treated ? (t < 0 ? `−${-Math.floor(t)} (before)` : `${Math.floor(t)}`) : "—";
     out.fer.textContent = `${Math.round(fer)} µg/L`;
     out.hb.textContent = `${Math.round(hbOf(t))} g/L`;
+    NOW.snap = still.matches;
+    gl.update(NOW);
+    gl.render();
   }
   function step(dt) {
     // dt in seconds on the viewer's clock

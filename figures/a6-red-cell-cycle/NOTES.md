@@ -78,3 +78,33 @@ Peter's decision: every A-piece goes 3-D, done the A7 way. The whole loop lies i
 - `lines.mjs`: 0.
 - Reduced motion draws a still.
 - Captures: `shots/phone-{390,360,320}-{dark,light}.png`, `shots/desktop-{dark,light}.png` and `shots/reduced-390-*.png` (Untreated), plus `shots/desktop-iv-{dark,light}.png` (IV iron, about day 5).
+
+## Round 4 (2026-11-10): the loop as a real-time 3-D scene (shared/gl3)
+
+The figure now has its own 3-D scene on the shared WebGL layer (`shared/gl3`, "A figure with its own 3-D scene"). The drawing is unchanged and is still the whole figure wherever the layer can't run (`?gl=off`, no WebGL 2, Save-Data, a small device, a lost context). With the layer on, the drawn organs, vessels and cells are hidden (`data-gl3-hide`) and the scene shows the same state; the age ticks and the monitor stay as SVG on top, drawn normally (`island: false`, `mix-blend-mode: normal`).
+
+**Where things are.** `gl-scene.js` models everything in the cut face's own coordinates (x, y as the drawing, z = depth behind the cut), under one group that maps them to the kit's world, so every part sits where the SVG draws it and the ticks stay registered. No kit solids are recorded (`parts: []`).
+
+**Parts**
+- **Bone:** the cortex as a round back half plus a crowned cut rim; the marrow face 3 units behind it (the drawing's radial tone, mottled, a little wet); the drawing's trabecular lattice as round struts half sunk in the marrow; fat cells as see-through globules; the two islands as a nurse cell ringed by see-through erythroblasts with their nuclei inside (violet with a big nucleus to red with a small one, as drawn).
+- **Vessel:** one open half-pipe: the marrow sinusoid (dark), flaring to the arc's width just inside the cortex, the 120-day arc, and its rounded end inside the spleen. Radius follows the drawing (15 → 18 wide, then 34 → 30).
+- **Spleen:** capsule (round back half and cut rim), red-pulp face with the drawing's cords as low ridges, the three white-pulp nodules each with its arteriole, and the macrophage: a bed of cytoplasm on the cut with the nucleus, the phagosome and the ferritin granules on it, under a see-through membrane.
+- **Return:** the transferrin half-pipe, from under the macrophage to under the lower island's nurse cell.
+- **Red cells:** four shapes, each a lathe of the textbook biconcave section (after Evans and Fung) with the drawing's colours and central pallor: made short of iron (smaller, thinner, wide pale dimple), full, reticulocyte (larger, plumper, two pale specks), old (darker, rounder).
+
+**Motion.** `live.js` now works out one state per frame (`place()`: every cell's position, kind and age, the granule count, the transferrin and IV particles, whether the IV line shows) and both pictures are made from it: `drawArt()` writes the SVG paths exactly as before, `gl.update()` places the instances. Nothing in the model, the numbers, the words or the controls changed. In 3-D a cell also has a depth in the pipe (the centre lane runs deeper) and a lean that rolls slowly with its age; both are functions of the cell's number and age only, so the same state always gives the same picture and reduced motion is still a still. The two side lanes are pulled in by up to a quarter where the pipe narrows, so no disc cuts through the wall.
+
+**Decisions**
+- **Vessels through organs.** Where a vessel runs through the cortex, marrow, capsule or pulp, those surfaces are cut away around it in the shader (a chain of capsules along the vessel), so the open half-pipe reads as one channel from the marrow island to the spleen. The organs' own surfaces don't cast shadows (the shadow pass can't see those cuts); cells, struts, nodules and nuclei do.
+- **The key light is re-aimed for this figure.** The shared key stands almost overhead, which only rakes an upright cut face. `aimKey()` in `gl-scene.js` turns it to the upper left in front of the cut and fits its shadow map to the scene (a workaround inside this figure; listed for the shared layer as "per-figure key direction").
+- **Instanced bodies hang from a point inside the bone**, because the shared floor-shadow passes draw an instanced mesh once at its own origin.
+- **The vessel's inside is a mid rose in both themes** (the drawing's is near-white on Cream and near-black on Forest night), so pale, full and old cells all separate from it by tone without an outline.
+- **Budgets:** phones (`ctx.coarse`) get about half the segments everywhere.
+
+## Verification (2026-11-11, round 4, local)
+
+- `node scripts/verify.mjs a6-red-cell-cycle`: passed (phones 390 / 360 / 320 in both themes with the layer on, reduced motion, desktop, line ends 0 with `?gl=off`, console clean), on the rebuilt shared chunk.
+- `?gl=off` against the page as it was before this round (same seed, reduced motion, both themes): the same picture to within raster noise (about 0.4% of pixels, none visible).
+- Scene size, one pass: 27–28 meshes drawn; about 140k triangles untreated and 150k after the dose on desktop, about 80k on phones.
+- The embed (`embed/test.html`) ends at `data-gl3="on"`; `optimal-gl3.js` is copied beside it by the build.
+- Still to carry over one day: the dashed outline of the return (it is a plain half-pipe in 3-D).
