@@ -16,6 +16,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
+import { gl3Wire } from "../../shared/gl3/wire.mjs";
 import * as M3 from "../03-iv-iron/model.mjs";
 import * as M from "./model.mjs";
 
@@ -66,6 +67,10 @@ const FERRITIN = [[214, 248], [388, 236], [300, 318]];
 const FPN = [192, 246, 300, 354, 408]; // ferroportin places on the base
 const CAP = { y0: 560, y1: 616 };
 const DMT1 = [];
+const MITO = [[196, 380, 22, 9, 1], [404, 372, 20, 9, 2], [250, 196, 18, 8, 3], [362, 300, 19, 8, 4]]; // x, y, rx, ry, seed
+const NUCLEUS = [300, 440, 76, 46];
+const NUCLEOLUS = [318, 432, 16, 11];
+const SECTION_VILLI = []; // the front row, for the 3-D scene: [centre x, h, main cell?]
 
 const cellPath = (x0, x1, seed) => {
   const pts = [];
@@ -90,6 +95,7 @@ for (let x = 22; x + VILLI.w <= 578; x += VILLI.w + VILLI.gap) {
   const main = x > CELL.x0 && x + VILLI.w < CELL.x1;
   const h = 44 + 4 * Math.sin(x * 0.37);
   villi.push(`<path class="a1-villus${main ? "" : " a1-dim"}" d="${pill(x, APICAL - h + 4, VILLI.w, h + 6)}"/>`);
+  SECTION_VILLI.push([x + VILLI.w / 2, +h.toFixed(2), main ? 1 : 0]);
   if (main && villi.length % 3 === 1) DMT1.push([x + VILLI.w / 2, APICAL - h + 10]);
 }
 parts.push(`<g>${villi.join("")}</g>`);
@@ -102,8 +108,8 @@ for (const x of [CELL.x0 - 3, CELL.x1 + 3]) parts.push(`<path class="a1-junction
 // DMT1 channels at the tips of every third villus
 parts.push(DMT1.map(([x, y]) => `<g class="a1-dmt1"><path d="${pill(x - 5.4, y - 6, 4.6, 12)}"/><path d="${pill(x + 0.8, y - 6, 4.6, 12)}"/></g>`).join(""));
 // organelles: mitochondria, the nucleus with its nucleolus
-for (const [x, y, rx, ry, s] of [[196, 380, 22, 9, 1], [404, 372, 20, 9, 2], [250, 196, 18, 8, 3], [362, 300, 19, 8, 4]]) parts.push(`<path class="a1-mito" d="${blob(x, y, rx, ry, 0.05, 10, s)}"/><path class="a1-mito-in" d="${blob(x, y, rx * 0.62, ry * 0.42, 0.12, 10, s + 1)}"/>`);
-parts.push(`<path class="a1-nucleus" d="${blob(300, 440, 76, 46, 0.03, 12, 2)}"/><path class="a1-nucleolus" d="${blob(318, 432, 16, 11, 0.06, 9, 5)}"/>`);
+for (const [x, y, rx, ry, s] of MITO) parts.push(`<path class="a1-mito" d="${blob(x, y, rx, ry, 0.05, 10, s)}"/><path class="a1-mito-in" d="${blob(x, y, rx * 0.62, ry * 0.42, 0.12, 10, s + 1)}"/>`);
+parts.push(`<path class="a1-nucleus" d="${blob(...NUCLEUS, 0.03, 12, 2)}"/><path class="a1-nucleolus" d="${blob(...NUCLEOLUS, 0.06, 9, 5)}"/>`);
 // ferritin cages: a shell of 24 subunits round an iron core (the page fills the core)
 parts.push(FERRITIN.map(([x, y], i) => {
   const dots = Array.from({ length: 24 }, (_, j) => {
@@ -212,14 +218,18 @@ let lpSeed = 11;
 const lpr = () => ((lpSeed = (lpSeed * 16807) % 2147483647) - 1) / 2147483646;
 let lpCollagen = "";
 let lpCells = "";
+const LP_COLLAGEN = []; // [u, y, control dx, control dy, end dx, end dy] on the end face, for the 3-D scene
+const LP_FIBRO = [[96, 590], [160, 616], [70, 628]];
 for (let i = 0; i < 26; i++) {
   const u = 44 + lpr() * (D - 50);
   const y = BASAL + 22 + lpr() * (H - BASAL - 30);
   const a = (lpr() - 0.5) * 0.8;
   const len = 12 + lpr() * 16;
-  lpCollagen += `M${fx(u)} ${fx(y)}q${fx(Math.cos(a) * len * 0.5)} ${fx(-3 + lpr() * 6)} ${fx(Math.cos(a) * len)} ${fx(Math.sin(a) * len)}`;
+  const bow = -3 + lpr() * 6;
+  lpCollagen += `M${fx(u)} ${fx(y)}q${fx(Math.cos(a) * len * 0.5)} ${fx(bow)} ${fx(Math.cos(a) * len)} ${fx(Math.sin(a) * len)}`;
+  LP_COLLAGEN.push([u, y, Math.cos(a) * len * 0.5, bow, Math.cos(a) * len, Math.sin(a) * len].map((v) => +v.toFixed(1)));
 }
-for (const [u, y] of [[96, 590], [160, 616], [70, 628]]) lpCells += blob(u, y, 11, 3.4, 0.08, 8, u);
+for (const [u, y] of LP_FIBRO) lpCells += blob(u, y, 11, 3.4, 0.08, 8, u);
 const halfDisc = (r) => `M0 ${fx(CAPC - r)}A${r} ${r} 0 0 1 0 ${fx(CAPC + r)}Z`;
 const sideFace = `<g transform="${SIDE_M}">
 <path class="a1-villus a1-dim b1-end-villus" d="${endVilli}"/>
@@ -249,14 +259,28 @@ const svg = `<svg class="iso-svg a1-svg" viewBox="0 0 ${VIEW_W} ${VIEW_H}" role=
   <clipPath id="b1-frontclip"><rect x="${X0}" y="-40" width="${L}" height="${H + 40}"/></clipPath>
   ${sideClip}
 </defs>
-${shadow}${topFace}${backEdges}<g class="b1-forest">${forestSvg}</g><g clip-path="url(#b1-sideclip)">${sideFace}</g>${edges}
-<g class="b1-front" transform="${FRONT_M}"><g clip-path="url(#b1-frontclip)">${parts.join("")}</g></g>
+<g class="a1-art" data-gl3-hide>${shadow}${topFace}${backEdges}<g class="b1-forest">${forestSvg}</g><g clip-path="url(#b1-sideclip)">${sideFace}</g>${edges}
+<g class="b1-front" transform="${FRONT_M}"><g clip-path="url(#b1-frontclip)">${parts.join("")}</g></g></g>
 </svg>`;
 
-const DATA = { W, H, APICAL, BASAL, CELL, FERRITIN, FPN, CAP, DMT1, SLOTS: M.SLOTS, scenes: SCENES.map((s) => ({ key: s.key, gate: s.gate, line: s.line })) };
+// ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same block as a real-time scene
+// The scene (gl-scene.js) is modelled in the block's own world units at the positions the drawing uses, in the
+// drawing's own camera (PB). It has no kit solids: everything is built in the page from the numbers below.
+const GL3W = gl3Wire();
+const GL3 = { parts: [], ground: 0, bounds: [[0, 0, 0], [L, D, H]], look: { exposure: 0.94, aoRadius: 15, contactHeight: 64, cast: 1.15, contact: 1.05 }, ...GL3W.chunk };
+const SCENE3 = {
+  X0, L, D, HX, HV, VILLI_R: R_V,
+  mito: MITO, nucleus: NUCLEUS, nucleolus: NUCLEOLUS,
+  web: [CELL.x0 + 10, CELL.x1 - 10, APICAL + 9, APICAL + 18],
+  villiFront: SECTION_VILLI,
+  // the brush border from above: [x, y (depth from the back), h, main cell?, DMT1?]
+  forest: forest.map((f) => [f.x, f.v, +f.h.toFixed(2), f.main ? 1 : 0, f.dmt ? 1 : 0]),
+  end: { nuclei: [[UB * 0.5, 446, 44, 40], [UB + 40, 462, 26, 34]], mito: [[UB * 0.36, 300, 16, 7], [UB * 0.7, 230, 15, 7]].map((m) => m.map((v) => +v.toFixed(1))), collagen: LP_COLLAGEN, fibro: LP_FIBRO },
+};
+const DATA = { W, H, APICAL, BASAL, CELL, FERRITIN, FPN, CAP, DMT1, SLOTS: M.SLOTS, scenes: SCENES.map((s) => ({ key: s.key, gate: s.gate, line: s.line })), gl3: GL3, P: PB, VW: VIEW_W, VH: VIEW_H, G: SCENE3 };
 const strip = (src) => src.replace(/^import .*$/gm, "").replace(/^export /gm, "");
-const SCRIPT = `${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
-const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8");
+const SCRIPT = `${GL3W.host}\n${strip(readFileSync(join(HERE, "model.mjs"), "utf8"))}\n${readFileSync(join(HERE, "gl-scene.js"), "utf8")}\n${readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA))}`;
+const CSS = readFileSync(join(HERE, "figure.css"), "utf8") + readFileSync(join(HERE, "block.css"), "utf8") + GL3W.css;
 const pct = (g) => `${Math.round(g * 100)} %`;
 const CAPTION = [
   `Iron from food crosses the gut through one layer of lining cells. It comes in at the top, through DMT1 channels on the brush border, and leaves at the base through ferroportin, the only known way out of the cell, into the blood, where transferrin carries it away. Iron that can't leave is held in ferritin and lost when the cell is shed a few days later.`,
@@ -287,5 +311,7 @@ writeFileSync(join(HERE, out), page({ title: "The gut cell's gate", theme: THEME
 if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
+  // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
+  GL3W.copyTo(join(HERE, "embed"));
 }
 console.log("wrote", out, SCENES.map((s) => `${s.key} ${s.gate.toFixed(2)}`).join(" · "), `DMT1 ${DMT1.length}`, `${forest.length} microvilli on top`, `view ${VIEW_W}×${VIEW_H}`);

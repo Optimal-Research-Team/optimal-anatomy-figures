@@ -1,5 +1,6 @@
 // A1 live code: iron in through DMT1, out through ferroportin; hepcidin docks and the cell pulls gates in.
 const DATA = __DATA__;
+const A1_INKS = ["a1-cell", "a1-cell-2", "a1-membrane", "a1-nucleus", "a1-nucleolus", "a1-mito", "a1-tissue", "a1-blood", "a1-endo", "a1-iron", "a1-hep", "a1-fpn", "a1-dmt1", "a1-tf", "a1-rbc", "a1-rbc-in", "a1-ferritin", "b1-lateral", "b1-cell-dim", "b1-villus-dim", "b1-top", "b1-top-main", "b1-v0", "b1-v1", "b1-v2", "b1-tip"];
 
 function mount(fig) {
   const svg = fig.querySelector("svg");
@@ -15,6 +16,12 @@ function mount(fig) {
   const pill = (x, y, w, h) => `M${f1(x + w / 2)} ${f1(y)}a${w / 2} ${w / 2} 0 0 1 ${w / 2} ${w / 2}v${f1(h - w)}a${w / 2} ${w / 2} 0 0 1 ${-w} 0v${f1(-(h - w))}a${w / 2} ${w / 2} 0 0 1 ${w / 2} ${-w / 2}Z`;
   const hepPath = (x, y) => `M${f1(x - 5)} ${f1(y - 4)}c0 7 10 7 10 0c0 -4 -3 -5 -3 -2c0 3 -4 3 -4 0c0 -3 -3 -2 -3 2Z`;
   const rnd = (a, b) => a + Math.random() * (b - a);
+  // the 3-D layer (shared/gl3): the same block as a real-time scene (gl-scene.js), fed the same state the SVG is
+  // drawn from. Until it arrives every call is a no-op and the drawing is the figure; once it is on, the drawing
+  // steps aside (data-gl3-hide) and is not redrawn.
+  const inks = getComputedStyle(svg);
+  const pal = Object.fromEntries(A1_INKS.map((k) => [k, inks.getPropertyValue(`--${k}`).trim()]));
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.VW, H: DATA.VH, file: DATA.gl3.file, v: DATA.gl3.v, island: false, redraw: () => draw(), build: (ctx) => a1Scene(ctx, DATA, pal) });
 
   // ---------------------------------------------------------------- state
   let sceneAt = 0;
@@ -29,6 +36,7 @@ function mount(fig) {
   const tf = Array.from({ length: 3 }, (_, i) => ({ x: i * 210 + 40, load: 0 }));
   const rbc = Array.from({ length: 6 }, (_, i) => ({ x: i * 110 + 20, y: rnd(CAP.y0 + 16, CAP.y1 - 16) }));
   let spawn = 0;
+  const live = { irons, heps, slots, fill, tf, rbc }; // what the 3-D scene reads every frame
 
   const working = () => slots.filter((s) => s.state === "on");
   function moveTo(p, tx, ty, speed, dt) {
@@ -130,6 +138,11 @@ function mount(fig) {
 
   // ---------------------------------------------------------------- draw
   function draw() {
+    const n = working().length;
+    out.fpn.textContent = `${n} of ${DATA.SLOTS}`;
+    gl.update(live);
+    gl.render();
+    if (gl.on) return;
     let fp = "";
     let ves = "";
     for (const s of slots) {
@@ -164,8 +177,6 @@ function mount(fig) {
       }
       N.cores[j].innerHTML = d;
     });
-    const n = working().length;
-    out.fpn.textContent = `${n} of ${DATA.SLOTS}`;
   }
 
   // ---------------------------------------------------------------- scenes, input, tour, reduced motion

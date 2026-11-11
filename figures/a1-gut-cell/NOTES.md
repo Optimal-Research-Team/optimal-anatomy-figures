@@ -48,6 +48,40 @@ Peter's decision: retire flat anatomy, and A1 goes 3-D. Same recipe as A3, A8 an
 
   All textbook-level ([K]), and no numbers ride on them.
 
+## Round 3 (2026-11-10 to 11): a real-time 3-D scene on the shared layer
+
+With the shared WebGL layer on (`shared/gl3`), the block is rendered as a 3-D model (`gl-scene.js`, inlined by `build.mjs`). The SVG drawing is unchanged and is still the figure wherever the layer can't run (`?gl=off`, no WebGL 2, Save-Data, a small device, a lost context): with the layer off the page is pixel-for-pixel what it was. No number, word, control or model rule changed.
+
+- **Same place, same camera.** The scene is built in the block's own world units, in the drawing's projection (`PB`). Every part sits where the drawing has it. What floats inside a cell is pushed back from the cut along the line of sight (`lift()`), so it still projects onto its drawn position: a ferroportin gate in the render lands within a pixel or two of the drawn one.
+- **The cells are cups of gel.** Each of the five honeycomb cells is a thin-walled cup, open where the block is cut. What shows through a cut is veiled by how far the line of sight ran inside the cell (one term in the materials: no see-through sorting, no extra pass). The traced cell is clear, its neighbours milky, so the neighbours stay muted by tone as before. A gloss-only pass puts the studio's strip light on each cut face.
+- **Inside the traced cell:** nucleus (the nucleolus shows through its envelope where the drawing has it), four mitochondria, three ferritin cages with 24 subunits on the cage's real 4-3-2 form and a core that fills, the terminal web as a layer under the brush border.
+- **On top:** one capsule per drawn microvillus (the drawn front row stands just behind the cut), DMT1 as a pair of small channels in each tip the drawing marks.
+- **Underneath:** lamina, lamina propria with the drawing's own collagen strokes and fibroblasts in low relief, the capillary cut along its length, biconcave red cells, two-lobed transferrin.
+- **Motion:** `live.js` hands its state (`irons`, `heps`, `slots`, `fill`, `tf`, `rbc`) to the scene every frame. The scene keeps no clock and decides nothing. Iron keeps its drawn position at every stage and only changes depth (in front of the microvillus on the way in, into the gel in the cytoplasm, forward again at the gate). A gate that hepcidin has docked on is pulled in inside a vesicle and fades, exactly on the drawing's timings; an empty seat is left in the membrane.
+- **Shading:** the shadow and occlusion passes see one plain block where the cells are (the cups themselves and the small movers stay out of them), so a cut face is flat and clean and the gates are still seated on it. On phones the layer's occlusion is coarse, and small moving parts would shimmer in it.
+- **Colours** are read from the figure's own CSS inks at run time, so both themes follow `figure.css` and `block.css`.
+
+**Where the render differs from the drawing** (all forced by it being one consistent solid):
+
+1. On the right end, the border between the two cut cells sits where the honeycomb on top actually reaches the end (y ≈ 73 of 210), not at the drawn end face's mid-line (u = 102). The back-row cell's nucleus moves back with it.
+2. The neighbours' nuclei are real bodies inside milky cells, so the right neighbour's (drawn on the end face) and the left neighbour's also show faintly through the front. The terminal web is a layer in every cut cell, not only the traced one.
+3. The nucleus of the traced cell is whole, behind the cut, instead of cut through.
+4. Red cells that reach the right end are cut by it as they pass; the drawing has one fixed cut red cell there.
+
+**Cost:** 28 meshes (about 23 drawn at a time), about 150 k triangles on desktop and about 70 k on touch devices (fewer segments, same parts). Nothing is rebuilt per frame: instances and a few uniforms move.
+
+**Shared layer, worked round in the figure:**
+
+- its floor-shadow passes draw an instanced mesh once, at the mesh's own origin (their shaders have no instancing), so every instanced mesh here hangs from a point inside the block;
+- its `stats()` reports the last pass only (1 call, 1 triangle), so the counts above were taken in the scene;
+- there is no clipping-plane switch, so parts that leave the block's ends are cut in their own shader.
+
+## Verification (2026-11-11, 3-D layer, local)
+
+- `node scripts/verify.mjs a1-gut-cell`: passed (line check on the drawing with `?gl=off`: 0).
+- Layer off against the page before this round: identical pixels in both themes (moving parts hidden for the comparison).
+- Embed (`embed/test.html`): the layer loads from beside the embed script.
+
 ## Verification (2026-10-12, 3-D, local)
 
 - `node scripts/verify.mjs a1-gut-cell`: passed.
@@ -59,6 +93,8 @@ Peter's decision: retire flat anatomy, and A1 goes 3-D. Same recipe as A3, A8 an
   - `shots/desktop-full-{dark,light}.png` (Stores full, with a channel pulled in).
 
 ## Embed
+
+`embed/optimal-gl3.js` (the shared 3-D layer) travels beside the embed script and is loaded lazily from the same folder.
 
 ```html
 <script src="https://optimal-research-team.github.io/optimal-anatomy-figures/a1-gut-cell/embed/optimal-fig-gut-cell.js" defer></script>
