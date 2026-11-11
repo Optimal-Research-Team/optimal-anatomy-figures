@@ -142,7 +142,9 @@ for (const [route, slugs] of pages) {
     .map((slug) => ({ y: Math.max(0, tops[slug] - 8), out: join(here, "shots", `${route.replace(/\W+/g, "_")}-${slug.replace("reveal:", "3d-")}-${width}.png`) }));
   if (shots.length) {
     try {
-      execFileSync("node", [join(here, "viewport-shots.mjs"), base + route, String(width), JSON.stringify(shots)], { stdio: "ignore" });
+      // (two minutes at most: a headless capture of a page with several WebGL figures can stall, and the
+      // screenshots are for the eye only; the pass / fail result does not depend on them)
+      execFileSync("node", [join(here, "viewport-shots.mjs"), base + route, String(width), JSON.stringify(shots)], { stdio: "ignore", timeout: 120000, killSignal: "SIGKILL" });
     } catch (e) {
       console.log(`  (screenshots failed for ${route}: ${e.message.split("\n")[0]})`);
     }

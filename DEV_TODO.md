@@ -9,6 +9,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
   - **Code:** none. Placements, `FIGURE_RESERVE`, `REVEAL_RESERVE` and the private patch stay as they are (card heights are unchanged: old and new embeds compared at 358 and 760 px).
   - **Fallback:** each figure still paints its approved drawing first and stays on it without WebGL 2, on Save-Data, on small devices, or if the chunk isn't deployed. `gl="off"` on an element turns the layer off for that figure.
   - **QA:** `check-embeds.mjs` expects `(3-D on)` on every figure and `(SVG fallback)` in its WebGL-off pass.
+  - **Checked Nov 11:** the patch applies to `main` (`98ff79c`); with the new `embeds/` in `public/figures/`, `yarn build` passes and `check-embeds.mjs` passes on every page at 390 and 1280 px.
   - **Still to do (S):** one pass on a real mid-range Android phone and an iPhone: the figure comes up in 3-D, scrolling stays smooth, and nothing jumps when the layer arrives.
   - **Approval:** the gallery shows the new look as "Real-time 3-D · awaiting Peter's OK". Ship `handoff-2026-10-24` until he signs off, then this one.
 - **Oct 24, 2026: the three machines in 3-D go on the page (Peter).** Inline, on their service pages: the InBody 580 (before "Why"), the Creator 600 (above Fig 4) and the KICKR Bike (VO₂ max "02 — Equipment", above Fig 5). See ENGINEERING_HANDOFF.md, "Added Oct 24".

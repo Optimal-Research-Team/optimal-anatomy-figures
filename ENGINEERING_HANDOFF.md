@@ -64,6 +64,7 @@ While a figure animates, the layer watches its own frame rate. After two slow st
 
 - `node handoff/qa/check-embeds.mjs <site URL>`: every figure with the layer reports `(3-D on)`; the second pass (WebGL off) reports `(SVG fallback)` and fails if the chunk was downloaded anyway. `svg:load` in the output means `optimal-gl3.js` isn't deployed next to the embed scripts.
 - `python3 scripts/measure-reserves.py` (after `node scripts/build-all.mjs`): every card against `FIGURE_RESERVE`.
+- Run on Nov 11 against the patched site (`main` `98ff79c` + the private patch + this release's `embeds/`): all pages passed at 390 and 1280 px. One thing it caught and this release fixes: on a page holding both A2 and a figure on the shared layer, three.js logged a "multiple instances" console warning; the shared chunk now loads without it.
 - By eye: open a page, wait for the figure, compare with the same URL plus `gl="off"` on the element. The model must sit exactly under the labels; every control must move both.
 
 **For the clinic TV** (not the site): the TV plays the same embeds and gets the layer with its next `npm run figures`. The equipment films (MP4) are pre-rendered and keep the drawn look.

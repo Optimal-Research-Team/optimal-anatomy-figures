@@ -18,7 +18,8 @@ Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) 
 3. **No site code changes.** Placements, `FIGURE_RESERVE`, `REVEAL_RESERVE`, `OptimalFigure.tsx`, `EquipmentReveal.tsx` and the private patch are unchanged. The layer draws under each figure's own drawing, in the same box: every card measures the same height as before (old and new embeds compared at 358 and 760 px, desktop and phone).
 4. **The drawing is still the first paint and the fallback.** A figure stays on its approved drawing with no WebGL 2, a software renderer, Save-Data or 2G, under 3 GB of memory, under 4 cores, a lost context, `gl="off"` on the element, or if `optimal-gl3.js` isn't deployed. Nothing breaks if you ship the embeds first and the chunk later.
 5. **QA:** `handoff/qa/check-embeds.mjs` now reports the layer on every figure ("3-D on") and, in a second pass with WebGL off, that each falls back to its drawing without downloading the chunk. New: `scripts/measure-reserves.py` re-measures every card against `FIGURE_RESERVE`.
-6. **Approval:** the new look is live in the gallery as "Real-time 3-D · awaiting Peter's OK". The Oct 24 package stays valid until he signs off; this one is ready when he does.
+6. **Checked on the site (Nov 11):** the private patch still applies cleanly to `beoptimal-landing` `main` (`98ff79c`); with this release's `embeds/` copied into `public/figures/`, `yarn build` passes and `check-embeds.mjs` reports "all pages passed" at 390 and 1280 px: every figure "3-D on", every machine frame at its usual height (1164 / 825 / 927 px on a phone), the WebGL-off pass on the drawings, consoles clean.
+7. **Approval:** the new look is live in the gallery as "Real-time 3-D · awaiting Peter's OK". The Oct 24 package stays valid until he signs off; this one is ready when he does.
 
 See `ENGINEERING_HANDOFF.md`, "Added Nov 11", for how it works and what to check.
 
