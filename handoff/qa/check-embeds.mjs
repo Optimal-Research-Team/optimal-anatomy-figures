@@ -9,9 +9,10 @@
 //   - the custom element mounted and drew its card in its shadow root (`.opt-figure`), with a non-empty SVG;
 //   - the page doesn't scroll sideways;
 //   - the console is clean;
-//   - figures with a lazy WebGL layer (A2, `hypothalamus`) bring it up: its chunk (hypothalamus-3d.js, next to
-//     the embed script) loads and the stage reports data-gl="on". If it stays on its SVG, the reason is printed
-//     (svg:load = the chunk isn't deployed next to optimal-fig-hypothalamus.js). Run QA on a machine with WebGL.
+//   - figures with a lazy WebGL layer bring it up. A2 (`hypothalamus`) has its own (hypothalamus-3d.js, the stage
+//     reports data-gl="on"); since Nov 10 the others share one (optimal-gl3.js, data-gl3="on"). Each chunk sits next
+//     to the embed scripts. If a figure stays on its SVG, the reason is printed (svg:load = the chunk isn't
+//     deployed next to the embed script). Run QA on a machine with WebGL.
 //   - the machines in 3-D (E1–E3, `reveals` in placements.json): the slot exists (`[data-optimal-reveal="<slug>"]`),
 //     its sandboxed frame loads the take-apart page, and the page reports its height (the slot gets data-ready and
 //     the frame takes that height, so there's no inner scrollbar).
@@ -92,12 +93,16 @@ for (const [route, slugs] of pages) {
         ok = !!(card && card.querySelector('svg') && card.getBoundingClientRect().height > 200);
       }
       let gl = '';
-      const G = ${JSON.stringify(GL_FIGURES)}[slug];
+      // A2 has its own layer; every other figure may carry the shared one (optimal-gl3.js), which marks its
+      // stage with data-gl3 as soon as the card mounts
+      const el0 = slot.querySelector('optimal-fig-' + slug);
+      const shared = ok && el0 && el0.shadowRoot.querySelector('.iso-stage[data-gl3]');
+      const G = ${JSON.stringify(GL_FIGURES)}[slug] || (shared ? { stage: '.iso-stage[data-gl3]', chunk: 'optimal-gl3', key: 'gl3' } : null);
       if (ok && G) {
         // the 3-D layer: wait for it to come up (or say why it stayed on its SVG)
         const el = slot.querySelector('optimal-fig-' + slug);
         for (let i = 0; i < 150; i++) {
-          gl = (el.shadowRoot.querySelector(G.stage) || {}).dataset?.gl || '';
+          gl = (el.shadowRoot.querySelector(G.stage) || {}).dataset?.[G.key || 'gl'] || '';
           if (gl === 'on' || gl.startsWith('svg:')) break;
           await new Promise((r) => setTimeout(r, 100));
         }
@@ -143,8 +148,9 @@ for (const [route, slugs] of pages) {
     }
   }
   console.log(`${bad ? "✗" : "✓"} ${route}  ${result}  ${consoleLine}`);
-  // pass 3: no WebGL, for pages with a WebGL-layer figure: the SVG fallback mounts, draws and stays quiet
-  if (slugs.some((s) => GL_FIGURES[s])) {
+  // pass 3: no WebGL, for pages with a WebGL-layer figure (A2's own layer, or the shared one, which reports
+  // "(3-D on)" in pass 1): the SVG fallback mounts, draws and stays quiet
+  if (slugs.some((s) => GL_FIGURES[s]) || /3-D on|3-D FAILED/.test(result)) {
     const log2 = run([["wait", 2500], ["eval", probeFor("svg")]], ["--no-webgl"]);
     const raw2 = ((log2.match(/eval: "(.*)"/) || [])[1] || "no result").split(" @@")[0];
     const console2 = (log2.match(/console: .*/) || ["console: ?"])[0];

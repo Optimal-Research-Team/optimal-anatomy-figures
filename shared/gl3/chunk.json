@@ -4,9 +4,9 @@
   "esbuild": "0.25.10",
   "format": "iife",
   "global": "OptimalGL3",
-  "bytes": 647819,
-  "gzipBytes": 167964,
-  "sha256": "11f1e581ba6489ed",
-  "sources": "6fa9df4db78d88da",
-  "built": "2026-11-10T22:56:02.320Z"
+  "bytes": 648078,
+  "gzipBytes": 168084,
+  "sha256": "459c2c406e3f2439",
+  "sources": "768dde2949baaf50",
+  "built": "2026-11-10T23:48:03.755Z"
 }

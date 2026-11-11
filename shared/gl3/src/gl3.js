@@ -459,7 +459,7 @@ function studio(renderer, theme, basis) {
   // front right, a thin rim behind. Night dims the walls, so the key and the rim carve the shape.
   const night = theme !== "light";
   const s = new THREE.Scene();
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), new THREE.MeshBasicMaterial({ color: night ? 0x232c22 : 0xcbc6b9, side: THREE.BackSide }));
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), new THREE.MeshBasicMaterial({ color: night ? 0x3a463a : 0xcbc6b9, side: THREE.BackSide }));
   s.add(wall);
   const panel = (w, h, pos, color, k) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
@@ -470,9 +470,9 @@ function studio(renderer, theme, basis) {
   };
   panel(26, 18, [-8, 20, 9], 0xfff6e8, night ? 6.5 : 8); // key, overhead-left
   panel(5, 26, [-22, 6, 6], 0xfffaf0, night ? 3.2 : 4.5); // strip, left
-  panel(14, 16, [18, 6, 12], 0xeaf3ea, night ? 1.3 : 2.8); // fill, front-right
+  panel(14, 16, [18, 6, 12], 0xeaf3ea, night ? 2.0 : 2.8); // fill, front-right
   panel(30, 4, [5, 10, -22], 0xdff3d8, night ? 6 : 3.5); // rim, behind
-  panel(44, 44, [0, -24, 0], night ? 0x1f2a1c : 0xf3ecdf, night ? 0.7 : 1.5); // floor bounce
+  panel(44, 44, [0, -24, 0], night ? 0x4f5e49 : 0xf3ecdf, night ? 1.0 : 1.5); // floor bounce (night: enough that upright metal isn't black)
   const pm = new THREE.PMREMGenerator(renderer);
   const env = pm.fromScene(s, 0.03).texture;
   pm.dispose();
@@ -485,7 +485,7 @@ function studio(renderer, theme, basis) {
 
 // ───────────────────────────────────────────────────────────── passes
 // Whatever lies on the floor (shadow, the night pool) fades out toward the canvas edge, so the canvas never shows as a box.
-const EDGE_GLSL = "uniform vec2 uRes; float edgeFade(){ vec2 s = gl_FragCoord.xy / uRes; vec2 e = smoothstep(vec2(0.0), vec2(0.09), s) * smoothstep(vec2(0.0), vec2(0.09), 1.0 - s); return e.x * e.y; }";
+const EDGE_GLSL = "uniform vec2 uRes; float edgeFadeW(float w){ vec2 s = gl_FragCoord.xy / uRes; vec2 e = smoothstep(vec2(0.0), vec2(w), s) * smoothstep(vec2(0.0), vec2(w), 1.0 - s); return e.x * e.y; } float edgeFade(){ return edgeFadeW(0.09); }";
 const QUAD_VS = "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }";
 
 /** Final pass: tone curve and sRGB on straight colour (the buffers hold premultiplied colour), a hair of dither. */
@@ -610,9 +610,11 @@ function groundShadows({ size, centre, ground, span, lightDir, height, color, ca
         }
         void main(){
           float far = 1.0 - smoothstep(fade.z, fade.w, length(vW.xy - fade.xy));
-          float a = tap(tCast, mL) * k.x * far;
-          float b = smoothstep(0.0, 0.62, tap(tContact, mC)) * k.y;
-          gl_FragColor = vec4(color, clamp(1.0 - (1.0 - a) * (1.0 - b), 0.0, 1.0) * edgeFade());
+          // the cast shadow fades well before the canvas edge; the contact shadow only in the last few pixels, so
+          // something standing at the edge of the stage still sits on its shadow
+          float a = tap(tCast, mL) * k.x * far * edgeFade();
+          float b = smoothstep(0.0, 0.62, tap(tContact, mC)) * k.y * edgeFadeW(0.025);
+          gl_FragColor = vec4(color, clamp(1.0 - (1.0 - a) * (1.0 - b), 0.0, 1.0));
         }`,
       transparent: true,
       depthWrite: false,
