@@ -122,7 +122,7 @@ function rounded(poly, rmax = 10) {
   return d + "Z";
 }
 /** Capillaries in the walls: red cells cut across, along each wall's middle line, never two in one spot. */
-function capillariesOf(cells, u0, u1, v0, v1, keep = () => true, note = null) {
+function capillariesOf(cells, u0, u1, v0, v1, keep = () => true) {
   const pts = [];
   for (const { poly } of cells) {
     const cx = poly.reduce((s, p) => s + p[0], 0) / poly.length;
@@ -148,15 +148,12 @@ function capillariesOf(cells, u0, u1, v0, v1, keep = () => true, note = null) {
   let ven = "";
   pts.forEach(([x, y], i) => {
     const r = 2.7 + ((i * 7) % 5) * 0.12;
-    if (note) note.push(+x.toFixed(1), +y.toFixed(1), i % 4 === 1 ? 1 : 0);
     if (i % 4 === 1) ven += dot(x, y, r);
     else art += dot(x, y, r);
   });
   return `<path class="b5-cap-a" d="${art}"/><path class="b5-cap-v" d="${ven}"/>`;
 }
 const foam = (cells) => cells.map((c) => rounded(c.poly)).join("");
-// what the 3-D scene (gl-scene.js) needs from the drawing: the same points, noted as they are drawn
-const CAPS = { front: [], top: [], end: [] };
 
 // ---------------------------------------------------------------- the camera
 const VB = { pad: 10 };
@@ -276,7 +273,7 @@ for (let g = 0; g < 5; g++) {
 }
 const FRONT = `<g data-gl3-hide><path class="b5-tissue" fill-rule="evenodd" d="M${X0} ${YT}H${X1}V${YB}H${X0}Z${dot(C[0], C[1], R)}M${DUCT.x - DUCT.r} ${YT}H${DUCT.x + DUCT.r}V${f1(ductBot)}H${DUCT.x - DUCT.r}Z"/>
 <g mask="url(#b5-frontmask)"><path class="b5-air" d="${foam(frontCells)}" fill="url(#b5-cav)"/></g>
-${capillariesOf(frontCells, X0, X1, YT, YB, keepFront, CAPS.front)}
+${capillariesOf(frontCells, X0, X1, YT, YB, keepFront)}
 <path class="b5-duct" d="M${DUCT.x - DUCT.r} ${YT - 1}H${DUCT.x + DUCT.r}V${f1(ductBot)}H${DUCT.x - DUCT.r}Z" fill="url(#b5-trough)"/>
 <path class="a5-duct-ring" d="${ductRings.join("")}"/>
 <path class="b5-knob" d="${knobs}"/>
@@ -387,7 +384,7 @@ const TOP_FACE = `<g data-gl3-hide transform="${FB.planeMatrix(W3(0, 0, YT), [1,
 <mask id="b5-topmask" maskUnits="userSpaceOnUse" x="${X0 - 2}" y="-2" width="${L + 4}" height="${D + 4}"><rect x="${X0 - 2}" y="-2" width="${L + 4}" height="${D + 4}" fill="#fff"/><circle cx="${DUCT.x}" cy="${D}" r="${DUCT.r + DUCT.sleeve}" fill="#000"/></mask>
 <rect class="b5-tissue" x="${X0}" y="0" width="${L}" height="${D}"/>
 <g mask="url(#b5-topmask)"><path class="b5-air" d="${foam(topCells)}" fill="url(#b5-cav)"/></g>
-${capillariesOf(topCells, X0, X1, 0, D, keepTop, CAPS.top)}
+${capillariesOf(topCells, X0, X1, 0, D, keepTop)}
 <path class="b5-shaft" d="M${DUCT.x - DUCT.r} ${D}A${DUCT.r} ${DUCT.r} 0 0 1 ${DUCT.x + DUCT.r} ${D}Z" fill="url(#b5-shaft)"/>
 <g class="b5-knob">${topKnobs}</g>
 <rect class="b5-top-light" x="${X0}" y="0" width="${L}" height="${D}"/>
@@ -401,7 +398,7 @@ const END_FACE = `<g data-gl3-hide transform="${FB.planeMatrix(W3(X1, D, 0), [0,
 <mask id="b5-endmask" maskUnits="userSpaceOnUse" x="-2" y="${YT - 2}" width="${D + 4}" height="${HF + 4}"><rect x="-2" y="${YT - 2}" width="${D + 4}" height="${HF + 4}" fill="#fff"/><circle cx="0" cy="${f1(vAtEdge[1])}" r="${f1(VR + 14)}" fill="#000"/></mask>
 <rect class="b5-tissue" x="0" y="${YT}" width="${D}" height="${HF}"/>
 <g mask="url(#b5-endmask)"><path class="b5-air" d="${foam(endCells)}" fill="url(#b5-cav)"/></g>
-${capillariesOf(endCells, 0, D, YT, YB, keepEnd, CAPS.end)}
+${capillariesOf(endCells, 0, D, YT, YB, keepEnd)}
 <path class="a5-art-tube" d="M0 ${f1(vAtEdge[1] - VR)}A${f1(VR)} ${f1(VR)} 0 0 1 0 ${f1(vAtEdge[1] + VR)}Z"/>
 <path class="b5-cap-a" d="${dot(4.5, vAtEdge[1] - 3, 3.3)}${dot(7, vAtEdge[1] + 5, 3)}"/>
 <rect class="b5-end-shade" x="0" y="${YT}" width="${D}" height="${HF}"/>
@@ -468,13 +465,13 @@ const LINES = [
   "All out: cells arrive emptier and leave sooner. In healthy lungs they still fill before they go.",
 ];
 // ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same block, modelled and lit
-// gl-scene.js builds the scene in the page from the drawing's own geometry: the foam's seeds, the sac, the duct, the
-// vessels' path and every noted point, all in the block's world units (x along, y back into the lung, z up).
+// gl-scene.js builds the scene in the page from the drawing's own geometry: the block, the sac, the duct, the vessels'
+// path and every noted knob, nucleus and granule, all in the block's world units (x along, y back into the lung, z up).
+// It packs its own air sacs for the three faces we see (the drawing's sections stay as they are).
 const GL3W = gl3Wire();
 const r1 = (v) => +v.toFixed(1);
 const G3 = {
-  L, D, HF, X0, YB, YT, C, R, RING, RHO, TH0, TH1, sept: SEPT,
-  seeds: seeds.map((p) => p.map(r1)),
+  L, D, HF, X0, YB, YT, C, R, RING, RHO, TH0, TH1,
   duct: { x: DUCT.x, r: DUCT.r, sleeve: DUCT.sleeve, knobs: KNOB_YS, topKnobs: TOP_KNOBS },
   vessel: { in: [26, 16, 40, 32], out: [16, 26, 32, 42], cap: 13 }, // lumen and sheath widths along the arteriole and the venule, as drawn
   net: { lats: NET_LATS, lons: NET_LONS, x0: +a0s.toFixed(2), x1: +a1s.toFixed(2) },
@@ -483,7 +480,6 @@ const G3 = {
   t2b: { at: [24, -30], gran: T2B_GRAN },
   mac: { at: [-38, 18], body: MAC_BODY.map((p) => p.map(r1)), nuc: MAC_NUC },
   pores: PORES,
-  caps: CAPS,
 };
 const GL3 = { parts: [], ground: -7, bounds: [[0, 0, 0], [L, D, HF]], look: { aoRadius: 15, contactHeight: 40, env: 0.72, exposure: 1.08, cast: 1.5, ao: 0.55 }, ...GL3W.chunk };
 const DATA = { gl3: GL3, g3: G3, P: PB, W, H, C, R, path: PATH, i0: I0, i1: I1, step, plot: { ...PLOT }, lines: LINES, a0x: A0[0], a1x: A1[0], top: [DUCT.x, C[1] - R + 14], duct: DUCT_PATH, pivot };

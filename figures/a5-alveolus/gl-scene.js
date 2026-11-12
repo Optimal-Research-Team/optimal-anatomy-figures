@@ -1,12 +1,13 @@
 // A5 3-D scene: the drawing's block of lung, modelled for the shared real-time layer (shared/gl3, `build`).
 //
-// Everything is built in the page from the drawing's own geometry (DATA.g3: the foam's seeds, the sac, the duct, the
-// vessels' path, every noted point), in the block's world units (x along, y back into the lung, z up), so the render
-// lands on the drawing to the pixel and the traced-cell ring and the monitor stay in the SVG on top.
+// Everything is built in the page from the drawing's own geometry (DATA.g3: the block, the sac, the duct, the vessels'
+// path, every noted knob, nucleus and granule), in the block's world units (x along, y back into the lung, z up), so the
+// render lands on the drawing to the pixel and the traced-cell ring and the monitor stay in the SVG on top.
 //
-//   foam      each air sac is its Voronoi cell, shrunk by half a wall and rounded (a p-norm of its planes): a real
-//             hollow behind every opening on the three cut faces. The cut faces are meshed from the same field
-//             (marching squares), so openings and hollows agree, and every edge of an opening is rolled over.
+//   foam      air sacs packed for the three faces we see (centres just under a face, sizes varied, thin walls). Each
+//             is its cell among its neighbours, shrunk by half a wall and rounded (a p-norm of its planes): a real
+//             hollow behind every opening. The cut faces are meshed from the same field (marching squares), so
+//             openings and hollows agree across the block's edges, and every edge of an opening is rolled over.
 //   the sac   one half-turned surface: the bowl, the mouth and the duct with its entrance rings. The capillary net
 //             is tubes on the bowl; its blue-to-red change is a 2-texel ramp the model slides.
 //   vessels   the arteriole, the traced capillary and the venule are one open gutter in the front face.
@@ -35,13 +36,13 @@ function a5Scene(ctx, G, opt) {
   // ---------------------------------------------------------------- palette (the drawing's own, figure.css + block.css)
   const PAL = night
     ? {
-        tissue: "#9d5c5b", rim: "#532629", sheath: "#a86866", lip: "#7c4647", deep: "#3a1c20", pit: "#2a1216", web: "#b5524f",
+        tissue: "#9d5c5b", rim: "#532629", sheath: "#a86866", lip: "#7c4647", deep: "#3a1c20", pit: "#2a1216", warm: "#7a4634", cool: "#5a3350", web: "#b5524f",
         bowl: "#8a5050", bowlDeep: "#43232a", duct: "#8f5656", ductDeep: "#4c282b", capA: "#e2402f", capV: "#7a62a8", knob: "#b46e63",
         ven: "#5d63b8", art: "#d84c3f", venTube: "#4a4d8a", artTube: "#8a3a36", plasma: "#e7c4b8",
         o2: "#8ff0e6", co2: "#b3b0aa", t2: "#a8645a", gran: "#ffe3c4", mac: "#8c5a63", macNuc: "#d7a3ad", pore: "#241012", pave: "#3a1c1c",
       }
     : {
-        tissue: "#e4a9a5", rim: "#b0645f", sheath: "#d08a84", lip: "#fdefee", deep: "#eec3be", pit: "#dca39d", web: "#e2817b",
+        tissue: "#e4a9a5", rim: "#b0645f", sheath: "#d08a84", lip: "#fff1ee", deep: "#f0c1bd", pit: "#d79a9b", warm: "#f8cdb4", cool: "#e6bfd0", web: "#e2817b",
         bowl: "#fbe6e2", bowlDeep: "#e0aaa3", duct: "#fbebe8", ductDeep: "#e7b9b2", capA: "#d4382a", capV: "#6f62b0", knob: "#b8695c",
         ven: "#7880cc", art: "#da5a4c", venTube: "#c3c6ea", artTube: "#f0b8ae", plasma: "#fff4ef",
         o2: "#0f8a8f", co2: "#8c877e", t2: "#eab3a3", gran: "#8a4a3e", mac: "#cf9aa6", macNuc: "#7a3d4a", pore: "#b98374", pave: "#9a5245",
@@ -54,9 +55,9 @@ function a5Scene(ctx, G, opt) {
   const mix3 = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
   // ---------------------------------------------------------------- detail
-  const HGRID = coarse ? 4 : 2.5; //   cut-face mesh step (divides 560, 340 and 180)
-  const ICO = coarse ? 2 : 3; //       air-sac hollows: icosphere detail
-  const INFL = coarse ? 1.035 : 1.012; // hollows a hair larger than their openings, so no edge shows a gap
+  const HGRID = coarse ? 2.5 : 2; //   cut-face mesh step (divides 560, 340 and 180): fine enough for the thin walls
+  const ICO = coarse ? 2 : 3; //       air-sac hollows: icosphere detail (one less for the small sacs on desktop)
+  const INFL = [0, 0, 1.035, 1.012]; // by detail: hollows a hair larger than their openings, so no edge shows a gap
   const LIP = 1.0; //                  how far an opening's edge rolls back from the cut face
   const LW = 3.2; //                   over what distance
   const OVER = 0.45;
@@ -189,57 +190,95 @@ function a5Scene(ctx, G, opt) {
   }
 
   // ---------------------------------------------------------------- the foam: one rounded hollow per air sac
-  const SEEDS = G.seeds;
-  const TMAX = 96;
+  // The block's air sacs are packed for the three faces we see. Their centres sit just under a face, so each face cuts
+  // its sacs near their widest: every opening is a full, rounded hollow with a thin wall to its neighbours, and none is
+  // a pin-hole, a slit or a shallow dish (what a random cut through the drawing's own packing gives, and what reads as
+  // dirt once it has depth). Sizes vary; big sacs are placed first and smaller ones fill between them. Solid tissue is
+  // left only where the anatomy has it: round the vessels in their sheaths, the opened sac's wall and the duct.
+  const SEPT = 3.1; // half a wall between two sacs
+  const SKIN = 2 * HGRID; // the block's unseen sides are closed by a skin: a hollow stops short of them
+  const EDGE = 2 * SEPT; //  and a sac under one face stops a wall short of the other two, so the block keeps its three edges
   // what the hollows keep clear of: the sac and its wall, the duct's sleeve, the vessels in their sheaths
   const keepAlv = [[CX, D, CZ, R + RING + 1.5]];
   const keepDuct = [];
   for (let z = CZ + 100; z <= HF + 40; z += 14) keepDuct.push([CX, D, z, DUCT_R + G.duct.sleeve + 1.5]);
   const keepIn = [];
   const keepOut = [];
-  for (let u = 0; u <= i0; u += 7) keepIn.push([PW[u][0], D, PW[u][1], Math.max(shR[u], lumR[u] + 6) + 2.5]);
-  for (let u = i1; u < NP; u += 7) keepOut.push([PW[u][0], D, PW[u][1], Math.max(shR[u], lumR[u] + 6) + 2.5]);
+  for (let u = 0; u <= i0; u += 5) keepIn.push([PW[u][0], D, PW[u][1], Math.max(shR[u], lumR[u] + 6) + 1.5]);
+  for (let u = i1; u < NP; u += 5) keepOut.push([PW[u][0], D, PW[u][1], Math.max(shR[u], lumR[u] + 6) + 1.5]);
   const KEEP = [keepAlv, keepDuct, keepIn, keepOut];
+  const SEEDS = []; // x, y, z, radius, the face it lies under (0 front, 1 top, 2 right end)
+  {
+    // along a face: from the skin of an unseen side to a wall's width short of the next face we see (EDGE below)
+    const span = (r, len, t) => SKIN + 0.8 * r + t * (len - EDGE - 1.6 * r - SKIN);
+    // [area, where a sac of radius r sits at depth d: (a, b) in 0..1 across the face]
+    const FACES = [
+      [L * HF, (r, d, a, b) => [span(r, L, a), D - d, span(r, HF, b)]], // front
+      [L * D, (r, d, a, b) => [span(r, L, a), span(r, D, b), HF - d]], // top
+      [D * HF, (r, d, a, b) => [L - d, span(r, D, a), span(r, HF, b)]], // right end
+    ];
+    const tryAt = (f, r, q) => {
+      for (let k = 0; k < SEEDS.length; k++) {
+        const o = SEEDS[k];
+        // sacs under two different faces may crowd each other along the edge the faces share (their common wall then
+        // runs slantwise in from the edge), so neither face is left with a blank band behind that edge
+        const lim = (r + o[3]) * (o[4] === f ? 1 : 0.62);
+        const dx = o[0] - q[0], dy = o[1] - q[1], dz = o[2] - q[2];
+        if (dx * dx + dy * dy + dz * dz < lim * lim) return;
+      }
+      for (const g of KEEP)
+        for (const bk of g) {
+          const lim = bk[3] + 0.8 * r;
+          const dx = bk[0] - q[0], dy = bk[1] - q[1], dz = bk[2] - q[2];
+          if (dx * dx + dy * dy + dz * dz < lim * lim) return;
+        }
+      SEEDS.push([q[0], q[1], q[2], r, f]);
+    };
+    const area = FACES.reduce((t, f) => t + f[0], 0);
+    const scatter = (r0, r1, tries) => {
+      for (let t = 0; t < tries; t++) {
+        const r = r0 + (r1 - r0) * rnd();
+        let pick = rnd() * area;
+        let f = 0;
+        while (f < 2 && pick > FACES[f][0]) pick -= FACES[f++][0];
+        tryAt(f, r, FACES[f][1](r, 2 + rnd() * 0.42 * r, rnd(), rnd()));
+      }
+    };
+    // First a row of sacs along each of the three edges we see, on both faces that meet there, of mixed sizes (a sac
+    // placed later, a little way in from an edge, would leave the other face blank behind that edge).
+    // [face, which of its two coordinates runs to the edge]
+    for (let t = 0; t < 9000; t++) {
+      const [f, side] = [[0, 1], [1, 1], [0, 0], [2, 0], [1, 0], [2, 1]][t % 6];
+      const r = t < 1500 ? 25 + 8 * rnd() : 17 + 10 * rnd() ** 1.4;
+      const a = side === 0 ? 1 - 0.014 * rnd() : rnd();
+      const b2 = side === 1 ? 1 - 0.014 * rnd() : rnd();
+      tryAt(f, r, FACES[f][1](r, 2 + 2.5 * rnd(), a, b2));
+    }
+    // then the faces: big sacs first, smaller and smaller ones between them
+    for (const [r0, r1, tries] of [[32, 38, 1100], [28, 33, 2600], [25, 30, 5200], [21.5, 26, 9000], [18.5, 22, 9000], [16, 19, 9000]]) scatter(r0, r1, tries);
+  }
   function cavityOf(i) {
     const s = SEEDS[i];
-    const pl = []; // planes about the seed: unit normal, distance
+    const pl = []; // planes about the seed: unit normal, distance. Each wall lies between two sacs in proportion to their sizes
     for (let j = 0; j < SEEDS.length; j++) {
       if (j === i) continue;
       const q = SEEDS[j];
       const dx = q[0] - s[0], dy = q[1] - s[1], dz = q[2] - s[2];
       const d = Math.hypot(dx, dy, dz);
-      if (d < 200) pl.push([dx / d, dy / d, dz / d, d / 2 - G.sept]);
+      if (d < 2.6 * (s[3] + q[3])) pl.push([dx / d, dy / d, dz / d, (d * s[3]) / (s[3] + q[3]) - SEPT]);
     }
-    // the block's unseen sides are closed by a skin: a hollow stops short of them
-    const SKIN = 2 * HGRID;
     pl.push([-1, 0, 0, s[0] - SKIN], [0, -1, 0, s[1] - SKIN], [0, 0, -1, s[2] - SKIN]);
-    const groups = KEEP.map((g) => g.filter((b) => Math.hypot(b[0] - s[0], b[1] - s[1], b[2] - s[2]) - b[3] < 80));
-    // Where to centre the hollow: at the seed, and, where a vessel or the duct passes through the seed's cell, on the
-    // far side of it as well (the cell then holds two hollows, one each side: alveoli do sit on both sides of a vessel)
-    const starts = [[s[0], s[1], s[2]]];
-    groups.forEach((g, gi) => {
-      if (!gi || !g.length) return;
-      let best = null;
-      let bd = 34;
-      for (const b of g) {
-        const d = Math.hypot(b[0] - s[0], b[1] - s[1], b[2] - s[2]) - b[3];
-        if (d < bd) (bd = d), (best = b);
-      }
-      if (!best) return;
-      const dx = s[0] - best[0], dy = s[1] - best[1], dz = s[2] - best[2];
-      const d = Math.hypot(dx, dy, dz);
-      const n = d > 1e-3 ? [dx / d, dy / d, dz / d] : [0, -1, 0];
-      const far = [best[0] - n[0] * (best[3] + 18), best[1] - n[1] * (best[3] + 18), best[2] - n[2] * (best[3] + 18)];
-      // (only where that far side is well inside the block: a hollow centred in the part that was cut away would
-      // show as a flat shelf against the vessel)
-      if (far[1] < D - 22 && far[0] > 12 && far[0] < L - 12 && far[2] > 12 && far[2] < HF - 12) starts.push(far);
-    });
-    const made = [];
-    for (const start of starts) {
-      const cv = settle(s, pl, groups, start);
-      if (cv && made.every((m) => Math.hypot(m.c[0] - cv.c[0], m.c[1] - cv.c[1], m.c[2] - cv.c[2]) > 26)) made.push(cv);
-    }
-    return made;
+    if (s[4] !== 0) pl.push([0, 1, 0, D - EDGE - s[1]]);
+    if (s[4] !== 1) pl.push([0, 0, 1, HF - EDGE - s[2]]);
+    if (s[4] !== 2) pl.push([1, 0, 0, L - EDGE - s[0]]);
+    const groups = KEEP.map((g) => g.filter((bk) => Math.hypot(bk[0] - s[0], bk[1] - s[1], bk[2] - s[2]) - bk[3] < 80));
+    const cv = settle(s, pl, groups, [s[0], s[1], s[2]]);
+    if (!cv) return [];
+    // where no neighbour bounds it (into the block, and in a gap of the packing) the sac is round
+    cv.cap = (1 / (1.32 * s[3])) ** 8;
+    cv.tint = rnd() * 2 - 1;
+    cv.r = s[3];
+    return [cv];
   }
   function settle(s, pl, groups, c) {
     // a centre that sits in something the hollow must keep clear of moves out of it
@@ -249,7 +288,7 @@ function a5Scene(ctx, G, opt) {
         for (const b of g) {
           const dx = c[0] - b[0], dy = c[1] - b[1], dz = c[2] - b[2];
           const d = Math.hypot(dx, dy, dz);
-          const want = b[3] + 14;
+          const want = b[3] + 12;
           if (d < want) {
             const k2 = ((want - d) * 0.5) / Math.max(d, 1e-3);
             c[0] += (d > 1e-3 ? dx : 0) * k2;
@@ -260,8 +299,8 @@ function a5Scene(ctx, G, opt) {
         }
       for (const p of pl) {
         const h = p[3] - (p[0] * (c[0] - s[0]) + p[1] * (c[1] - s[1]) + p[2] * (c[2] - s[2]));
-        if (h < 14) {
-          const k2 = (14 - h) * 0.5;
+        if (h < 11) {
+          const k2 = (11 - h) * 0.5;
           c[0] -= p[0] * k2;
           c[1] -= p[1] * k2;
           c[2] -= p[2] * k2;
@@ -288,11 +327,11 @@ function a5Scene(ctx, G, opt) {
       return out;
     });
     if (slack < 9.5) return null; // a sliver: leave it solid
-    return { c, planes, sets: sets.filter((q) => q.length), tmax: 0, cuts: 0 };
+    return { c, planes, sets: sets.filter((q) => q.length), tmax: 0, cuts: 0, cap: 0, tint: 0, r: 0 };
   }
   /** How far the hollow reaches from its centre along a unit direction. */
   function reach(cv, ux, uy, uz) {
-    let sum = 1 / TMAX ** 8;
+    let sum = cv.cap;
     const p = cv.planes;
     for (let q = 0; q < p.length; q += 4) {
       const a = (p[q] * ux + p[q + 1] * uy + p[q + 2] * uz) * p[q + 3];
@@ -345,10 +384,13 @@ function a5Scene(ctx, G, opt) {
     }
     return { v, f };
   }
-  const BALL = icosphere(ICO);
+  const BALLS = [null, null, icosphere(2), coarse ? null : icosphere(3)];
   const cavities = [];
   for (const cv of SEEDS.flatMap((_, i) => cavityOf(i))) {
     // its surface, sampled on the icosphere
+    cv.ball = BALLS[cv.r < 23 ? 2 : ICO];
+    const BALL = cv.ball;
+    const infl = INFL[cv.r < 23 ? 2 : ICO];
     const n = BALL.v.length;
     const pts = new Float32Array(n * 3);
     let tmax = 0;
@@ -357,7 +399,7 @@ function a5Scene(ctx, G, opt) {
       const u = BALL.v[q];
       const t = reach(cv, u[0], u[1], u[2]);
       if (t > tmax) tmax = t;
-      const x = cv.c[0] + u[0] * t * INFL, y = cv.c[1] + u[1] * t * INFL, z = cv.c[2] + u[2] * t * INFL;
+      const x = cv.c[0] + u[0] * t * infl, y = cv.c[1] + u[1] * t * infl, z = cv.c[2] + u[2] * t * infl;
       pts[q * 3] = x;
       pts[q * 3 + 1] = y;
       pts[q * 3 + 2] = z;
@@ -373,12 +415,39 @@ function a5Scene(ctx, G, opt) {
   }
 
   // the hollows themselves: seen from inside, clipped to the block
-  const bowlColor = (cv, x, y, z) => {
+  // A hollow's tone: bright where the open air reaches (its rim, and the part of its wall that faces up to the light),
+  // deeper and rosier further in and under its roof; each sac a little its own tint, as living tissue is.
+  // The studio's key light, as shared/gl3 places it (above, a little left of the camera and toward it).
+  const KEY = (() => {
+    const v = [-0.5 * cam.sA + 0.42 * DV[0], 0.5 * cam.cA + 0.42 * DV[1], 0.42 * DV[2] + 1.45];
+    const l = Math.hypot(v[0], v[1], v[2]);
+    return [v[0] / l, v[1] / l, v[2] / l];
+  })();
+  /** How much of the key light reaches a point of a hollow's wall: 1 where the way to the light leaves by its opening. */
+  const litOf = (cv, x, y, z) => {
+    let lit = 0;
+    for (const [bit, axis, at] of [[1, 1, D], [2, 2, HF], [4, 0, L]]) {
+      if (!(cv.cuts & bit) || KEY[axis] <= 0.02) continue;
+      const t = (at - (axis === 0 ? x : axis === 1 ? y : z)) / KEY[axis];
+      const vx = x + KEY[0] * t - cv.c[0], vy = y + KEY[1] * t - cv.c[1], vz = z + KEY[2] * t - cv.c[2];
+      const rho = Math.hypot(vx, vy, vz) || 1e-6;
+      lit = Math.max(lit, 1 - sstep(-9, 4, rho - reach(cv, vx / rho, vy / rho, vz / rho)));
+    }
+    return lit;
+  };
+  // A hollow's tone: bright where the open air and the light reach (its rim, the part of its wall the key light finds
+  // through the opening), deeper and rosier further in and under its roof; each sac a little its own tint.
+  const SHADE = night ? [0.9, 0.86, 0.88] : [0.8, 0.7, 0.73];
+  const bowlColor = (cv, x, y, z, nz) => {
     let depth = 1e9;
     if (cv.cuts & 1) depth = Math.min(depth, D - y);
     if (cv.cuts & 2) depth = Math.min(depth, HF - z);
     if (cv.cuts & 4) depth = Math.min(depth, L - x);
-    return mix3(mix3(C.lip, C.deep, sstep(0, 34, depth)), C.pit, 0.7 * sstep(30, 85, depth));
+    let c = mix3(mix3(C.lip, C.deep, sstep(0, 26, depth)), C.pit, 0.85 * sstep(20, 58, depth));
+    c = mix3(c, cv.tint > 0 ? C.warm : C.cool, 0.2 * Math.abs(cv.tint));
+    const lit = litOf(cv, x, y, z);
+    const k2 = 1 + (nz > 0 ? 0.08 * nz : 0.12 * nz) * sstep(2, 20, depth);
+    return [c[0] * k2 * (SHADE[0] + (1 - SHADE[0]) * lit), c[1] * k2 * (SHADE[1] + (1 - SHADE[1]) * lit), c[2] * k2 * (SHADE[2] + (1 - SHADE[2]) * lit)];
   };
   const BW = mk();
   {
@@ -387,6 +456,7 @@ function a5Scene(ctx, G, opt) {
     const inside = (p, pl) => (pl[1] > 0 ? p[pl[0]] >= pl[2] : p[pl[0]] <= pl[2]);
     for (const cv of cavities) {
       if (!cv.cuts) continue;
+      const BALL = cv.ball;
       const n = BALL.v.length;
       const pts = cv.pts;
       const nrm = new Float32Array(n * 3);
@@ -409,7 +479,7 @@ function a5Scene(ctx, G, opt) {
       }
       const map = new Int32Array(n).fill(-1);
       const use = (q) => {
-        if (map[q] < 0) map[q] = vtx(BW, pts[q * 3], pts[q * 3 + 1], pts[q * 3 + 2], nrm[q * 3], nrm[q * 3 + 1], nrm[q * 3 + 2], bowlColor(cv, pts[q * 3], pts[q * 3 + 1], pts[q * 3 + 2]));
+        if (map[q] < 0) map[q] = vtx(BW, pts[q * 3], pts[q * 3 + 1], pts[q * 3 + 2], nrm[q * 3], nrm[q * 3 + 1], nrm[q * 3 + 2], bowlColor(cv, pts[q * 3], pts[q * 3 + 1], pts[q * 3 + 2], nrm[q * 3 + 2]));
         return map[q];
       };
       for (const [a, b, c] of BALL.f) {
@@ -436,7 +506,7 @@ function a5Scene(ctx, G, opt) {
           if (poly.length < 3) break;
         }
         if (poly.length < 3) continue;
-        const ids = poly.map((p) => vtx(BW, p[0], p[1], p[2], p[3], p[4], p[5], bowlColor(cv, p[0], p[1], p[2])));
+        const ids = poly.map((p) => vtx(BW, p[0], p[1], p[2], p[3], p[4], p[5], bowlColor(cv, p[0], p[1], p[2], p[5])));
         for (let q = 1; q < ids.length - 1; q++) BW.idx.push(ids[0], ids[q], ids[q + 1]);
       }
     }
@@ -544,7 +614,7 @@ function a5Scene(ctx, G, opt) {
       // a hollow that only dips a little way under this face would be a shallow dish: leave the face closed over it
       let low = 1e9;
       for (let q = axis; q < cv.pts.length; q += 3) if (cv.pts[q] < low) low = cv.pts[q];
-      if (at - low < 15) continue;
+      if (at - low < 12) continue;
       const rr = Math.sqrt(cv.tmax * cv.tmax - off * off) + 1;
       const iA = Math.max(0, Math.floor((cv.c[ia] - rr) / HGRID)), iB = Math.min(nu, Math.ceil((cv.c[ia] + rr) / HGRID));
       const jA = Math.max(0, Math.floor((cv.c[ib] - rr) / HGRID)), jB = Math.min(nv, Math.ceil((cv.c[ib] + rr) / HGRID));
@@ -568,9 +638,9 @@ function a5Scene(ctx, G, opt) {
           hits.push(j * W1 + i, val);
         }
       // a small or a slit-like opening stays closed (the drawing drops small sections too): no pin-holes or slits in a
-      // face. Slit-like: nothing is left of it after wearing its edge back by about 7 units.
-      if (open * HGRID * HGRID < 150) continue;
-      for (let step = Math.ceil(7 / HGRID); step > 0 && open > 0; step--) {
+      // face. Slit-like: nothing is left of it after wearing its edge back by about 4 units. (The packing above leaves very few of these.)
+      if (open * HGRID * HGRID < 110) continue;
+      for (let step = Math.ceil(4 / HGRID); step > 0 && open > 0; step--) {
         const next = new Uint8Array(mask.length);
         open = 0;
         for (let j = 1; j < jB - jA; j++)
@@ -614,6 +684,7 @@ function a5Scene(ctx, G, opt) {
     const Hh = new Float32Array(W1 * (nv + 1)).fill(99);
     const sheath = new Float32Array(W1 * (nv + 1));
     cavityField(V, Hh, nu, nv, 1, D, 0, 2);
+    const Vc = V.slice();
     for (let j = 0; j <= nv; j++)
       for (let i = 0; i <= nu; i++) {
         const id = j * W1 + i;
@@ -634,7 +705,7 @@ function a5Scene(ctx, G, opt) {
         }
       }
     marchFace(FACE, { nu, nv, V, Hh, N: [0, 1, 0], tint: faceTint(Hh, sheath), pos: (i, j, o) => ((o[0] = i * HGRID), (o[1] = D), (o[2] = j * HGRID)) });
-    frontField = { nu, nv, V };
+    frontField = { nu, nv, V, Vc };
   }
   let topField = null;
   {
@@ -643,6 +714,7 @@ function a5Scene(ctx, G, opt) {
     const V = new Float32Array(W1 * (nv + 1)).fill(99);
     const Hh = new Float32Array(W1 * (nv + 1)).fill(99);
     cavityField(V, Hh, nu, nv, 2, HF, 0, 1);
+    const Vc = V.slice();
     const rTop = profR(HF - CZ);
     for (let j = 0; j <= nv; j++)
       for (let i = 0; i <= nu; i++) {
@@ -652,7 +724,7 @@ function a5Scene(ctx, G, opt) {
         if (v < Hh[id]) Hh[id] = v;
       }
     marchFace(FACE, { nu, nv, V, Hh, N: [0, 0, 1], tint: faceTint(Hh, null), pos: (i, j, o) => ((o[0] = i * HGRID), (o[1] = j * HGRID), (o[2] = HF)) });
-    topField = { nu, nv, V };
+    topField = { nu, nv, V, Vc };
   }
   // where the venule leaves through the right end
   let uEnd = NP - 1;
@@ -674,6 +746,7 @@ function a5Scene(ctx, G, opt) {
     const V = new Float32Array(W1 * (nv + 1)).fill(99);
     const Hh = new Float32Array(W1 * (nv + 1)).fill(99);
     cavityField(V, Hh, nu, nv, 0, L, 1, 2);
+    const Vc = V.slice();
     for (let j = 0; j <= nv; j++)
       for (let i = 0; i <= nu; i++) {
         const id = j * W1 + i;
@@ -682,7 +755,7 @@ function a5Scene(ctx, G, opt) {
         if (v < Hh[id]) Hh[id] = v;
       }
     marchFace(FACE, { nu, nv, V, Hh, N: [1, 0, 0], tint: faceTint(Hh, null), pos: (i, j, o) => ((o[0] = L), (o[1] = i * HGRID), (o[2] = j * HGRID)) });
-    endField = { nu, nv, V };
+    endField = { nu, nv, V, Vc };
   }
   {
     // the sac's own wall on the front face, on a polar grid: its rows fall on the sac's rim and on the capillary's two
@@ -725,16 +798,20 @@ function a5Scene(ctx, G, opt) {
     quad([[0, 0, 0], [0, D, 0], [0, D, HF], [0, 0, HF]], [-1, 0, 0]);
     quad([[0, 0, 0], [L, 0, 0], [L, 0, HF], [0, 0, HF]], [0, -1, 0]);
     quad([[0, 0, 0], [L, 0, 0], [L, D, 0], [0, D, 0]], [0, 0, -1]);
-    // and their inner sides, so that nothing could ever show the page through the block
+  }
+  // and their inner sides, so that nothing could ever show the page through the block. A mesh of their own, kept out of
+  // the occlusion pass: that pass does not see the hollows, and would draw these walls' corners through the openings.
+  const LINER = mk();
+  {
+    const quad = (pts, n) => {
+      const ids = pts.map((p) => vtx(LINER, p[0], p[1], p[2], n[0], n[1], n[2], C.deep));
+      LINER.idx.push(ids[0], ids[1], ids[2], ids[0], ids[2], ids[3]);
+    };
     const e = 0.3;
     quad([[e, 0, 0], [e, D, 0], [e, D, HF], [e, 0, HF]], [1, 0, 0]);
     quad([[0, e, 0], [L, e, 0], [L, e, HF], [0, e, HF]], [0, 1, 0]);
     quad([[0, 0, e], [L, 0, e], [L, D, e], [0, D, e]], [0, 0, 1]);
   }
-  const sampleField = (F, a, b) => {
-    const i = clamp(Math.round(a / HGRID), 0, F.nu), j = clamp(Math.round(b / HGRID), 0, F.nv);
-    return F.V[j * (F.nu + 1) + i];
-  };
 
   // ---------------------------------------------------------------- the sac's bowl and the duct (inside faces)
   const NLAM = coarse ? 36 : 56;
@@ -893,7 +970,7 @@ function a5Scene(ctx, G, opt) {
             return (1.0 - smoothstep(0.035 - w, 0.1 + w, e)) / (1.0 + 14.0 * w);
           }`,
         )
-        .replace("#include <color_fragment>", `#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, uWeb, ${night ? "0.3" : "0.42"} * a5web(vA5));`);
+        .replace("#include <color_fragment>", `#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, uWeb, ${night ? "0.24" : "0.42"} * a5web(vA5));`);
     };
   }
   // the bowl's lining: a pavement of thin flat cells, drawn once to a small canvas and laid on by longitude and latitude
@@ -967,8 +1044,10 @@ function a5Scene(ctx, G, opt) {
     return m;
   };
   solid(finish(FACE), tissueMat);
+  ctx.ghost(solid(finish(LINER), tissueMat, false));
   // the hollows stay out of the occlusion pass (in the narrow wedge under an opening's rolled edge it reads as soot);
   // their depth is in their own tone, the key light's shadow and the net on their walls
+  hollowMat.shadowSide = T.DoubleSide; // a hollow's roof stops the light as well as its floor: light enters by the opening only
   const hollows = solid(finish(BW), hollowMat);
   ctx.ghost(hollows);
   hollows.castShadow = true;
@@ -1050,23 +1129,40 @@ function a5Scene(ctx, G, opt) {
   const scl = (v, s) => [v[0] * s, v[1] * s, v[2] * s];
   const bitMat = phys({ color: 0xffffff, roughness: 0.4, clearcoat: 0.5, clearcoatRoughness: 0.25 });
   {
-    // capillaries cut across in the walls of the three faces: a red cell in each (one in four darker, venous)
-    const caps = G.caps;
-    const total = (caps.front.length + caps.top.length + caps.end.length) / 3;
-    const beads = placed(total, bitMat, unitLow);
-    const each = (list, F, at, ex, ey, n) => {
-      for (let q = 0; q < list.length; q += 3) {
-        const [a, b] = at(list[q], list[q + 1]);
-        if (sampleField(F, a, b) < 2.2) continue;
-        const r = 2.45 + (((q / 3) * 7) % 5) * 0.12;
+    // capillaries cut across in the walls of the three faces: a red cell in each (one in four darker, venous), spaced
+    // along each wall's middle line (where the distance to the two hollows it parts is greatest), never two in one spot
+    const GAP = 15;
+    const spots = [];
+    const each = (F, ex, ey, n) => {
+      const W1 = F.nu + 1;
+      const found = [];
+      for (let j = 1; j < F.nv; j++)
+        for (let i = 1; i < F.nu; i++) {
+          const id = j * W1 + i;
+          const v = F.Vc[id];
+          if (v < 2.2 || v > 8 || F.V[id] < 2.2) continue;
+          const a = F.Vc[id - 1], b = F.Vc[id + 1], c = F.Vc[id - W1], d = F.Vc[id + W1];
+          if (!((v >= a && v >= b && a < 90 && b < 90) || (v >= c && v >= d && c < 90 && d < 90))) continue;
+          found.push([((id * 2654435761) >>> 0) / 4294967296, i * HGRID, j * HGRID]);
+        }
+      found.sort((p, q) => p[0] - q[0]);
+      const kept = [];
+      for (const f of found) {
+        if (kept.some((k) => Math.abs(k[1] - f[1]) < GAP && Math.abs(k[2] - f[2]) < GAP && Math.hypot(k[1] - f[1], k[2] - f[2]) < GAP)) continue;
+        kept.push(f);
         const o = [0, 0, 0];
-        for (let w = 0; w < 3; w++) o[w] = ex[w] * a + ey[w] * b + n[w] * (n[3] + 0.15);
-        beads.put(o, scl(ex, r), scl(ey, r), scl(n, r * 0.34), list[q + 2] ? PAL.capV : PAL.capA);
+        for (let w = 0; w < 3; w++) o[w] = ex[w] * f[1] + ey[w] * f[2] + n[w] * (n[3] + 0.1);
+        spots.push([o, ex, ey, n]);
       }
     };
-    each(caps.front, frontField, (sx, sy) => [sx - G.X0, G.YB - sy], [1, 0, 0], [0, 0, 1], [0, 1, 0, D]);
-    each(caps.top, topField, (x, v) => [x - G.X0, v], [1, 0, 0], [0, 1, 0], [0, 0, 1, HF]);
-    each(caps.end, endField, (u, sy) => [D - u, G.YB - sy], [0, 1, 0], [0, 0, 1], [1, 0, 0, L]);
+    each(frontField, [1, 0, 0], [0, 0, 1], [0, 1, 0, D]);
+    each(topField, [1, 0, 0], [0, 1, 0], [0, 0, 1, HF]);
+    each(endField, [0, 1, 0], [0, 0, 1], [1, 0, 0, L]);
+    const beads = placed(spots.length, bitMat, unitLow);
+    spots.forEach(([o, ex, ey, n], q) => {
+      const r = 1.95 + ((q * 7) % 5) * 0.09;
+      beads.put(o, scl(ex, r), scl(ey, r), scl(n, r * 0.36), q % 4 === 1 ? PAL.capV : PAL.capA);
+    });
     beads.done();
   }
   {
@@ -1249,7 +1345,14 @@ function a5Scene(ctx, G, opt) {
       tris += ((g.index ? g.index.count : g.attributes.position.count) / 3) * (o.isInstancedMesh ? o.instanceMatrix.count : 1);
       console.warn("a5", o.isInstancedMesh ? "inst" : "mesh", Math.round((g.index ? g.index.count : g.attributes.position.count) / 3), o.isInstancedMesh ? o.instanceMatrix.count : "");
     });
-    console.warn("a5 total", calls, "meshes", Math.round(tris), "triangles (instances at capacity)", cavities.length, "hollows");
+    const by = [1, 2, 4].map((bit) => cavities.filter((cv) => cv.cuts & bit).length);
+    const deep = cavities.filter((cv) => cv.cuts).map((cv) => {
+      let low = 1e9;
+      const axis = cv.cuts & 1 ? 1 : cv.cuts & 2 ? 2 : 0;
+      for (let q = axis; q < cv.pts.length; q += 3) low = Math.min(low, cv.pts[q]);
+      return (axis === 1 ? D : axis === 2 ? HF : L) - low;
+    });
+    console.warn("a5 total", calls, "meshes", Math.round(tris), "triangles (instances at capacity)", cavities.length, "hollows: front/top/end", by.join("/"), "depth", Math.round(Math.min(...deep)), "to", Math.round(Math.max(...deep)));
   }
   const centre = [L / 2, D / 2, HF / 2];
   const vT = new T.Vector3(), vA = new T.Vector3(), vB = new T.Vector3();
