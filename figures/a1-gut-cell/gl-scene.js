@@ -73,44 +73,74 @@ function a1Scene(ctx, DATA, pal) {
   };
   const K = {};
   for (const k of Object.keys(FALL)) K[k.replace(/^[ab]1-/, "").replace(/-/g, "_")] = ink(k);
-  // Rendered surfaces are lit, so the inks sit a little deeper than the flat fills (a lit cream reads as the drawing's cream).
-  const TONE = night ? 1.5 : 0.86;
-  const C = {
-    gel: gain(rich(K.cell, night ? 1 : 1.45), night ? 1.25 : 0.87),
-    gelDim: gain(rich(K.cell_dim, night ? 1 : 1.2), night ? 1.25 : 0.84),
-    wall: gain(blend(K.cell_2, K.lateral, 0.5), night ? 1.4 : 0.74),
-    wallDim: gain(blend(K.cell_dim, K.lateral, 0.6), night ? 1.3 : 0.72),
-    rim: gain(blend(K.membrane, K.cell, night ? 0.25 : 0.22), night ? 1.3 : 0.9),
-    rimDim: gain(blend(K.membrane, K.cell_dim, night ? 0.4 : 0.36), night ? 1.2 : 0.9),
-    lateral: gain(K.lateral, night ? 1.1 : 0.84),
-    junction: gain(blend(K.membrane, K.lateral, night ? 0.3 : 0.12), night ? 1.1 : 0.92),
-    top: gain(K.top, TONE),
-    topMain: gain(K.top_main, TONE),
-    web: gain(blend(K.cell_2, K.lateral, night ? 0.45 : 0.75), night ? 1.5 : 0.72),
-    webDim: gain(blend(K.cell_dim, K.lateral, night ? 0.5 : 0.7), night ? 1.35 : 0.72),
-    villusTip: gain(K.tip, night ? 1.7 : 0.86),
-    villus: gain(rich(K.v1, night ? 1 : 1.15), night ? 1.6 : 0.8),
-    villusRoot: gain(K.v2, night ? 1.5 : 0.72),
-    villusDim: gain(K.villus_dim, night ? 1.5 : 0.8),
-    nucleus: gain(rich(K.nucleus, night ? 1 : 1.3), night ? 1.5 : 0.68),
-    nucleolus: gain(K.nucleolus, night ? 1.5 : 0.5),
-    mito: gain(rich(blend(K.mito, K.nucleolus, night ? 0 : 0.55), night ? 1 : 1.35), night ? 1.55 : 0.68),
-    mitoBand: gain(blend(K.mito, K.membrane, 0.6), night ? 1.4 : 0.62),
-    ferritin: gain(K.ferritin, night ? 1.15 : 0.8),
-    tissue: gain(K.tissue, night ? 1.35 : 0.9),
-    lamina: gain(K.endo, night ? 1.3 : 0.86),
-    collagen: gain(blend(K.tissue, K.membrane, 0.5), night ? 1.3 : 0.9),
-    endo: gain(K.endo, night ? 1.4 : 0.9),
-    blood: gain(blend(K.blood, K.rbc, night ? 0.1 : 0.07), night ? 1.5 : 0.92),
-    iron: K.iron.clone(),
-    hep: K.hep.clone(),
-    fpn: K.fpn.clone(),
-    dmt1: K.dmt1.clone(),
-    tf: K.tf.clone(),
-    rbc: K.rbc.clone(),
-    rbcIn: K.rbc_in.clone(),
-    sheen: night ? new T.Color("#bfe0b4") : new T.Color("#fff1e2"),
-  };
+  // Rendered surfaces are lit, so the inks are re-toned per theme. Forest night: the dark fills lifted so light can
+  // model them. Cream: the gel is the mid tone of the block (the drawing's own deeper inks: top, lateral, membrane),
+  // so the block has a silhouette on the cream page and what floats in it is lit against something deeper, as it is
+  // in Forest night. Every colour is still one of the figure's inks, or a blend of two.
+  const C = night
+    ? {
+        gel: gain(K.cell, 1.25),
+        gelDim: gain(K.cell_dim, 1.25),
+        wall: gain(blend(K.cell_2, K.lateral, 0.5), 1.4),
+        wallDim: gain(blend(K.cell_dim, K.lateral, 0.6), 1.3),
+        rim: gain(blend(K.membrane, K.cell, 0.25), 1.3),
+        rimDim: gain(blend(K.membrane, K.cell_dim, 0.4), 1.2),
+        lateral: gain(K.lateral, 1.1),
+        junction: gain(blend(K.membrane, K.lateral, 0.3), 1.1),
+        top: gain(K.top, 1.5),
+        topMain: gain(K.top_main, 1.5),
+        web: gain(blend(K.cell_2, K.lateral, 0.45), 1.5),
+        webDim: gain(blend(K.cell_dim, K.lateral, 0.5), 1.35),
+        villusTip: gain(K.tip, 1.7),
+        villus: gain(K.v1, 1.6),
+        villusRoot: gain(K.v2, 1.5),
+        villusDim: gain(K.villus_dim, 1.5),
+        nucleus: gain(K.nucleus, 1.5),
+        nucleolus: gain(K.nucleolus, 1.5),
+        mito: gain(K.mito, 1.55),
+        mitoBand: gain(blend(K.mito, K.membrane, 0.6), 1.4),
+        ferritin: gain(K.ferritin, 1.15),
+        tissue: gain(K.tissue, 1.35),
+        lamina: gain(K.endo, 1.3),
+        collagen: gain(blend(K.tissue, K.membrane, 0.5), 1.3),
+        endo: gain(K.endo, 1.4),
+        blood: gain(blend(K.blood, K.rbc, 0.1), 1.5),
+        seat: gain(blend(K.membrane, K.cell, 0.45), 1.2),
+        iron: K.iron.clone(),
+        sheen: new T.Color("#bfe0b4"),
+      }
+    : {
+        gel: gain(rich(blend(K.cell, K.top_main, 0.72), 1.5), 0.95),
+        gelDim: gain(rich(blend(K.cell_dim, K.top, 0.6), 1.1), 0.93),
+        wall: gain(blend(K.top_main, K.membrane, 0.5), 0.7),
+        wallDim: gain(blend(K.lateral, K.membrane, 0.48), 0.72),
+        rim: gain(blend(K.membrane, K.top_main, 0.12), 0.8),
+        rimDim: gain(blend(K.membrane, K.lateral, 0.25), 0.82),
+        lateral: gain(K.lateral, 0.74),
+        junction: gain(K.membrane, 0.78),
+        top: gain(K.top, 0.6),
+        topMain: gain(rich(K.top_main, 1.15), 0.6),
+        web: gain(blend(K.top_main, K.membrane, 0.4), 0.76),
+        webDim: gain(blend(K.lateral, K.membrane, 0.35), 0.78),
+        villusTip: gain(rich(K.v0, 1.2), 0.98),
+        villus: gain(rich(K.v1, 2.1), 0.76),
+        villusRoot: gain(rich(K.v2, 1.9), 0.5),
+        villusDim: gain(rich(K.villus_dim, 1.1), 0.8),
+        nucleus: gain(rich(K.nucleus, 1.25), 0.98),
+        nucleolus: gain(rich(K.nucleolus, 1.3), 0.4),
+        mito: gain(rich(blend(K.mito, K.nucleolus, 0.6), 2.1), 0.84),
+        mitoBand: gain(rich(blend(K.nucleolus, K.membrane, 0.3), 1.6), 0.52),
+        ferritin: gain(K.ferritin, 0.62),
+        tissue: gain(blend(K.tissue, K.endo, 0.5), 0.84),
+        lamina: gain(blend(K.endo, K.membrane, 0.2), 0.72),
+        collagen: gain(blend(K.tissue, K.membrane, 0.6), 0.8),
+        endo: gain(K.endo, 0.78),
+        blood: gain(rich(blend(K.blood, K.rbc, 0.1), 1.15), 0.92),
+        seat: gain(blend(K.membrane, K.top_main, 0.3), 0.78),
+        iron: gain(K.iron, 0.9),
+        sheen: new T.Color("#fff1e2"),
+      };
+  Object.assign(C, { hep: K.hep.clone(), fpn: K.fpn.clone(), dmt1: K.dmt1.clone(), tf: K.tf.clone(), rbc: K.rbc.clone(), rbcIn: K.rbc_in.clone() });
 
   // ---------------------------------------------------------------- materials
   const mats = [];
@@ -126,10 +156,20 @@ function a1Scene(ctx, DATA, pal) {
     kit: { value: new T.Matrix4() },
     view: { value: new T.Vector3(VD[0], VD[1], VD[2]) },
     cut: { value: new T.Vector4(D, L, ZB, ZT) },
+    // in view space (x screen right, y up, z to the viewer): the block's own up, and the side the key light is on
+    up: { value: new T.Vector3(0, Math.cos(EL), Math.sin(EL)) },
+    key: { value: new T.Vector3(-0.62, 0.4, 0.68).normalize() },
   };
+  // Cream only. The studio there is bright all round, so forms are flat: `under` darkens what faces down, `side` what
+  // faces away from the key (the drawing shades its microvilli the same way, light on the left). And the gel deepens
+  // where the line of sight runs far, toward the base, and on the end face (the drawing's shaded side).
+  const GEL_TONE = night ? "" : "a1g *= mix( 1.0, 0.86, step( a1sx, a1sy ) ) * mix( 1.0, 0.9, 1.0 - exp( - 0.008 * a1s ) );\n";
+  const GEL_RISE = night ? "0.86 + 0.2" : "0.8 + 0.27";
   let gelN = 0;
-  function gel(m, { sigma = 0, color = C.gel, max = 0.94, attr = false, clip = false, fog = true, edge = 0 } = {}) {
+  function gel(m, { sigma = 0, color = C.gel, max = 0.94, attr = false, clip = false, fog = true, edge = 0, under = 0, side = 0 } = {}) {
+    const form = under || side;
     const u = { uA1Kit: U.kit, uA1View: U.view, uA1Cut: U.cut, uA1Gel: { value: new T.Vector4(color.r, color.g, color.b, max) }, uA1Sigma: { value: sigma } };
+    if (form) Object.assign(u, { uA1Up: U.up, uA1Key: U.key });
     m.userData.gel = u;
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, u);
@@ -140,33 +180,41 @@ function a1Scene(ctx, DATA, pal) {
           `#include <project_vertex>\n{ vec4 a1p = vec4( transformed, 1.0 );\n#ifdef USE_INSTANCING\na1p = instanceMatrix * a1p;\n#endif\nvA1Kit = ( uA1Kit * ( modelMatrix * a1p ) ).xyz; }\n${attr ? "vA1Fog = aFog;\n" : ""}`,
         );
       sh.fragmentShader = sh.fragmentShader
-        .replace("#include <common>", `#include <common>\nuniform vec3 uA1View;\nuniform vec4 uA1Cut;\nuniform vec4 uA1Gel;\nuniform float uA1Sigma;\nvarying vec3 vA1Kit;\n${attr ? "varying float vA1Fog;\n" : ""}`)
+        .replace("#include <common>", `#include <common>\nuniform vec3 uA1View;\nuniform vec4 uA1Cut;\nuniform vec4 uA1Gel;\nuniform float uA1Sigma;\nvarying vec3 vA1Kit;\n${attr ? "varying float vA1Fog;\n" : ""}${form ? "uniform vec3 uA1Up;\nuniform vec3 uA1Key;\n" : ""}`)
         .replace("#include <clipping_planes_fragment>", `${clip ? "if ( vA1Kit.x < 0.0 || vA1Kit.x > uA1Cut.y ) discard;\n" : ""}#include <clipping_planes_fragment>`)
         .replace(
           "#include <opaque_fragment>",
           `#include <opaque_fragment>\n${edge ? `gl_FragColor.rgb *= 1.0 - ${edge.toFixed(3)} * pow( 1.0 - saturate( dot( normal, normalize( vViewPosition ) ) ), 2.0 );\n` : ""}${
+            form
+              ? `gl_FragColor.rgb *= mix( ${(under || 1).toFixed(3)}, 1.0, smoothstep( -0.85, 0.45, dot( normal, uA1Up ) ) ) * mix( ${(side || 1).toFixed(3)}, 1.0, smoothstep( -0.35, 0.72, dot( normal, uA1Key ) ) );\n`
+              : ""
+          }${
             fog
-              ? `{ float a1s = max( min( ( uA1Cut.x - vA1Kit.y ) / uA1View.y, ( uA1Cut.y - vA1Kit.x ) / uA1View.x ), 0.0 );
+              ? `{ float a1sy = ( uA1Cut.x - vA1Kit.y ) / uA1View.y;
+float a1sx = ( uA1Cut.y - vA1Kit.x ) / uA1View.x;
+float a1s = max( min( a1sy, a1sx ), 0.0 );
 float a1in = step( uA1Cut.z, vA1Kit.z ) * step( vA1Kit.z, uA1Cut.w );
 float a1f = ( 1.0 - exp( - ${attr ? "vA1Fog" : "uA1Sigma"} * a1s ) ) * a1in * uA1Gel.a;
 vec3 a1e = vA1Kit + uA1View * a1s;
 float a1m = sin( a1e.x * 0.023 + a1e.y * 0.031 + 1.7 * sin( a1e.z * 0.017 ) ) * sin( a1e.z * 0.021 + 0.9 * sin( a1e.x * 0.019 + a1e.y * 0.013 ) );
-vec3 a1g = uA1Gel.rgb * ( 0.86 + 0.2 * smoothstep( uA1Cut.z, uA1Cut.w, a1e.z ) + 0.035 * a1m );
-gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
+vec3 a1g = uA1Gel.rgb * ( ${GEL_RISE} * smoothstep( uA1Cut.z, uA1Cut.w, a1e.z ) + 0.035 * a1m );
+${GEL_TONE}gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
               : ""
           }`,
         );
     };
-    const key = `a1gel${attr ? "a" : ""}${clip ? "c" : ""}${fog ? "f" : ""}${edge ? "e" : ""}${gelN++}`;
+    const key = `a1gel${attr ? "a" : ""}${clip ? "c" : ""}${fog ? "f" : ""}${edge ? "e" : ""}${form ? "s" : ""}${gelN++}`;
     m.customProgramCacheKey = () => key;
     return m;
   }
-  const SIG = night ? 0.0075 : 0.0068; // the traced cell: clear
-  const SIG_DIM = night ? 0.03 : 0.022; // its neighbours: milky
+  const SIG = night ? 0.0075 : 0.0058; // the traced cell: clear
+  const SIG_DIM = night ? 0.03 : 0.02; // its neighbours: milky
   // The cells' own inner walls veil faster than what floats in them, so a cut shows a body of gel with a soft edge
   // under the membrane, not the inside of an empty box.
-  const SIG_WALL = 0.024;
-  const SIG_WALL_DIM = 0.055;
+  const SIG_WALL = night ? 0.024 : 0.014;
+  const SIG_WALL_DIM = night ? 0.055 : 0.034;
+  /** Cream: form shading on a material that is not in the gel (night: the material as it is). */
+  const lit = (m, o) => (night ? m : gel(m, { fog: false, ...o }));
 
   // ---------------------------------------------------------------- geometry kit
   const SEG = coarse ? 0.6 : 1; // phones: about half the triangles
@@ -639,7 +687,7 @@ gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
     mesh.receiveShadow = false;
     scene.add(mesh);
   }
-  solid(soupTop.geometry(), flesh({ vertexColors: true, roughness: 0.62 }));
+  solid(soupTop.geometry(), flesh({ vertexColors: true, roughness: night ? 0.62 : 0.7 }));
   {
     const pos = [];
     const nor = [];
@@ -688,7 +736,7 @@ gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
   }
 
   // ---------------------------------------------------------------- inside the cells
-  const organelle = (sig = SIG, color = C.gel, o = {}) => gel(flesh({ vertexColors: true, roughness: 0.5, clearcoat: 0.3, ...o }), { sigma: sig, color, edge: 0.42 });
+  const organelle = (sig = SIG, color = C.gel, o = {}) => gel(flesh({ vertexColors: true, roughness: 0.5, clearcoat: night ? 0.3 : 0.4, ...o }), night ? { sigma: sig, color, edge: 0.42 } : { sigma: sig, color, edge: 0.5, under: 0.56, side: 0.86 });
   const matIn = organelle();
   const matInDim = organelle(SIG_DIM, C.gelDim);
   const withColor = (g, fn) => {
@@ -787,7 +835,7 @@ gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
     const q = new T.Quaternion().setFromUnitVectors(new T.Vector3(0, 1, 0), new T.Vector3(VD[0], VD[1], VD[2]));
     const turn = new T.Quaternion().setFromAxisAngle(new T.Vector3(VD[0], VD[1], VD[2]), 0.4);
     const RC = 14.6;
-    const cage = instanced(ballGeo(seg(12, 8), seg(8, 6)), gel(flesh({ color: C.ferritin, roughness: 0.5 }), { sigma: SIG, edge: 0.25 }), 24 * FCEN.length, { receive: false });
+    const cage = instanced(ballGeo(seg(12, 8), seg(8, 6)), gel(flesh({ color: C.ferritin, roughness: 0.5 }), night ? { sigma: SIG, edge: 0.25 } : { sigma: SIG * 0.8, edge: 0.3, under: 0.6 }), 24 * FCEN.length, { receive: false });
     const v3 = new T.Vector3();
     let k = 0;
     FCEN.forEach((c, j) => {
@@ -815,20 +863,22 @@ gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
   const VR = G.VILLI_R;
   {
     const HN = 44;
-    const prof = [[VR + 2.6, -2], [VR + 1.5, 0.3], [VR + 0.6, 2.2], [VR + 0.1, 5], [VR, 9], [VR, HN * 0.55], [VR, HN - VR]];
-    const nd = seg(5, 3);
+    // (Forest night keeps the mesh it shipped with; Cream's is a little lighter: it is drawn in every pass of the layer)
+    const prof = night ? [[VR + 2.6, -2], [VR + 1.5, 0.3], [VR + 0.6, 2.2], [VR + 0.1, 5], [VR, 9], [VR, HN * 0.55], [VR, HN - VR]] : [[VR + 2.6, -2], [VR + 1.2, 0.8], [VR + 0.2, 3.6], [VR, 9], [VR, HN * 0.55], [VR, HN - VR]];
+    const nd = seg(night ? 5 : 4, 3);
     for (let i = 1; i < nd; i++) prof.push([VR * Math.cos((i / nd) * (Math.PI / 2)), HN - VR + VR * Math.sin((i / nd) * (Math.PI / 2))]);
     prof.push([0, HN]);
-    const d = latheData(prof, seg(14, 8));
+    const d = latheData(prof, seg(night ? 14 : 12, 8));
     const g = withColor(smoothGeo(d.pos, d.idx), (x, y, z) => {
       const t = clamp(z / HN, 0, 1);
-      return t < 0.5 ? blend(C.villusRoot, C.villus, sstep(0, 0.5, t)) : blend(C.villus, C.villusTip, sstep(0.5, 1, t));
+      if (night) return t < 0.5 ? blend(C.villusRoot, C.villus, sstep(0, 0.5, t)) : blend(C.villus, C.villusTip, sstep(0.5, 1, t));
+      return t < 0.42 ? blend(C.villusRoot, C.villus, sstep(0, 0.42, t)) : blend(C.villus, C.villusTip, sstep(0.66, 1, t)); // Cream: a shaft of tone under a light tip
     });
     const list = [];
     for (const [x, h, main] of G.villiFront) list.push({ p: [x - X0, D - VR, ZT], h: h - 4, main, dmt: DATA.DMT1.some((q) => Math.abs(q[0] - x) < 0.5), q: QI });
     for (const [x, v, h, main, dmt] of G.forest) if (v < D - 14) list.push({ p: [x - X0, v, ZT], h: h + 6, main, dmt, q: new T.Quaternion().setFromEuler(new T.Euler((rnd() - 0.5) * 0.11, (rnd() - 0.5) * 0.11, 0)) });
-    const villi = instanced(g, flesh({ vertexColors: true, roughness: 0.52, clearcoat: 0.26, clearcoatRoughness: 0.36, sheen: 0.7 }), list.length);
-    const dimK = new T.Color(C.villusDim.r / C.villus.r, C.villusDim.g / C.villus.g, C.villusDim.b / C.villus.b).multiplyScalar(night ? 0.8 : 0.97);
+    const villi = instanced(g, lit(flesh({ vertexColors: true, roughness: night ? 0.52 : 0.46, clearcoat: night ? 0.26 : 0.34, clearcoatRoughness: 0.36, sheen: 0.7 }), { under: 0.55, side: 0.5, edge: 0.25 }), list.length);
+    const dimK = night ? new T.Color(C.villusDim.r / C.villus.r, C.villusDim.g / C.villus.g, C.villusDim.b / C.villus.b).multiplyScalar(0.8) : new T.Color(0.93, 0.925, 0.92);
     const white = new T.Color(1, 1, 1);
     list.forEach((v, i) => {
       put(villi, i, v.p, 1, 1, v.h / HN, v.q);
@@ -921,7 +971,7 @@ gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
   // ---------------------------------------------------------------- what the model moves
   // iron: one bead, drawn wherever the model has one (lumen, cell, blood), on transferrin and in the ferritin cores
   const IRON_MAX = 220;
-  const irons = instanced(ballGeo(seg(14, 8), seg(9, 6)), gel(phys({ color: C.iron, roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2, emissive: C.iron, emissiveIntensity: night ? 0.22 : 0.1 }), { sigma: SIG * 0.45, clip: true }), IRON_MAX, { dynamic: true, cast: false, receive: false, ghost: true });
+  const irons = instanced(ballGeo(seg(14, 8), seg(9, 6)), gel(phys({ color: C.iron, roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2, emissive: C.iron, emissiveIntensity: night ? 0.22 : 0.06 }), night ? { sigma: SIG * 0.45, clip: true } : { sigma: SIG * 0.35, clip: true, under: 0.72 }), IRON_MAX, { dynamic: true, cast: false, receive: false, ghost: true });
   // the blood: red cells (true biconcave discs) and transferrin, two lobes with an iron site each
   const RBC_R = 12.5;
   const rbcGeo = (() => {
@@ -980,7 +1030,7 @@ gl_FragColor.rgb = mix( gl_FragColor.rgb, a1g, a1f ); }`
     return { pair, ves, vm };
   });
   // where a gate has been taken in: an empty seat in the membrane
-  const seats = instanced(ballGeo(seg(12, 8), seg(8, 6)), flesh({ color: gain(blend(K.membrane, K.cell, night ? 0.45 : 0.3), night ? 1.2 : 0.9), roughness: 0.6 }), DATA.FPN.length, { dynamic: true, cast: false, receive: false });
+  const seats = instanced(ballGeo(seg(12, 8), seg(8, 6)), flesh({ color: C.seat, roughness: 0.6 }), DATA.FPN.length, { dynamic: true, cast: false, receive: false });
 
   // ---------------------------------------------------------------- one frame, from the model's state
   const depth = new WeakMap();

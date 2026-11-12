@@ -21,7 +21,8 @@ function mount(fig) {
   // steps aside (data-gl3-hide) and is not redrawn.
   const inks = getComputedStyle(svg);
   const pal = Object.fromEntries(A1_INKS.map((k) => [k, inks.getPropertyValue(`--${k}`).trim()]));
-  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.VW, H: DATA.VH, file: DATA.gl3.file, v: DATA.gl3.v, island: false, redraw: () => draw(), build: (ctx) => a1Scene(ctx, DATA, pal) });
+  const cream = (svg.closest("[data-theme]") || fig).getAttribute("data-theme") === "light";
+  const gl = gl3Attach(fig, { scene: cream ? { ...DATA.gl3, look: DATA.gl3.lookCream } : DATA.gl3, P: DATA.P, W: DATA.VW, H: DATA.VH, file: DATA.gl3.file, v: DATA.gl3.v, island: false, redraw: () => draw(), build: (ctx) => a1Scene(ctx, DATA, pal) });
 
   // ---------------------------------------------------------------- state
   let sceneAt = 0;

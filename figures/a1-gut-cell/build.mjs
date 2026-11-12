@@ -267,7 +267,14 @@ const svg = `<svg class="iso-svg a1-svg" viewBox="0 0 ${VIEW_W} ${VIEW_H}" role=
 // The scene (gl-scene.js) is modelled in the block's own world units at the positions the drawing uses, in the
 // drawing's own camera (PB). It has no kit solids: everything is built in the page from the numbers below.
 const GL3W = gl3Wire();
-const GL3 = { parts: [], ground: 0, bounds: [[0, 0, 0], [L, D, H]], look: { exposure: 0.94, aoRadius: 15, contactHeight: 64, cast: 1.15, contact: 1.05 }, ...GL3W.chunk };
+// `look` is Forest night's; `lookCream` is Cream's (live.js picks one by the theme it finds itself in, since one embed
+// script serves both): a firmer floor shadow so the pale block sits on the cream page, a little more occlusion.
+const GL3 = {
+  parts: [], ground: 0, bounds: [[0, 0, 0], [L, D, H]],
+  look: { exposure: 0.94, aoRadius: 15, contactHeight: 64, cast: 1.15, contact: 1.05 },
+  lookCream: { exposure: 0.94, aoRadius: 15, ao: 1.2, contactHeight: 64, cast: 2.3, contact: 1.45 },
+  ...GL3W.chunk,
+};
 const SCENE3 = {
   X0, L, D, HX, HV, VILLI_R: R_V,
   mito: MITO, nucleus: NUCLEUS, nucleolus: NUCLEOLUS,

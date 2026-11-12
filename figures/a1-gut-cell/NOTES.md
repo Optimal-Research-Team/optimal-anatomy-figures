@@ -76,9 +76,21 @@ With the shared WebGL layer on (`shared/gl3`), the block is rendered as a 3-D mo
 - its `stats()` reports the last pass only (1 call, 1 triangle), so the counts above were taken in the scene;
 - there is no clipping-plane switch, so parts that leave the block's ends are cut in their own shader.
 
-## Verification (2026-11-11, 3-D layer, local)
+### Round 3b (2026-11-12): Cream with presence
 
-- `node scripts/verify.mjs a1-gut-cell`: passed (line check on the drawing with `?gl=off`: 0).
+Review: on Cream the block was pale cream gel on a cream page and lost the drawing's definition. Cream only: Forest night, the model, numbers, words and controls are untouched (every Cream value sits behind `night ? … : …` in `gl-scene.js`, Forest night's mesh and shaders are the ones it shipped with, and `look` is picked by theme in `live.js` because one embed script serves both).
+
+- **The gel is the block's mid tone.** It moves from the cell ink toward the drawing's own deeper inks (top, lateral, membrane): honey for the traced cell, a greyer tan for its neighbours. It deepens toward the base, where the line of sight runs far, and on the end face (the drawing shades that side too). The inner walls are deeper still and veil more slowly, so every cut face has a soft deeper edge under a firmer membrane line.
+- **What floats in it is lit against something deeper**, as in Forest night: an ivory nucleus with a darker nucleolus, golden banded mitochondria, grey-brown ferritin cages round rust cores, rust iron beads that veil less, the forest gates. Two small terms in the material give them form the bright Cream studio doesn't: surfaces facing down and away from the key are darkened (the drawing shades its microvilli the same way, light on the left).
+- **Brush border:** each microvillus has a toned shaft, a light tip and a shaded side, over a deeper apical surface, so the carpet reads as separate microvilli with light on them. The neighbours' are a little cooler.
+- **Under the block:** a firmer floor shadow (`lookCream`: cast 2.3, contact 1.45, occlusion 1.2).
+- The capillary, red cells, transferrin, hepcidin and gates keep their colours.
+
+**Cost now** (`stage.__gl3.stats()` counts all of the layer's passes since the Nov 11 chunk): about 100 draw calls and about 505 k triangles a frame on Cream desktop (628 k in Forest night, whose microvilli keep the heavier mesh they shipped with), of which roughly 150 k are the picture itself.
+
+## Verification (2026-11-12, 3-D layer, local)
+
+- `node scripts/verify.mjs a1-gut-cell`: passed after round 3b (line check on the drawing with `?gl=off`: 0).
 - Layer off against the page before this round: identical pixels in both themes (moving parts hidden for the comparison).
 - Embed (`embed/test.html`): the layer loads from beside the embed script.
 
