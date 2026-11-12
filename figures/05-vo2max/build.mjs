@@ -195,8 +195,8 @@ const svg = k.figureSvg({
 });
 
 // ---------------------------------------------------------------- the 3-D layer (shared/gl3): the same solids, rendered
-// The bike in the brand's colourway (no maker's finish): white shells, a forest frame, graphite feet, rubber where
-// hands and seat go. The flywheel cover and the crank cover stay white because the figure draws on them.
+// The bike in the brand's colourway (no maker's finish), matching the treadmill of Figs 4 and 6: white shells, a sage
+// frame and a slate stand (forest and graphite sank into the Forest night page), rubber where hands and seat go. The flywheel cover and the crank cover stay white because the figure draws on them.
 const GL3W = gl3Wire();
 F.glFigure("as", AS.gl, (q) => (q.name === "tablet" ? "graphite" : null));
 F.glNote(glPart.panel("as.screen", AS.glScreen.o, AS.glScreen.ex, AS.glScreen.ey, AS.glScreen.w, AS.glScreen.h));
@@ -204,14 +204,14 @@ const GL3 = {
   ...F.gl3Scene({
     ground: 0,
     materials: [
-      ["^stand\\.", "graphite"],
+      ["^stand\\.", "slate"],
       ["^fly\\.post", "graphite"],
       ["^fly\\.housing", "shell"],
       ["^crank\\.cover", "shell"],
       ["^bb\\.stub", "steel"],
       ["^bb\\.house|^drive\\.case", "satin"],
       ["^frame\\.knob", "graphite"],
-      ["^frame\\.|^riser", "forest"],
+      ["^frame\\.|^riser", "sage"],
       ["^seat\\.clamp", "graphite"],
       ["^seat\\.", "alu"],
       ["^saddle|^hood|^drop", "rubber"],
