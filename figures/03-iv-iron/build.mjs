@@ -344,10 +344,11 @@ const GL3W = gl3Wire();
 const GL3 = {
   ...F.gl3Scene({
     ground: -13,
+    turn: true,
     materials: [
       ["^stand\\.foot\\d\\.pad", "rubber"],
       ["^stand\\.foot", "graphite"],
-      ["^stand\\.plate", "shell"],
+      ["^stand\\.plate", "forest"],
       ["^ruler", "alu"],
       ["^rider|^dose", "forest"],
       ["^track\\.bed", "sage"],

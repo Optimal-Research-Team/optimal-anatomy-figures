@@ -24,7 +24,7 @@ function mount(fig) {
   };
   const KS = P.scale * Math.sqrt(1.6);
   // the 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
-  const gl = gl3Attach(fig, { scene: DATA.gl3, P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => render(0) });
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => render(0), turn: DATA.gl3.turn });
   const riderSkin = (p) => (p.name === "mask" ? "silicone" : p.name === "analyser" ? "shell" : /^crank/.test(p.name) ? "alu" : /^pedal/.test(p.name) ? "graphite" : null);
   const view = mannequinView(nodes.runner, P, { gl, key: "rider", materialOf: riderSkin });
   const base = [DATA.bike.hipX, 0, 0];

@@ -134,11 +134,12 @@ F.glNote(glPart.ball("fx.spot", [RUN_X, 0, BELT_Z + 0.05], 0.75, LIT));
 F.glNote(glPart.lathe("fx.beam", G.frameOf([RUN_X, 0, BELT_Z], [0, 0, 1], [1, 0, 0], [0, 1, 0]), [[0, THIN.beam / 2], [1, THIN.beam / 2]], LIT));
 const MARKS = 8;
 for (let i = 0; i < MARKS; i++) F.glNote(glPart.prism(`fx.mark${i}`, FLOOR_F, k.roundedPlan({ x: -1.2 * PX, y: -4.6 - 1.2 * PX, w: 2.4 * PX, d: 9.2 + 2.4 * PX, r: 1.2 * PX }, 4), BELT_Z - 0.1, BELT_Z + 0.05, LIT));
-// the knee's load glow: a disc facing the camera, behind the knee ball (the page sets its place, size and strength)
+// the knee's load glow: an unlit ball round the knee, far half only, so the knee ball sits in a disc of light from any
+// side the model is turned to (the page sets its place, size and strength)
 const VIEW = G.viewOf(P);
 const GLOW = { a: VIEW, u: G.unit3(G.cross3(VIEW, [0, 0, 1])) };
 GLOW.v = G.cross3(GLOW.a, GLOW.u);
-for (const side of ["R", "L"]) F.glNote(glPart.lathe(`fx.knee${side}`, G.frameOf([RUN_X, 0, BELT_Z + 40], GLOW.a, GLOW.u, GLOW.v), [[0, 1], [0.05, 1]], LIT));
+for (const side of ["R", "L"]) F.glNote(glPart.ball(`fx.knee${side}`, [RUN_X, 0, BELT_Z + 40], 1, { ...LIT, side: "back" }));
 
 // ---------------------------------------------------------------- front: motor hood, display column and display, depth camera
 const hood = box("hood", { x: BELT.x1, y: -43.5, w: 26, d: 87, r: 4 }, 22, 9, { tone: "mid" }, {
@@ -275,6 +276,7 @@ Object.assign(F.GL.find((part) => part.n === "belt"), glPart.prism("belt", FLOOR
 const GL3 = {
   ...F.gl3Scene({
     ground: 0,
+    turn: true,
     // a long, low machine: the default occlusion radius (4.5 % of its span) reaches too far for the creases between
     // its shells and turns grainy at the phone quality level, so it is held to 5 cm and eased a little
     look: { aoRadius: 5, ao: 0.8 },

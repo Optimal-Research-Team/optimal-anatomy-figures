@@ -79,3 +79,7 @@ The slope measured off the model's ramp is 10.29 ml/min per W (Hansen 1987: 10.2
 2. **The bike.** Resolved: the app pairs with the bike's power meter, and the bike is a Wahoo trainer bike, drawn in its proportions.
 3. **To verify with full web access:** the VO2 Master spec sheet (CO₂, battery, weight); resting heart rate and the shape of the heart-rate rise; the VO₂ time constant (Wasserman).
 4. **Site copy.** The Performance one-pager says "breath-by-breath gas analysis". That matches the mask unit. "One of the strongest known predictors of longevity" fits Mandsager and Kokkinos as an association; the caption keeps "association, not a promise".
+
+## 3-D layer, 2026-11-12
+
+The bike, rider and assessor turn by drag (`turn: true`; see `shared/gl3/README.md`). The drawing steps aside while they are turned (the tablet goes dark glass, the flywheel loses its drawn hatching) and returns when the model swings home.

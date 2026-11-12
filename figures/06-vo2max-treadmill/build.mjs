@@ -219,6 +219,7 @@ F.glNote(glPart.panel("as.screen", AS.glScreen.o, AS.glScreen.ex, AS.glScreen.ey
 const GL3 = {
   ...F.gl3Scene({
     ground: 0,
+    turn: true,
     // a long, low machine: the default occlusion radius (4.5 % of its span) reaches too far for the creases between
     // its shells and turns grainy at the phone quality level, so it is held to 5 cm and eased a little (as Fig 4)
     look: { aoRadius: 5, ao: 0.8 },

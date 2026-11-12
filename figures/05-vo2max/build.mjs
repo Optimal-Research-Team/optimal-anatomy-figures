@@ -203,6 +203,7 @@ F.glNote(glPart.panel("as.screen", AS.glScreen.o, AS.glScreen.ex, AS.glScreen.ey
 const GL3 = {
   ...F.gl3Scene({
     ground: 0,
+    turn: true,
     materials: [
       ["^stand\\.", "slate"],
       ["^fly\\.post", "graphite"],

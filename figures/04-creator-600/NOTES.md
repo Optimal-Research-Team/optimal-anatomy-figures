@@ -63,6 +63,8 @@ All in `reference/truth-pack.md` §4, under "How Fig 4 uses these numbers".
 
 ## The 3-D layer (2026-11-10)
 
+**2026-11-12.** The rig turns by drag (`turn: true`). Its light now bleeds (the layer's glow pass): the plumb laser, its beam and spot, the gauge's beam, the landing marks, the knee load and the camera's pilot light. The knee load is no longer a disc facing the camera but an unlit ball round the knee with only its far half drawn (`side: "back"`), so it reads as a disc of light behind the knee from whichever side the model is turned to. While turned, both screens go dark glass (their pictures are ink).
+
 Adopted as `shared/gl3/README.md` describes, with Fig 5 as the template. `?gl=off` (or `gl="off"` on the embed) shows the drawing exactly as before.
 
 - **Colourway** (the brand's, not the maker's):

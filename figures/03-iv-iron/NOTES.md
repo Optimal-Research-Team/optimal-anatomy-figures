@@ -46,6 +46,8 @@ All in `reference/truth-pack.md` §3, "How Fig 3 uses these numbers".
 
 ## 3-D layer (shared/gl3, 2026-11-10)
 
+**2026-11-12.** The depot turns by drag (`turn: true`; see `shared/gl3/README.md`): the drawing steps aside while it is turned and returns when it swings home. The board is forest paint now, not white: the track, the silo and the white housings stand off it, and the ruler keeps its own pale strip so its ticks still read.
+
 The yard renders under the SVG with the shared real-time layer; the SVG stays on top as ink. With `?gl=off` (or wherever the layer can't run) the drawing is as before: the static SVG is byte-identical apart from three hooks for the layer (`data-gl3-hide` on the bed's tint, a `data-gl3-hide` group round the sleepers' lines, one `.fe-gl3-only` group that is `display: none` until the layer is on), and the live SVG (reduced-motion still, all three routes) matched the previous build's exactly.
 
 **Scene: 146 parts.** The kit's helpers record 33 solids. `build.mjs` adds a body for everything else that is drawn as a solid:

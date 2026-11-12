@@ -22,7 +22,7 @@ function mount(fig) {
     return n;
   };
   // the 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
-  const gl = gl3Attach(fig, { scene: DATA.gl3, P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => frame && render() });
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => frame && render(), turn: DATA.gl3.turn });
   const view = mannequinView(nodes.runner, P, { between: ["plumb"], gl, key: "runner", materialOf: (p) => (p.name === "emitter" ? "graphite" : null) });
   const Z = DATA.beltZ;
   const base = [DATA.runX, 0, Z];
@@ -236,9 +236,10 @@ function mount(fig) {
     if (!glLit) {
       glLit = true;
       glBeam = 0;
-      for (const n of ["fx.laser", "fx.spot", "fx.beam", "fx.gbeam"]) gl.set(n, { color: LASER });
-      for (let i = 0; i < DATA.marks; i++) gl.set(`fx.mark${i}`, { color: HEAT, opacity: 0.99, visible: false });
-      for (const k of ["R", "L"]) gl.set(`fx.knee${k}`, { color: HEAT, opacity: 0.5, visible: false });
+      // light bleeds from all of these (the layer's glow pass): hair-thin beams need a lot to show a halo
+      for (const n of ["fx.laser", "fx.spot", "fx.beam", "fx.gbeam"]) gl.set(n, { color: LASER, glow: { "fx.laser": 4, "fx.spot": 3, "fx.beam": 2.4, "fx.gbeam": 3.4 }[n] });
+      for (let i = 0; i < DATA.marks; i++) gl.set(`fx.mark${i}`, { color: HEAT, opacity: 0.99, visible: false, glow: 1.4 });
+      for (const k of ["R", "L"]) gl.set(`fx.knee${k}`, { color: HEAT, opacity: 0.5, visible: false, glow: 1.1 });
       gl.set("camera.pilot", { emissive: 0x7fe08a, intensity: 2.4 });
       const beam = view.nodes.get("beam");
       if (beam) beam.g.setAttribute("data-gl3-hide", "");
@@ -273,8 +274,7 @@ function mount(fig) {
       const a = mk ? Math.max(0, 1 - (clock - mk.t) / 1.2) : 0;
       gl.set(`fx.mark${i}`, mk && x >= DATA.belt.x + 2 && a > 0.01 ? { visible: true, opacity: Math.min(0.99, a), F: flat(x, mk.y, 0) } : { visible: false });
     }
-    // the knee's glow: a disc facing the camera, just behind the knee ball, sized and faded as the drawing's
-    const g = DATA.glow;
+    // the knee's glow: a ball of light round the knee ball (its far half only), sized and faded as the drawing's
     for (const k of ["R", "L"]) {
       const ball = parts.find((p) => p.name === `knee${k}`);
       const load = loads[k];
@@ -283,8 +283,7 @@ function mount(fig) {
         continue;
       }
       const r = (ball.r + 1.6 + 5.5 * load) / Math.sqrt(1.6);
-      const back = ball.r + 0.5;
-      gl.set(`fx.knee${k}`, { visible: true, opacity: 0.8 * Math.min(1, load), F: { o: [ball.c[0] - g.a[0] * back, ball.c[1] - g.a[1] * back, ball.c[2] - g.a[2] * back], a: g.a, u: g.u.map((v) => v * r), v: g.v.map((v) => v * r) } });
+      gl.set(`fx.knee${k}`, { visible: true, opacity: 0.8 * Math.min(1, load), F: { o: ball.c, a: [0, 0, r], u: [r, 0, 0], v: [0, r, 0] } });
     }
   }
 

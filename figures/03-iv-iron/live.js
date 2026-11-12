@@ -179,6 +179,7 @@ function mount(fig) {
     H: DATA.H,
     file: DATA.gl3.file,
     v: DATA.gl3.v,
+    turn: DATA.gl3.turn,
     redraw: () => {
       glShown = {};
       draw();
