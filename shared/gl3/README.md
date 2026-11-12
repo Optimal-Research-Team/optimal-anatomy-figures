@@ -130,5 +130,10 @@ and feet go, brushed metal for shafts, maple mannequins with satin nickel joints
   blurred wide, and a contact layer (the scene seen from the floor looking up, nearer = darker). Both fade to
   nothing before the canvas edge, so the canvas never shows as a box.
 - **Occlusion.** GTAO on the solids, blended into the picture; then one output pass (tone curve, sRGB, dither).
+- **Shadows between solids.** One shadow map from the key light, fitted to the scene's box as the light sees it (so every
+  texel lands on the figure) and drawn once a frame, however many passes the frame has. `look.shadowBlur` sets the
+  soft edge in cm (default 2.4).
+- **Sharpness.** Multisampled, and on a 1x screen (a desktop monitor, the clinic TV) drawn at 1.5x and scaled down.
+- **Counts.** `stage.__gl3.stats()` gives draw calls and triangles for the last frame, all passes together.
 - **Pace.** The figure owns the clock and calls `render()`. If frames run long while it animates, `host.js` steps
   the layer's quality down (lighter occlusion, then none and a lower pixel ratio). It never steps up.

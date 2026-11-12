@@ -98,7 +98,7 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 // One palette for both themes: warm white shells, sage and forest paint, graphite, rubber, steel, maple. The theme
 // changes the room (bright studio on Cream, a dark stage with a rim light on Forest night), not the object.
 const PRESETS = {
-  shell: { color: 0xece8de, roughness: 0.4, clearcoat: 0.35, clearcoatRoughness: 0.32 },
+  shell: { color: 0xeeede8, roughness: 0.4, clearcoat: 0.35, clearcoatRoughness: 0.32 },
   satin: { color: 0xd9ddd3, roughness: 0.52, metalness: 0.04 },
   bone: { color: 0xe7dfd0, roughness: 0.62 },
   sage: { color: 0xa7b89d, roughness: 0.46, clearcoat: 0.3, clearcoatRoughness: 0.38 },
@@ -459,7 +459,7 @@ function studio(renderer, theme, basis) {
   // front right, a thin rim behind. Night dims the walls, so the key and the rim carve the shape.
   const night = theme !== "light";
   const s = new THREE.Scene();
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), new THREE.MeshBasicMaterial({ color: night ? 0x3a463a : 0xcbc6b9, side: THREE.BackSide }));
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(60, 60, 60), new THREE.MeshBasicMaterial({ color: night ? 0x3a463a : 0xcac8c1, side: THREE.BackSide }));
   s.add(wall);
   const panel = (w, h, pos, color, k) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(k), side: THREE.DoubleSide }));
@@ -468,11 +468,11 @@ function studio(renderer, theme, basis) {
     m.lookAt(0, 0, 0);
     s.add(m);
   };
-  panel(26, 18, [-8, 20, 9], 0xfff6e8, night ? 6.5 : 8); // key, overhead-left
+  panel(26, 18, [-8, 20, 9], night ? 0xfff6e8 : 0xfffaf3, night ? 6.5 : 8); // key, overhead-left
   panel(5, 26, [-22, 6, 6], 0xfffaf0, night ? 3.2 : 4.5); // strip, left
   panel(14, 16, [18, 6, 12], 0xeaf3ea, night ? 2.0 : 2.8); // fill, front-right
   panel(30, 4, [5, 10, -22], 0xdff3d8, night ? 6 : 3.5); // rim, behind
-  panel(44, 44, [0, -24, 0], night ? 0x4f5e49 : 0xf3ecdf, night ? 1.0 : 1.5); // floor bounce (night: enough that upright metal isn't black)
+  panel(44, 44, [0, -24, 0], night ? 0x4f5e49 : 0xf3f0e9, night ? 1.0 : 1.5); // floor bounce (night: enough that upright metal isn't black)
   const pm = new THREE.PMREMGenerator(renderer);
   const env = pm.fromScene(s, 0.03).texture;
   pm.dispose();
@@ -686,6 +686,8 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   renderer.toneMapping = THREE.NoToneMapping; // the tone curve is applied once, in the final pass
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.VSMShadowMap;
+  renderer.shadowMap.autoUpdate = false; // drawn once a frame (render() asks for it), not once for each of the frame's passes
+  renderer.info.autoReset = false; // so stats() counts the whole frame
   renderer.setClearColor(0x000000, 0);
   renderer.autoClear = true;
 
@@ -816,32 +818,49 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   const unit = look.unit ?? 1;
   if (span > 600) placeCamera(span * 5);
 
-  const key = new THREE.DirectionalLight(0xfff4e6, night ? 3.3 : 3.0);
+  const key = new THREE.DirectionalLight(night ? 0xfff4e6 : 0xfff9f1, night ? 3.3 : 3.0);
   // from above, a little left of the camera and toward it: tops lightest, shadows falling back and to the right
   const keyDir = new THREE.Vector3().addScaledVector(r, -0.5).addScaledVector(d, 0.42).add(new THREE.Vector3(0, 0, 1.45)).normalize();
   key.position.copy(centre).addScaledVector(keyDir, span * 2.2);
   key.target.position.copy(centre);
   key.castShadow = true;
-  const sm = coarse ? 768 : 1024;
+  // The shadow map covers the lit volume and no more: the scene's box, grown a little for movers, seen from the
+  // light. Every texel then lands on the figure, so solids shade each other cleanly at a soft, even width.
+  const sm = coarse ? 1024 : 2048;
   key.shadow.mapSize.set(sm, sm);
   const sc = key.shadow.camera;
-  const reach = span * 0.85 + 30;
-  sc.left = -reach;
-  sc.right = reach;
-  sc.top = reach;
-  sc.bottom = -reach;
-  sc.near = 1;
-  sc.far = span * 5;
+  {
+    const lit = box.clone().expandByScalar(span * 0.12);
+    const eye = new THREE.OrthographicCamera();
+    eye.position.copy(key.position).applyMatrix4(mirror.matrix);
+    eye.lookAt(centre.clone().applyMatrix4(mirror.matrix));
+    eye.updateMatrixWorld(true);
+    const toLight = eye.matrixWorldInverse.clone().multiply(mirror.matrix);
+    const seen = new THREE.Box3();
+    const q = new THREE.Vector3();
+    for (let i = 0; i < 8; i++) seen.expandByPoint(q.set(i & 1 ? lit.max.x : lit.min.x, i & 2 ? lit.max.y : lit.min.y, i & 4 ? lit.max.z : lit.min.z).applyMatrix4(toLight));
+    const half = Math.max(seen.max.x - seen.min.x, seen.max.y - seen.min.y) / 2; // square texels
+    const cx = (seen.min.x + seen.max.x) / 2;
+    const cy = (seen.min.y + seen.max.y) / 2;
+    sc.left = cx - half;
+    sc.right = cx + half;
+    sc.bottom = cy - half;
+    sc.top = cy + half;
+    sc.near = Math.max(0.5, -seen.max.z - span * 0.05);
+    sc.far = -seen.min.z + span * 0.05;
+    sc.updateProjectionMatrix();
+    const texel = (half * 2) / sm; // world units per texel
+    key.shadow.radius = clamp(((look.shadowBlur ?? 2.4) * unit) / texel, 2, 18); // the key is a big softbox: a soft edge of about 2.4 cm
+  }
   key.shadow.bias = -0.0005;
-  key.shadow.normalBias = 0.6 * unit;
-  key.shadow.radius = coarse ? 7 : 9; // wide: the key is a big softbox, so its shadow is soft
+  key.shadow.normalBias = 0.4 * unit;
   key.shadow.blurSamples = coarse ? 10 : 16;
   mirror.add(key, key.target);
   const rim = new THREE.DirectionalLight(0xdcf2d3, night ? 1.5 : 0.5);
   rim.position.copy(centre).addScaledVector(r, span).addScaledVector(d, -span * 1.4).add(new THREE.Vector3(0, 0, span * 0.9));
   rim.target.position.copy(centre);
   mirror.add(rim, rim.target);
-  mirror.add(new THREE.HemisphereLight(night ? 0xcfe0c8 : 0xfffaf0, night ? 0x10180f : 0xcfc6b2, night ? 0.35 : 0.42));
+  mirror.add(new THREE.HemisphereLight(night ? 0xcfe0c8 : 0xfffcf6, night ? 0x10180f : 0xcfcbc1, night ? 0.35 : 0.42));
 
   // The floor only takes shadow, so the page shows through around the figure (see groundShadows). It lives in the
   // mirrored world's own coordinates: its cameras must not carry the mirror.
@@ -872,7 +891,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     lightDir: keyDir.clone().transformDirection(mirror.matrix),
     height: look.contactHeight ?? clamp(span * 0.14, 12 * unit, 38 * unit),
     color: night ? 0x000000 : 0x3d3320,
-    cast: (look.cast ?? 1) * (night ? 0.55 : 0.26),
+    cast: (look.cast ?? 1) * (night ? 0.55 : 0.3),
     contact: (look.contact ?? 1) * (night ? 0.85 : 0.7),
     res,
   });
@@ -947,6 +966,8 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   function resize(w, h) {
     if (!w || !h) return;
     let want = Math.min(window.devicePixelRatio || 1, 2);
+    // on a 1x screen (a desktop monitor, the clinic TV) draw at 1.5x and let the browser scale it down: crisper edges
+    if (!coarse && level === 2 && want < 1.5) want = 1.5;
     if (level === 0) want = Math.min(want, 1.5);
     const cap = coarse ? 2.2e6 : 4.6e6; // device pixels
     if (w * h * want * want > cap) want = Math.sqrt(cap / (w * h));
@@ -976,6 +997,8 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     resize,
     render() {
       if (lost || !cssW) return;
+      renderer.info.reset();
+      renderer.shadowMap.needsUpdate = true;
       const hidden = groundOnly.filter((o) => o.visible).concat(ghosts.filter((g) => g.visible));
       if (!floorless) ground.update(renderer, world, hidden);
       renderer.setRenderTarget(beauty);
@@ -1081,6 +1104,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
       const q = V(p).applyMatrix4(mirror.matrix).project(cam);
       return [((q.x + 1) / 2) * W, ((1 - q.y) / 2) * H];
     },
+    /** Counts for the last frame, all passes together. */
     stats: () => ({ parts: named.size, calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, dpr: +dpr.toFixed(2), cssW, cssH, level, frames }),
     dispose() {
       world.traverse((o) => {
