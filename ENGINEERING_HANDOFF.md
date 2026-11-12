@@ -1,7 +1,7 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
 **Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b"; every figure in real-time 3-D added 2026-11-11)
-**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-11` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-11), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
+**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-12` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -21,7 +21,7 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `handoff/site/` | Drop-in files for `src/components/optimal-figures/`: `OptimalFigure.tsx`, `optimalFigures.ts`, `optimal-figures.css`. |
 | `scripts/export-embeds.mjs` | Copies the 15 built scripts, the shared 3-D chunk `optimal-gl3.js` (also into `reveals/`) and A2's own chunk `hypothalamus-3d.js`, into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha; the chunk is listed under A2's `chunks`). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
-| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-11-11` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-11), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
+| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-11-12` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
 
 ## Added Nov 11: every figure in real-time 3-D (one shared layer)
 
@@ -34,9 +34,11 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | A2, A4 | already real-time 3-D | unchanged, byte-identical |
 | E1–E3 on the site (and E4 in the gallery) | take-apart drawing that turns | the same parts as lit 3-D bodies while they turn and come apart; decals and screens kept as drawn |
 
+**Nov 12 polish round:** the look was refined after the first release (cleaner whites, finer shadows, 1.5x drawing on 1x screens, A1 and A5 reworked on the cream theme, Fig 5's colourway). It changes the same files and nothing about how they load; use `handoff-2026-11-12`.
+
 **What you ship**
 
-- `optimal-gl3.js` (633 KB, 164 KB gzip), **in two places**:
+- `optimal-gl3.js` (634 KB, 165 KB gzip), **in two places**:
   - `public/figures/optimal-gl3.js`: the 13 figures that use it load it lazily from the embed script's own folder (`<embed folder>/optimal-gl3.js?v=<sha>`), once per page view however many figures are on the page.
   - `public/figures/reveals/optimal-gl3.js`: each framed machine page loads it from its own folder. The frame is `sandbox="allow-scripts"` as before; a script from the same folder needs nothing more.
 - The 13 changed embed scripts and the 3 changed machine pages. `scripts/export-embeds.mjs` writes all of it, and the manifest lists the chunk under each figure's `chunks` and each machine's `chunks`.

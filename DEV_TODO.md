@@ -4,8 +4,9 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
-- **Nov 11, 2026: every figure renders in real-time 3-D. Ship one more file, `optimal-gl3.js`, in two places, and re-copy the embeds.** See ENGINEERING_HANDOFF.md, "Added Nov 11". Use release `handoff-2026-11-11`, or re-run `scripts/export-embeds.mjs`.
-  - **Files:** `optimal-gl3.js` (633 KB, 164 KB gzip) goes in `public/figures/` next to the embed scripts **and** in `public/figures/reveals/` next to the three machine pages. Re-copy 13 embed scripts (Figs 1–6, A1, A3, A5–A9) and the 3 machine pages. `optimal-fig-hypothalamus.js`, `hypothalamus-3d.js` and `optimal-fig-heart.js` are byte-identical to `handoff-2026-10-24`.
+- **Nov 12, 2026: polish round on the 3-D look. Same files, same places; use release `handoff-2026-11-12` in place of `handoff-2026-11-11`.** Looks only (whites, shadows, sharpness on 1x screens, A1 and A5 on the cream theme, Fig 5's colours). `optimal-gl3.js` (both copies), the 13 embeds and the 3 machine pages changed; A2 and A4 are still byte-identical to Oct 24. No site code, placement or reserve changes.
+- **Nov 11, 2026: every figure renders in real-time 3-D. Ship one more file, `optimal-gl3.js`, in two places, and re-copy the embeds.** See ENGINEERING_HANDOFF.md, "Added Nov 11". Use release `handoff-2026-11-12` (the Nov 12 polish round replaced `handoff-2026-11-11`), or re-run `scripts/export-embeds.mjs`.
+  - **Files:** `optimal-gl3.js` (634 KB, 165 KB gzip) goes in `public/figures/` next to the embed scripts **and** in `public/figures/reveals/` next to the three machine pages. Re-copy 13 embed scripts (Figs 1–6, A1, A3, A5–A9) and the 3 machine pages. `optimal-fig-hypothalamus.js`, `hypothalamus-3d.js` and `optimal-fig-heart.js` are byte-identical to `handoff-2026-10-24`.
   - **Code:** none. Placements, `FIGURE_RESERVE`, `REVEAL_RESERVE` and the private patch stay as they are (card heights are unchanged: old and new embeds compared at 358 and 760 px).
   - **Fallback:** each figure still paints its approved drawing first and stays on it without WebGL 2, on Save-Data, on small devices, or if the chunk isn't deployed. `gl="off"` on an element turns the layer off for that figure.
   - **QA:** `check-embeds.mjs` expects `(3-D on)` on every figure and `(SVG fallback)` in its WebGL-off pass.
@@ -50,7 +51,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 1. **Apply the reference integration** (S, about 1 h including review)
    - Apply `beoptimal-landing-anatomy-figures.patch` from the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch) on a branch from `main` (`git apply`). It was made against `0f36c00`; on Oct 21 it applied cleanly there and to `main` at `0c0473c` (re-checked that afternoon with the A2 3-D embeds: build and QA pass).
-   - Copy `embeds/` from the `handoff-2026-11-11` release into `public/figures/` (15 scripts, `optimal-gl3.js`, `hypothalamus-3d.js`, and `reveals/` with the three machines), or run `scripts/export-embeds.mjs`.
+   - Copy `embeds/` from the `handoff-2026-11-12` release into `public/figures/` (15 scripts, `optimal-gl3.js`, `hypothalamus-3d.js`, and `reveals/` with the three machines), or run `scripts/export-embeds.mjs`.
    - `yarn test` (80/80), `yarn build`, `yarn preview`.
 2. **Compliance look at the Menopause Protocol** (owner: Peter and the Protocol's reviewer)
    - Four figures go in the reviewed page: A9 in §3, Fig 1 and A3 in §5, A2 in §14.

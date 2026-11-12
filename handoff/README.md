@@ -1,4 +1,4 @@
-# Optimal figures: engineering handoff, Nov 11 2026 (replaces the Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
+# Optimal figures: engineering handoff, Nov 12 2026 (replaces the Nov 11, Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
 
 **For:** Jeremy, and anyone integrating the anatomy figures into `BeOptimal/beoptimal-landing`.
 
@@ -6,11 +6,20 @@
 
 Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) and `DEV_TODO.md` (the task list, newest changes first).
 
+## What changed since the Nov 11 package (`handoff-2026-11-11`)
+
+A polish round on the new 3-D look (Peter, Nov 12). **Same files, same places, no site code changes**: if you took `handoff-2026-11-11`, re-copy `embeds/` from this one.
+
+- `optimal-gl3.js` (both copies), the 13 embeds that use it and the 3 machine pages changed. `optimal-fig-hypothalamus.js`, `hypothalamus-3d.js` and `optimal-fig-heart.js` are still byte-identical to Oct 24.
+- What changed is looks only: cleaner white housings, finer shadows between parts, drawing at 1.5x on 1x screens (desktop monitors), more presence for A1 on the cream theme, a finer foam in A5, and Fig 5's bike in the same sage and slate as the treadmill figures.
+- Card heights, placements, reserves and the private patch are unchanged.
+- Checked: every built page (57: both themes, embed test pages, the framed machine pages) brings the layer up with a clean console. The full site check (patch + embeds on `beoptimal-landing`, `check-embeds.mjs` at 390 and 1280 px) was last run on the Nov 11 embeds; nothing about how the files load has changed since.
+
 ## What changed since the Oct 24 package (`handoff-2026-10-24`)
 
 **Every figure now renders as a real-time 3-D model** (Peter, Nov 10: "video game standard"). One new file does it for all of them. No site code changes.
 
-1. **One more file to ship, in two places: `optimal-gl3.js`** (633 KB, 164 KB gzip).
+1. **One more file to ship, in two places: `optimal-gl3.js`** (634 KB, 165 KB gzip).
    - `public/figures/optimal-gl3.js`, next to the embed scripts. Thirteen figures load it lazily from their own folder, once per page view, when a figure comes near the viewport.
    - `public/figures/reveals/optimal-gl3.js`, next to the three framed machine pages. Each framed page loads it from its own folder.
    - Both are in this release's `embeds/`, and `scripts/export-embeds.mjs` writes both.
@@ -49,7 +58,7 @@ See `ENGINEERING_HANDOFF.md`, "Added Nov 11", for how it works and what to check
 
 ## What changed between the Oct 12 and Oct 21 packages
 
-1. **All 15 embed scripts are new.** Use `embeds/` from the latest release (now `handoff-2026-11-11`), or re-run `scripts/export-embeds.mjs`. Don't use the Oct 12 copies.
+1. **All 15 embed scripts are new.** Use `embeds/` from the latest release (now `handoff-2026-11-12`), or re-run `scripts/export-embeds.mjs`. Don't use the Oct 12 copies.
    - **Oct 18:** readout names and units now match the clinic TV ("Step rate N/min", "Kneecap force", "Hemoglobin", mL).
    - **Oct 20:** a visual-bug sweep.
      - Tap targets are at least 44 px at 320 px wide.
@@ -81,7 +90,7 @@ See `ENGINEERING_HANDOFF.md`, "Added Nov 11", for how it works and what to check
 | Slot reserves and the site component | `handoff/site/`: `optimalFigures.ts`, `OptimalFigure.tsx`, `optimal-figures.css` |
 | Placements | `handoff/placements.json`: every figure's route, anchor, size and priority |
 | QA | `handoff/qa/check-embeds.mjs`, the end-to-end QA against any running site |
-| Embed scripts | The **`handoff-2026-11-11` release** (`embeds/`: the 15 scripts, `optimal-gl3.js`, `hypothalamus-3d.js`, `reveals/` with the three machines in 3-D and their copy of `optimal-gl3.js`, and `manifest.json`), or re-run `node scripts/export-embeds.mjs --out <site>/public/figures`. Live copies: `https://optimal-research-team.github.io/optimal-anatomy-figures/<fig>/embed/optimal-fig-<slug>.js` (and `a2-hypothalamus/embed/hypothalamus-3d.js`) |
+| Embed scripts | The **`handoff-2026-11-12` release** (`embeds/`: the 15 scripts, `optimal-gl3.js`, `hypothalamus-3d.js`, `reveals/` with the three machines in 3-D and their copy of `optimal-gl3.js`, and `manifest.json`), or re-run `node scripts/export-embeds.mjs --out <site>/public/figures`. Live copies: `https://optimal-research-team.github.io/optimal-anatomy-figures/<fig>/embed/optimal-fig-<slug>.js` (and `a2-hypothalamus/embed/hypothalamus-3d.js`) |
 | Equipment films E1–E4 | `figures/e*/assets/` here, or the release zip's `equipment/` |
 | **The site integration patch** | **Private:** [Optimal-Research-Team/optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch). It's code from the private site repo, so it stays out of this public one. Ask Peter for access. It applies cleanly to `beoptimal-landing` `0f36c00` and `main` `0c0473c` (checked Oct 21), and hasn't been applied yet. |
 
@@ -94,5 +103,5 @@ See `ENGINEERING_HANDOFF.md`, "Added Nov 11", for how it works and what to check
 
 ## How this package is made
 
-`node scripts/package-handoff.mjs --tag handoff-2026-11-11` builds every figure, exports the embeds, and assembles the folder and zip (docs, `site/`, `placements.json`, the QA script, `export-embeds.mjs`, `embeds/`, `equipment/`) in `handoff/package/` (git-ignored). The zip goes on the GitHub release; the site patch never does (it lives in the private repo).
+`node scripts/package-handoff.mjs --tag handoff-2026-11-12` builds every figure, exports the embeds, and assembles the folder and zip (docs, `site/`, `placements.json`, the QA script, `export-embeds.mjs`, `embeds/`, `equipment/`) in `handoff/package/` (git-ignored). The zip goes on the GitHub release; the site patch never does (it lives in the private repo).
 
