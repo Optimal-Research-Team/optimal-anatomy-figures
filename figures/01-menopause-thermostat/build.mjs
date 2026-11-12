@@ -13,7 +13,7 @@
 //   node build.mjs            -> menopause-thermostat.html (Forest night)
 //   node build.mjs --light    -> menopause-thermostat-light.html (Cream)
 //   node build.mjs --audit    -> also prove the geometry
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as k from "../../.claude/skills/anatomy/kit/iso-kit.mjs";
@@ -524,6 +524,9 @@ const svg = k.figureSvg({
 // kept for the one part the drawing lights: the column (rod, collar, finger, index), in forest paint. Anything the
 // drawing puts ink on (scale, dial faces, knob plate, bridge label) stays pale so the ink reads. The core is dark so
 // that its glow during a flash (live.js) is the only warm colour in the picture, as the heat wash is in the drawing.
+// Peter, Nov 12: the 3-D version of this figure is withdrawn. The drawing is the figure again; the scene below is
+// kept so it can come back by flipping this one flag (the page then never loads the 3-D chunk).
+const GL3_LIVE = false;
 const GL3W = gl3Wire();
 const GL3 = {
   ...gl3SceneOf(GL, {
@@ -566,7 +569,7 @@ for (const part of GL3.parts) {
 }
 
 const DATA = {
-  gl3: GL3,
+  gl3: GL3_LIVE ? GL3 : null,
   W,
   H,
   P,
@@ -629,7 +632,8 @@ if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
   // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
-  GL3W.copyTo(join(HERE, "embed"));
+  if (GL3_LIVE) GL3W.copyTo(join(HERE, "embed"));
+  else rmSync(join(HERE, "embed", GL3W.chunk.file), { force: true });
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `${CABLES.length} cables`, `scale ${KS.toFixed(3)}`);
 A.auditOrExit(R, P, { frames: STATES });

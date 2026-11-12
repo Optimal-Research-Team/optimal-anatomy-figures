@@ -17,7 +17,7 @@ function mount(fig) {
   const SPEED = 9; // world units per second through a 9-lane section; narrower sections run faster (same current)
   // the 3-D layer (shared/gl3): the same solids, rendered under this SVG. Until it arrives every call is a no-op.
   // Nothing solid moves in this figure (dots, needles and the switch are ink), so the layer is drawn on change only.
-  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3.file, v: DATA.gl3.v, redraw: () => glArrive(), build: glGlass });
+  const gl = gl3Attach(fig, { scene: DATA.gl3, P: DATA.P, W: DATA.W, H: DATA.H, file: DATA.gl3?.file, v: DATA.gl3?.v, redraw: () => glArrive(), build: glGlass });
   // The far shoulder stands above the viewBox (the SVG shows it: its overflow is visible), and the layer's canvas
   // only covers the SVG's box. So while the layer is on, the viewBox reaches up to it (same scale, same place on
   // the page: the margin takes the extra height back) and the layer's camera follows.

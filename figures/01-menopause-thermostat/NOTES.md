@@ -60,6 +60,8 @@ All in `reference/truth-pack.md` §1 ("How Fig 1 uses these numbers").
 
 ## The 3-D layer (shared/gl3, 2026-11-10)
 
+**Withdrawn, 2026-11-12 (Peter).** The 3-D version of this figure is off: `GL3_LIVE = false` in `build.mjs`, so the page carries no scene, never loads the 3-D chunk, and the drawing (approved Oct 12) is the figure again. Everything below describes the scene as it was built; it stays in the source and comes back by flipping that flag.
+
 This figure does not use `shared/figkit.mjs`, so `build.mjs` keeps its own `GL` list: every local helper pushes one descriptor (`glPart.prism | lathe | tube`) with the frame, outline and extents the kit call gets, and the piece name for movers. Solids drawn by a direct kit call are noted by hand: base plate, feet, label plate, capsule body, rod, lead screw, lamp domes, slats, linkage bar. 80 rendered parts. `gl3SceneOf(GL, …)` gives each a material by name.
 
 **Colourway.** Warm white enamel (`shell`) for the plate and every housing, the scale board, knob plate and dial faces (ink reads on them). `graphite` for the feet, the capsule's flange, the scale's foot, the solenoid's plinth, terminal bosses, and the radiator's sill and core. `rubber` for foot pads and cables. Metal for what is turned or ground: `steel` rails, screw and contacts, `alu` knob, jaws, linkage bar, solenoid can and label plate, `nickel` bezels, bushings, bearings, gland, pins and studs. `satin` louvres. **Green is only the lit column** (rod, collar, finger, index) in `forest`, so the legend's "lit" swatch still means one thing. The only warm colour is the flash: the core glows and the flash lamp lights; the chill lamp is the only blue.

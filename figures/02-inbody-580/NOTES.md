@@ -34,6 +34,8 @@ Frequency buttons (5 / 50 / 250 / 500 kHz) and segment buttons (Arm / Trunk / Le
 
 ## 3-D layer (shared/gl3, 2026-11-10)
 
+**Withdrawn, 2026-11-12 (Peter).** The 3-D version of this figure is off: `GL3_LIVE = false` in `build.mjs`, so the page carries no scene, never loads the 3-D chunk, and the drawing (approved Oct 12) is the figure again. Everything below describes the scene as it was built; it stays in the source and comes back by flipping that flag.
+
 The same solids, rendered under the SVG; the SVG is the ink on top (cells, dots, ticks, needles, screen, switch). Read `shared/gl3/README.md` first.
 
 - **Colourway (the brand's, not InBody's):** warm white shells (column, docks, deck, head, pelvis, console); a forest bench, forest caps and soles on the glass body, a forest trim strip on the column; graphite base under the deck, graphite grips and neck; rubber feet and cable; satin nickel electrodes (foot pads, and two bands on each grip), shoulder balls and bar, switch knob; aluminium grip rods and label plate; brass terminal studs.

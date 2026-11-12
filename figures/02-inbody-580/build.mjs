@@ -9,7 +9,7 @@
 // like the InBody result sheet, reading each segment's impedance.
 //
 //   node build.mjs | --light | --audit
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { figkit, k, G, A, glPart } from "../../shared/figkit.mjs";
@@ -323,6 +323,9 @@ const svg = k.figureSvg({ width: W, height: H, label: LABEL_TEXT, body: [...back
 // the glass body's caps and soles; graphite and rubber at the base, the feet and the grips; brushed metal for the
 // electrodes, rods, joints and the knob; glass for the five tubes (live.js gives them their own glass material).
 // The floor is under the bench's feet (z = -13).
+// Peter, Nov 12: the 3-D version of this figure is withdrawn. The drawing is the figure again; the scene below is
+// kept so it can come back by flipping this one flag (the page then never loads the 3-D chunk).
+const GL3_LIVE = false;
 const GL3W = gl3Wire();
 const GL3 = {
   ...F.gl3Scene({
@@ -354,7 +357,7 @@ const GL3 = {
 };
 
 const DATA = {
-  gl3: GL3,
+  gl3: GL3_LIVE ? GL3 : null,
   W,
   H,
   P,
@@ -405,7 +408,8 @@ if (THEME === "light") {
   mkdirSync(join(HERE, "embed"), { recursive: true });
   writeFileSync(join(HERE, "embed", `optimal-fig-${SLUG}.js`), embed({ tag: `optimal-fig-${SLUG}`, body, script: SCRIPT, css: CSS }));
   // the 3-D chunk sits next to the embed script (the embed resolves it from its own URL; the pages use embed/)
-  GL3W.copyTo(join(HERE, "embed"));
+  if (GL3_LIVE) GL3W.copyTo(join(HERE, "embed"));
+  else rmSync(join(HERE, "embed", GL3W.chunk.file), { force: true });
 }
 console.log("wrote", out, `${R.items.length} items`, `${R.solids.length} solids`, `scale ${KS.toFixed(3)}`);
 // The arm tubes end with their rim on the shoulder balls; the 4 px² sliver at that rim was checked at 8× (shots/tmp/shoulder8x.png).

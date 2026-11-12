@@ -30,12 +30,12 @@ function mount(fig) {
   const night = (fig.closest("[data-theme]")?.getAttribute("data-theme") ?? "dark") !== "light";
   const gl = gl3Attach(fig, {
     // at night the few upright metal parts wear their second finish (see build.mjs, NIGHT)
-    scene: night ? { ...DATA.gl3, parts: DATA.gl3.parts.map((part) => (part.mn ? { ...part, m: part.mn } : part)) } : DATA.gl3,
+    scene: !DATA.gl3 ? null : night ? { ...DATA.gl3, parts: DATA.gl3.parts.map((part) => (part.mn ? { ...part, m: part.mn } : part)) } : DATA.gl3,
     P,
     W: DATA.W,
     H: DATA.H,
-    file: DATA.gl3.file,
-    v: DATA.gl3.v,
+    file: DATA.gl3?.file,
+    v: DATA.gl3?.v,
     redraw: () => {
       for (const key of Object.keys(drawn)) delete drawn[key];
       draw();
