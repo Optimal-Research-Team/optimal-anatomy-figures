@@ -1,10 +1,22 @@
-# Optimal figures: engineering handoff, Nov 12 2026 (replaces the Nov 11, Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
+# Optimal figures: engineering handoff, Nov 12 2026 (b) (replaces the Nov 12, Nov 11, Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
 
 **For:** Jeremy, and anyone integrating the anatomy figures into `BeOptimal/beoptimal-landing`.
 
 **Source of truth:** https://github.com/Optimal-Research-Team/optimal-anatomy-figures. The live gallery is https://optimal-research-team.github.io/optimal-anatomy-figures/.
 
 Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) and `DEV_TODO.md` (the task list, newest changes first).
+
+## What changed since the first Nov 12 package (`handoff-2026-11-12`)
+
+A second round on Nov 12 (Peter: "build the bigger ideas"). **Same files, same places, no site code changes. Copy the whole of `embeds/` again, all at once** (see the first point).
+
+- **The 3-D file and the embeds must be updated together.** `optimal-gl3.js` and every embed that uses it now carry version 3 of their handshake. An old embed with the new file (or the other way round) does not break: it shows the drawing and never the 3-D model. A full copy of `embeds/` avoids that.
+- **Fig 1 (thermostat) and Fig 2 (InBody, five cylinders) are drawings again.** Peter withdrew their 3-D versions on Nov 12. Their two embed scripts no longer load `optimal-gl3.js` at all. Nothing to do beyond re-copying them.
+- **Figs 3 to 6 can be turned.** A drag on the figure spins the model; a small handle sits in the figure's top-left corner (it appears once a pointer moves over the figure) and takes the arrow keys. While the model is turned its labels and screens step aside; let go and it swings back. A touch drag turns only sideways, so the page still scrolls. To switch turning off on a page, put `turn="off"` on the element, e.g. `<optimal-fig-vo2max turn="off">`.
+- **Lit parts glow** (Fig 4's lasers and knee load, the pilot lights on Figs 4 and 6, and the lit parts of the tissue figures).
+- Fig 3's board is forest green now, not white.
+- `optimal-gl3.js` is 655 KB (170 KB gzip). `optimal-fig-hypothalamus.js`, `hypothalamus-3d.js` and `optimal-fig-heart.js` are still byte-identical to Oct 24.
+- Card heights, placements, reserves and the private patch are unchanged.
 
 ## What changed since the Nov 11 package (`handoff-2026-11-11`)
 
@@ -19,7 +31,7 @@ A polish round on the new 3-D look (Peter, Nov 12). **Same files, same places, n
 
 **Every figure now renders as a real-time 3-D model** (Peter, Nov 10: "video game standard"). One new file does it for all of them. No site code changes.
 
-1. **One more file to ship, in two places: `optimal-gl3.js`** (634 KB, 165 KB gzip).
+1. **One more file to ship, in two places: `optimal-gl3.js`** (655 KB, 170 KB gzip).
    - `public/figures/optimal-gl3.js`, next to the embed scripts. Thirteen figures load it lazily from their own folder, once per page view, when a figure comes near the viewport.
    - `public/figures/reveals/optimal-gl3.js`, next to the three framed machine pages. Each framed page loads it from its own folder.
    - Both are in this release's `embeds/`, and `scripts/export-embeds.mjs` writes both.

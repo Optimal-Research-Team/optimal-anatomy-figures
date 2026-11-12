@@ -34,11 +34,18 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | A2, A4 | already real-time 3-D | unchanged, byte-identical |
 | E1–E3 on the site (and E4 in the gallery) | take-apart drawing that turns | the same parts as lit 3-D bodies while they turn and come apart; decals and screens kept as drawn |
 
+**Nov 12, second round (release `handoff-2026-11-12b`):**
+
+- Fig 1 and Fig 2 are drawings again: Peter withdrew their 3-D versions. Their embed scripts carry no 3-D scene and never request `optimal-gl3.js`. In the table above, read "Figs 1–6" as "Figs 3–6".
+- Figs 3 to 6 turn by drag. The model spins on the spot under the same lights; its labels and screens (which are drawn for one view) step aside while it is turned and come back when it swings home, about a second after the pointer lets go. A handle in the figure's top-left corner does the same and takes the left and right arrow keys; it only appears once a pointer has moved over the figure, or straight away on touch devices. A touch drag turns only sideways (`touch-action: pan-y` stays on the stage), so the page scrolls as before. A click that ends a drag is not passed to the figure. Switch it off per element with `turn="off"`.
+- Lit parts bleed light (a glow pass). No setting; it costs nothing on a frame with nothing lit.
+- `optimal-gl3.js` and the embeds now share version 3 of their handshake: update them together. A mismatch falls back to the drawing.
+
 **Nov 12 polish round:** the look was refined after the first release (cleaner whites, finer shadows, 1.5x drawing on 1x screens, A1 and A5 reworked on the cream theme, Fig 5's colourway). It changes the same files and nothing about how they load; use `handoff-2026-11-12`.
 
 **What you ship**
 
-- `optimal-gl3.js` (634 KB, 165 KB gzip), **in two places**:
+- `optimal-gl3.js` (655 KB, 170 KB gzip), **in two places**:
   - `public/figures/optimal-gl3.js`: the 13 figures that use it load it lazily from the embed script's own folder (`<embed folder>/optimal-gl3.js?v=<sha>`), once per page view however many figures are on the page.
   - `public/figures/reveals/optimal-gl3.js`: each framed machine page loads it from its own folder. The frame is `sandbox="allow-scripts"` as before; a script from the same folder needs nothing more.
 - The 13 changed embed scripts and the 3 changed machine pages. `scripts/export-embeds.mjs` writes all of it, and the manifest lists the chunk under each figure's `chunks` and each machine's `chunks`.
