@@ -125,9 +125,23 @@ customElements.define(${JSON.stringify(tag)}, Fig);
 `;
 }
 
+// A shadow root keeps the host page's selectors out, but not what its text inherits: tracking, word spacing, case,
+// indent, alignment, wrapping, hyphenation and text shadow all come down from the page through the element. The
+// figures were measured and drawn without any of it (on beoptimal.ca the site's -0.32 px tracking re-wrapped the
+// captions and left cards up to 83 px short of their reserves), so the embed puts each one back to its initial value.
+// On :host, and again on .opt-host: a page rule that matches the element itself outranks :host, and nothing from the
+// page can reach .opt-host.
+// The list is every inherited text property that was measured to move a box, or a label in the drawing, when a page
+// sets it (all 15 figures, on an English-language page, Nov 12, 2026), plus text-shadow, which moves nothing but
+// paints on every word. scripts/check-host-type.py tests it.
+// Not in it: size, family, weight, style, line height, font features and colour (.opt-host sets them itself, the
+// first six through its `font` shorthand); font-synthesis, text-rendering and tab-size (they arrive and move
+// nothing); and `direction` (a right-to-left page is a different job).
+const HOST_TYPE_RESET =
+  "letter-spacing:normal;word-spacing:normal;text-transform:none;text-indent:0;text-align:start;text-align-last:auto;white-space:normal;text-wrap:wrap;word-break:normal;overflow-wrap:normal;hyphens:manual;line-break:auto;text-anchor:start;text-shadow:none";
 const EMBED_CSS = `
-:host{display:block}
-.opt-host{background:transparent;color:var(--anatomy-text);font:15px/1.6 var(--opt-ui);-webkit-font-smoothing:antialiased}
+:host{display:block;${HOST_TYPE_RESET}}
+.opt-host{background:transparent;color:var(--anatomy-text);font:15px/1.6 var(--opt-ui);-webkit-font-smoothing:antialiased;${HOST_TYPE_RESET}}
 .opt-host *{box-sizing:border-box}
 .opt-host .iso-figure{margin:0}
 `;

@@ -1,7 +1,7 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
-**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b"; every figure in real-time 3-D added 2026-11-11)
-**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-12` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
+**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b"; every figure in real-time 3-D added 2026-11-11; host-page text styles kept out 2026-11-12, package "c")
+**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-12c` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12c), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
@@ -21,7 +21,44 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 | `handoff/site/` | Drop-in files for `src/components/optimal-figures/`: `OptimalFigure.tsx`, `optimalFigures.ts`, `optimal-figures.css`. |
 | `scripts/export-embeds.mjs` | Copies the 15 built scripts, the shared 3-D chunk `optimal-gl3.js` (also into `reveals/`) and A2's own chunk `hypothalamus-3d.js`, into a folder (the site's `public/figures/`) with a `manifest.json` (bytes, gzip, sha; the chunk is listed under A2's `chunks`). |
 | `handoff/qa/check-embeds.mjs` | End-to-end QA against any running site (local preview or a Vercel preview URL). |
-| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-11-12` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
+| **Not in this repo** | The site patch, `beoptimal-landing-anatomy-figures.patch`, is the reference integration. It lives in the **private** repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch), because the site repo is private. The 15 built scripts, A2's `hypothalamus-3d.js` and their manifest are in `embeds/` in the [`handoff-2026-11-12c` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12c), with the three machines in 3-D in `embeds/reveals/` and the equipment films in `equipment/`. |
+
+## Added Nov 12 (c): a host page's text styles stay out of the figures
+
+**Found by the Nov 12 site check; release `handoff-2026-11-12c`.** A shadow root keeps a page's selectors out of a figure, but inherited properties still come down through the element. On the site every figure inherited the site's `letter-spacing` (-0.32 px on the service pages, -0.17 px on the Menopause Protocol). Tighter tracking let the captions wrap in fewer lines than in the gallery, where `FIGURE_RESERVE` was measured, so phone cards came out 14 to 83 px shorter than their reserves and a few desktop cards were short too. Nothing overlapped; there was spare space under each card.
+
+**The fix is in the embeds** (`shared/page.mjs`, `HOST_TYPE_RESET`). Each embed's stylesheet now sets these back to their initial values:
+
+| Property | Reset to |
+|---|---|
+| `letter-spacing`, `word-spacing` | `normal` |
+| `text-transform` | `none` |
+| `text-indent` | `0` |
+| `text-align`, `text-align-last` | `start`, `auto` |
+| `white-space`, `text-wrap` | `normal`, `wrap` |
+| `word-break`, `overflow-wrap` | `normal` |
+| `hyphens`, `line-break` | `manual`, `auto` |
+| `text-anchor` (the drawing's own labels) | `start` |
+| `text-shadow` | `none` |
+
+- **Where:** on the element (`:host`), and again on the card's root inside the shadow root (`.opt-host`). A page rule that matches the `<optimal-fig-…>` element itself outranks `:host`, but nothing on the page can reach `.opt-host`, so the reset holds either way.
+- **How the list was chosen:** each candidate was set on a figure's parent in turn, and every box in the card and every label in its drawing was compared with the plain page: 26 settings on all 15 figures at 358 px, then hyphenation, `line-break` and `text-anchor` again on an English-language page for A2, A4 and A5. The thirteen layout properties above are the ones that moved something, `direction` aside. `white-space: nowrap` changed a card's height by up to 542 px and `letter-spacing: -0.32px` by up to 84 px; `hyphens: auto` and `line-break: anywhere` by one or two lines; `text-anchor` shifted labels drawn inside A4 and A5. `text-shadow` moves nothing but paints on every word, so it is reset too.
+- **Checked and left alone:**
+  - `font-feature-settings`, `font-variation-settings`, `line-height`, size, family, weight, style and colour never get in: the card's root sets `font` and `color` itself, and the `font` shorthand resets the feature settings (checked on Fig 2, A2 and A4; the rule is the same in every embed).
+  - `font-synthesis`, `text-rendering` and `tab-size` arrive but moved nothing in any of the 15 cards.
+  - `-webkit-text-fill-color` and `-webkit-text-stroke` arrive and would repaint the words. They are not reset: pages put them on one heading, not on a section.
+  - `direction` moves boxes too and is not reset: a right-to-left page would need more than this.
+- **The machines in 3-D (E1–E4) need nothing:** each is a framed document, and a frame inherits nothing from the page around it (confirmed by the same test).
+
+**What you ship:** the 15 `optimal-fig-*.js` scripts again. Each grew by the same 506 bytes (about 100 bytes gzipped). **This is the first change to `optimal-fig-hypothalamus.js` (A2) and `optimal-fig-heart.js` (A4) since Oct 24**; it is this one rule and nothing else. `optimal-gl3.js` (both copies), `hypothalamus-3d.js` and the three pages in `reveals/` are byte-identical to `handoff-2026-11-12b`.
+
+**What does not change:** no site code, no placements, no reserves, no patch. On any page that sets none of these properties every card is exactly as tall as before (old and new embeds compared at 358 and 760 px, as a desktop browser and as a phone), and the gallery's 39 standalone pages are byte-identical to the last build; only the embed scripts differ.
+
+**QA:** `python3 scripts/check-host-type.py` (after `node scripts/build-all.mjs`). For each embed, at 358 and 760 px, it measures the card on a plain page and then under five host pages: the site's two trackings, every property from the parent (with and without `nowrap`), and every property set on the element itself. The test page is in English, like the site. It fails if a card's height changes or if any element that holds text computes a different style. On the Nov 12 (b) embeds it fails (Fig 2: 1172.3 px plain, 1088.6 under -0.32 px tracking, the same numbers the site check saw); on these it passes.
+
+**What to expect on the site.** With the site's two fonts loaded and the new embeds, nine of the fifteen phone cards (358 px) match their reserves to within half a pixel. Six still sit under theirs, for reasons older than this round: Fig 5 is 1203 px (reserve 1224) and A2 1290 (1311), because the reserves are measured on a page without Castoro and Public Sans, where those two cards wrap one more line; A3 is 1036 (1040), A5 1181 (1186), A6 1171 (1175) and A9 981 (998), whose reserves are a few px above what the cards measure either way. At 760 px thirteen match; A4 (1605 against 1626) and A9 (1039 against 1060) are one line under for the same font reason. No card is taller than its reserve. `scripts/measure-reserves.py` measures on a page without the two fonts (the taller case, which is the safe one to reserve while fonts load); `scripts/check-host-type.py` loads them, so its `plain` column is what a card should measure on the site at 358 and 760 px.
+
+**Not re-run this round:** `check-embeds.mjs` on the patched site. The fix was tested on pages that copy the site's tracking, not on the site itself.
 
 ## Added Nov 11: every figure in real-time 3-D (one shared layer)
 
@@ -31,7 +68,7 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 |---|---|---|
 | Figs 1–6 (the machines) | isometric drawing | the same solids, rendered: white shells, forest and sage paint, graphite, rubber, brushed metal, glass; maple mannequins with nickel joints |
 | A1, A3, A5, A6, A7, A8, A9 (tissue) | hand-drawn block | a 3-D scene of the same anatomy in the same camera, driven by the same model state |
-| A2, A4 | already real-time 3-D | unchanged, byte-identical |
+| A2, A4 | already real-time 3-D | unchanged, byte-identical (until Nov 12 (c), which adds one style rule to both) |
 | E1–E3 on the site (and E4 in the gallery) | take-apart drawing that turns | the same parts as lit 3-D bodies while they turn and come apart; decals and screens kept as drawn |
 
 **Nov 12, second round (release `handoff-2026-11-12b`):**
@@ -73,6 +110,7 @@ While a figure animates, the layer watches its own frame rate. After two slow st
 
 - `node handoff/qa/check-embeds.mjs <site URL>`: every figure with the layer reports `(3-D on)`; the second pass (WebGL off) reports `(SVG fallback)` and fails if the chunk was downloaded anyway. `svg:load` in the output means `optimal-gl3.js` isn't deployed next to the embed scripts.
 - `python3 scripts/measure-reserves.py` (after `node scripts/build-all.mjs`): every card against `FIGURE_RESERVE`.
+- `python3 scripts/check-host-type.py` (same build): a host page's text styles stay out of every figure (added Nov 12 (c)).
 - Run on Nov 11 against the patched site (`main` `98ff79c` + the private patch + this release's `embeds/`): all pages passed at 390 and 1280 px. One thing it caught and this release fixes: on a page holding both A2 and a figure on the shared layer, three.js logged a "multiple instances" console warning; the shared chunk now loads without it.
 - By eye: open a page, wait for the figure, compare with the same URL plus `gl="off"` on the element. The model must sit exactly under the labels; every control must move both.
 
@@ -279,12 +317,13 @@ import OptimalFigure from 'components/optimal-figures/OptimalFigure'
 - **Width:** the figures are designed for up to 760 px, and fill the width on phones. `gutter` adds 16 px each side for slots outside a padded column.
 - **Theme:** `light` (Cream) on the site. `dark` (Forest night) is for the exam-room TV.
 - **Fonts:** Castoro and Public Sans, which `index.html` already loads.
+- **Text styles:** a figure keeps its own tracking, case, alignment and wrapping whatever the section around it sets (since Nov 12 (c); see "Added Nov 12 (c)"). You don't need to reset anything on the slot.
 - **Failure:** if a script 404s, the slot collapses (`data-failed`). Nothing else on the page is affected.
 - **HTML-string pages:** use `<div data-optimal-fig="slug"></div>` (optional `data-gutter`, `data-theme`) plus `useEffect(() => mountOptimalFigures(root.current), [])`.
 
 ## Ship the scripts
 
-1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the `handoff-2026-10-24` release. Either way `public/figures/` gets the 15 `optimal-fig-*.js` scripts, `hypothalamus-3d.js`, **and** `reveals/` (the three machines in 3-D).
+1. In the figures repo: `node scripts/build-all.mjs`, then `node scripts/export-embeds.mjs --out ../beoptimal-landing/public/figures`. Or copy `embeds/` from the latest `handoff-*` release (now `handoff-2026-11-12c`). Either way `public/figures/` gets the 15 `optimal-fig-*.js` scripts, `hypothalamus-3d.js`, **and** `reveals/` (the three machines in 3-D).
 2. Total size is about 3.6 MB raw and 0.93 MB gzipped across all 15. A page only loads its own figures (1–4 per page), each 112–424 KB raw (35–94 KB gzipped). A2 also loads its 3-D chunk (634 KB raw, 169 KB gzipped) when it's near the screen on a device that can run it.
 3. Caching: the file names aren't hashed. Either serve `/figures/*` with `Cache-Control: public, max-age=3600, stale-while-revalidate=86400` (a `headers` entry in `vercel.json`), or version the folder (`/figures/2026-10-12/`) and set `FIGURE_BASE`. `manifest.json` has a sha per file, for cache-busting or CI checks.
 4. Don't hot-link GitHub Pages in production. It's the review gallery and it changes when we iterate.

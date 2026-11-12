@@ -38,6 +38,8 @@ node scripts/verify.mjs <figure-dir>            # every check (phones 390/360/32
 python3 scripts/contact-sheet.py                # review/contact-sheet.png
 node scripts/export-embeds.mjs --out <dir>      # copy the 15 embed scripts + manifest (for the website's public/figures)
 node handoff/qa/check-embeds.mjs <site URL>     # QA the figures on a running site (see ENGINEERING_HANDOFF.md)
+python3 scripts/measure-reserves.py             # every card's height against the site's reserves (after build-all)
+python3 scripts/check-host-type.py              # a host page's text styles stay out of the embeds (after build-all)
 node scripts/package-handoff.mjs --tag handoff-YYYY-MM-DD   # the release zip for engineering (handoff/package/, git-ignored)
 bash figures/a2-hypothalamus/gl/build-gl.sh      # rebuild A2's 3-D chunk after editing gl/ (commit gl/hypothalamus-3d.js + gl/chunk.json)
 bash shared/gl3/build-gl3.sh                     # rebuild the shared 3-D chunk after editing shared/gl3/src (commit optimal-gl3.js + chunk.json, then rebuild the figures)
