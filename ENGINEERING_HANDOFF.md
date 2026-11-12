@@ -305,6 +305,8 @@ node handoff/qa/check-embeds.mjs https://<your-preview>.vercel.app            # 
 node handoff/qa/check-embeds.mjs https://<your-preview>.vercel.app --only all --width 1280
 ```
 
+**The checker keeps analytics out (since Nov 12).** The site loads Google Analytics, Microsoft Clarity and the Meta Pixel on every host, a local build included, so an automated check would send its page views to the clinic's real properties. The checker now starts Chrome with those hosts made unresolvable; everything else loads as usual. `--allow-analytics` switches that off. It also stops any Chrome it started that outlived its run (on a busy machine the driver can give up on a slow start and leave one behind). The checks run before Nov 12, mine included, did not block analytics: expect a handful of localhost page views in GA4, Clarity and the Pixel on Oct 12 to Nov 11.
+
 For each page, it checks that:
 - every slot exists;
 - each element mounted and drew its card;

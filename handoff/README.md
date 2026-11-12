@@ -17,6 +17,8 @@ A second round on Nov 12 (Peter: "build the bigger ideas"). **Same files, same p
 - Fig 3's board is forest green now, not white.
 - `optimal-gl3.js` is 655 KB (170 KB gzip). `optimal-fig-hypothalamus.js`, `hypothalamus-3d.js` and `optimal-fig-heart.js` are still byte-identical to Oct 24.
 - Card heights, placements, reserves and the private patch are unchanged.
+- **Checked on the site (Nov 12):** the patch still applies cleanly to `beoptimal-landing` `main` (`98ff79c`); with this package's `embeds/`, `yarn build` passes and `check-embeds.mjs` passes on every page at 390 and 1280 px, with and without WebGL, consoles clean. Fig 1 and Fig 2 make no request for `optimal-gl3.js`; Figs 4 to 6 turn by drag on their pages and swing back. Two things the check turned up that are older than this round are in `DEV_TODO.md` ("Found by the Nov 12 site check").
+- **`qa/check-embeds.mjs` now keeps analytics out:** it starts Chrome with the site's analytics hosts made unresolvable, so a check no longer sends page views to GA4, Clarity or the Meta Pixel (`--allow-analytics` to switch off).
 
 ## What changed since the Nov 11 package (`handoff-2026-11-11`)
 

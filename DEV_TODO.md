@@ -86,6 +86,12 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 11. **IV iron page:** Fig 3 hero, A1 under it, A6 in "After your infusion", when the page is built.
 
+## Found by the Nov 12 site check (not from this round; for the next package)
+
+- **On the site, phone cards are 14 to 83 px shorter than their reserves** (e.g. Fig 2 is 1089 px against a reserve of 1172 at 390 px), and a few desktop cards are 9 to 175 px shorter in narrow columns. Nothing overlaps and nothing shifts; there is spare space under the card. Cause: the figures inherit the site's `letter-spacing` through the shadow root (-0.32 px on the service pages, -0.17 px on the Menopause Protocol), so their captions wrap in fewer lines than in the gallery, where the reserves were measured. With the tracking reset on the element, Fig 2 measures 1172.3 and Fig 4 1187.9: the reserves are right. The fix belongs in the embeds (`:host { letter-spacing: normal }`), which will come in the next package; until then you can do the same from the site: `[data-optimal-fig] > * { letter-spacing: normal; }`.
+- One card is 4 px taller than its reserve: Fig 1 on the Menopause Protocol at 390 px (1065 against 1061), because that column is 362 px wide, not 358.
+- `yarn test` gives 175 of 177 on `main` with or without the patch (`legacyRedirects.test.ts`, `siteNavigation.test.ts`).
+
 ## Housekeeping found on the way (pre-existing, optional)
 
 12. Restore `yarn lint`: migrate to `eslint.config.js` (ESLint 9) or pin ESLint 8.

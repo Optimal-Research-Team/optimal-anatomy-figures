@@ -20,8 +20,14 @@
 // still mounts and draws, the stage reports data-gl="svg:no-webgl2", nothing downloads the chunk, and the
 // console stays clean.
 // It saves a screenshot of each figure to handoff/qa/shots/ (viewport-shots.mjs). Exit code 1 if anything fails.
+//
+// Analytics: the site loads Google Analytics, Microsoft Clarity and the Meta Pixel on every host, a local build
+// included, so a check would send its page views to the clinic's real properties. Chrome is therefore started
+// through a small wrapper that makes those hosts unresolvable (everything else loads as usual). Pass
+// --allow-analytics to switch that off. macOS and Linux; on Windows the wrapper is skipped.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -35,6 +41,32 @@ if (!/^https?:\/\//.test(base)) {
 const opt = (name, fallback) => {
   const i = process.argv.indexOf(name);
   return i > 0 ? process.argv[i + 1] : fallback;
+};
+// Chrome without the analytics hosts (see the note at the top). The children (drive.mjs, viewport-shots.mjs) read
+// CHROME_PATH, so they get the wrapper; `MARK` lets the sweep below find Chromes this run started.
+const ANALYTICS = ["www.googletagmanager.com", "*.googletagmanager.com", "google-analytics.com", "*.google-analytics.com", "analytics.google.com", "*.analytics.google.com", "*.doubleclick.net", "clarity.ms", "*.clarity.ms", "connect.facebook.net", "facebook.com", "*.facebook.com", "*.facebook.net"];
+const MARK = `optimal-check-${process.pid}`;
+const env = { ...process.env };
+let wrapDir = null;
+if (!process.argv.includes("--allow-analytics") && process.platform !== "win32" && process.env.CHROME_PATH) {
+  wrapDir = mkdtempSync(join(tmpdir(), "optimal-check-"));
+  const wrapper = join(wrapDir, "chrome");
+  const rules = [...ANALYTICS.map((h) => `MAP ${h} ~NOTFOUND`), `MAP ${MARK}.invalid ~NOTFOUND`].join(", ");
+  writeFileSync(wrapper, `#!/bin/sh\nexec "${process.env.CHROME_PATH}" --host-resolver-rules="${rules}" "$@"\n`, { mode: 0o755 });
+  env.CHROME_PATH = wrapper;
+}
+if (!process.argv.includes("--allow-analytics") && !wrapDir) console.log("note: analytics hosts are NOT blocked for this run (set CHROME_PATH, or you are on Windows)");
+// The driver gives Chrome 20 s to start and, on a busy machine, can give up and leave that Chrome running. Stop any
+// Chrome this run started that has lost its parent (found by this run's own marker, so no other Chrome is touched).
+const sweep = () => {
+  if (!wrapDir) return;
+  try {
+    const rows = execFileSync("ps", ["-axo", "pid=,ppid=,command="], { encoding: "utf8" }).split("\n");
+    for (const row of rows) {
+      const m = /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(row);
+      if (m && m[2] === "1" && m[3].includes(MARK)) try { process.kill(Number(m[1]), "SIGKILL"); } catch (_) {}
+    }
+  } catch (_) {}
 };
 // default: the placements to ship now ("primary", plus "primary-now" for pages that exist today)
 const only = opt("--only", "primary");
@@ -119,7 +151,7 @@ for (const [route, slugs] of pages) {
     const file = join(here, "shots", ".actions.json");
     writeFileSync(file, JSON.stringify(actions));
     try {
-      return execFileSync("node", [drive, base + route, "--actions", file, "--width", String(width), "--height", "900", "--theme", "light", ...flags], { encoding: "utf8" });
+      return execFileSync("node", [drive, base + route, "--actions", file, "--width", String(width), "--height", "900", "--theme", "light", ...flags], { encoding: "utf8", env });
     } catch (e) {
       return String(e.stdout || e.message);
     }
@@ -144,7 +176,7 @@ for (const [route, slugs] of pages) {
     try {
       // (two minutes at most: a headless capture of a page with several WebGL figures can stall, and the
       // screenshots are for the eye only; the pass / fail result does not depend on them)
-      execFileSync("node", [join(here, "viewport-shots.mjs"), base + route, String(width), JSON.stringify(shots)], { stdio: "ignore", timeout: 120000, killSignal: "SIGKILL" });
+      execFileSync("node", [join(here, "viewport-shots.mjs"), base + route, String(width), JSON.stringify(shots)], { stdio: "ignore", timeout: 120000, killSignal: "SIGKILL", env });
     } catch (e) {
       console.log(`  (screenshots failed for ${route}: ${e.message.split("\n")[0]})`);
     }
@@ -163,6 +195,9 @@ for (const [route, slugs] of pages) {
     console.log(`${bad2 ? "✗" : "✓"} ${route}  without WebGL: ${raw2}  ${console2}`);
   }
   if (bad) failed++;
+  sweep();
 }
+sweep();
+if (wrapDir) rmSync(wrapDir, { recursive: true, force: true });
 console.log(failed ? `\n${failed} page(s) failed` : "\nall pages passed");
 process.exit(failed ? 1 : 0);
