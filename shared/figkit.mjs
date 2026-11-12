@@ -34,7 +34,7 @@ export const glPart = {
  * ({ exposure, env, ao, aoRadius, cast, contact, contactHeight, pool }, each a multiplier or a value in cm);
  * `bounds` ([[x0,y0,z0],[x1,y1,z1]]) widens the lit volume when parts are added after mount.
  */
-export function gl3SceneOf(parts, { materials = [], fallback = "shell", skip = null, ground, look, bounds } = {}) {
+export function gl3SceneOf(parts, { materials = [], fallback = "shell", skip = null, ground, look, bounds, turn } = {}) {
   const rules = materials.map(([pattern, preset]) => [pattern instanceof RegExp ? pattern : new RegExp(pattern), preset]);
   const out = [];
   for (const part of parts) {
@@ -42,7 +42,7 @@ export function gl3SceneOf(parts, { materials = [], fallback = "shell", skip = n
     const hit = part.m ? null : rules.find(([re]) => re.test(part.n));
     out.push({ ...part, m: part.m || (hit ? hit[1] : fallback) });
   }
-  return { parts: out, ...(ground !== undefined ? { ground } : {}), ...(look ? { look } : {}), ...(bounds ? { bounds } : {}) };
+  return { parts: out, ...(ground !== undefined ? { ground } : {}), ...(look ? { look } : {}), ...(bounds ? { bounds } : {}), ...(turn ? { turn } : {}) };
 }
 
 export function figkit(P) {

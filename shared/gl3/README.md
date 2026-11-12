@@ -59,6 +59,42 @@ gl.render();                          // once, last
 Every call is a no-op until the chunk has loaded, so the figure never waits on it. `redraw` is called once when
 the layer arrives (and if it is lost): push the current state and render. `gl.add(desc)` adds a part after mount.
 
+## Drag to turn (Figs 3 to 6)
+
+`F.gl3Scene({ turn: true, ... })` in the build and `turn: DATA.gl3.turn` in `gl3Attach` put the machine on a
+turntable. A drag on the stage spins it about its upright axis under the same lights (a mouse or pen drag up and down
+also raises and drops the camera); a touch drag turns only sideways, so the page still scrolls under a thumb. A small
+handle in the stage's corner does the same and takes the arrow keys (it shows once a pointer is about, so never on a
+wall screen). Let go and the object coasts, rests about a second, and swings back.
+
+The drawing was made for one view, so while the object is turned the SVG steps aside (`data-gl3-turn` on the stage)
+and the render stands alone: paper panels stop being paper (a part named `…screen…` goes dark glass, any other goes a
+plain white card), labels and drawn-only marks are gone, and everything returns when the object is home. So anything
+that should survive the turn has to be a rendered part, not ink.
+
+- `turn: { stage: false, at: "tr" }`: the stage keeps its own drag (a figure whose stage is a slider); only the
+  handle turns the model. `at` is the handle's corner (`tl` default, `tr`, `bl`, `br`).
+- A page or host switches it off with `?turn=off` or `turn="off"` on the element.
+- The engine pulls the camera back just enough to keep the turned object in the picture, and lights the whole
+  volume the object sweeps. `stage.__gl3Turn.hold(yaw, tilt)` holds a pose for QA (radians; `hold(0, 0)` is home).
+- A figure whose stage already means something to a click keeps working: the click that ends a drag is swallowed.
+
+## Glow
+
+Lit parts bleed light: a glow pass draws only what is lit, behind the solids' own depth, blurs it at two widths and
+adds it before the tone curve (a halo of the light's own colour where it falls off the object). It costs nothing on
+a frame with nothing lit, and is off at the lowest quality level.
+
+- A part is lit when its `emissive` colour times `intensity` reaches about 0.5 (`gl.set("lamp", { emissive, intensity })`).
+  Fainter emissive, and anything with an emissive map, is left alone: tissue scenes use it to keep colour alive at
+  night, and that is not a lamp.
+- An unlit part (a laser line on a `paper` panel) glows in its own colour with `gl.set(name, { color, glow: 4 })`.
+  Hair-thin parts need a high number to show a halo. In a figure's own scene code: `mesh.userData.glow = 2`, or
+  `{ color, intensity }`, or `false` to keep a mesh out.
+- `look.glow` scales the whole pass for one figure (`0` switches it off).
+- A halo that must read from every side: a ball part with `side: "back"` (only its far half is drawn, so whatever
+  sits inside it stands in a disc of light whichever way the model is turned). Fig 4's knee load is the example.
+
 ## A figure with its own 3-D scene (tissue, organs, anything the helpers don't record)
 
 `gl3Attach(fig, { ..., build })` takes figure-specific scene code. It runs once when the layer arrives, on the same
@@ -116,8 +152,10 @@ The colourway is the brand's, not a maker's: white shells, forest or sage paint,
 and feet go, brushed metal for shafts, maple mannequins with satin nickel joints. See-through presets (`glass`,
 `smoke`, `fluid`, `water`) cast no shadow and take no part in the occlusion pass.
 
-`look` in `gl3Scene({ look })` tunes one figure: `exposure`, `env`, `ao`, `cast`, `contact`, `pool` (multipliers),
-`aoRadius`, `contactHeight` (cm).
+`look` in `gl3Scene({ look })` tunes one figure: `exposure`, `env`, `ao`, `cast`, `contact`, `pool`, `glow`
+(multipliers), `aoRadius`, `contactHeight` (cm).
+
+`screenOff` (dark glass) and `card` (plain white) are what `paper` turns into while a machine is turned.
 
 ## How the picture is made
 
@@ -134,6 +172,10 @@ and feet go, brushed metal for shafts, maple mannequins with satin nickel joints
   texel lands on the figure) and drawn once a frame, however many passes the frame has. `look.shadowBlur` sets the
   soft edge in cm (default 2.4).
 - **Sharpness.** Multisampled, and on a 1x screen (a desktop monitor, the clinic TV) drawn at 1.5x and scaled down.
+- **Glow.** Lit parts alone, drawn at half size behind the solids' depth, blurred at two widths, added in the output
+  pass. See Glow above.
+- **Turntable.** `turn(yaw, tilt)` spins the scene's root about an upright axis through the middle of its box and
+  changes the camera's elevation; lights, floor and studio stay put, so shadows and reflections move as they would.
 - **Counts.** `stage.__gl3.stats()` gives draw calls and triangles for the last frame, all passes together.
 - **Pace.** The figure owns the clock and calls `render()`. If frames run long while it animates, `host.js` steps
   the layer's quality down (lighter occlusion, then none and a lower pixel ratio). It never steps up.

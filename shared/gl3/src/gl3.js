@@ -12,7 +12,7 @@ import * as THREE from "three";
 import { GTAOPass } from "three-addons/postprocessing/GTAOPass.js";
 import { FullScreenQuad } from "three-addons/postprocessing/Pass.js";
 
-export const version = 2;
+export const version = 3;
 // Figure-specific scene code (a `build` function, see create) gets three.js from here: one copy for every figure.
 // A chosen set, not the whole library: no loaders, so the chunk still holds no network or storage API.
 export const T = {
@@ -143,6 +143,9 @@ glass: { color: 0xf2f7f3, roughness: 0.05, metalness: 0, clearcoat: 1, clearcoat
   // paper: unlit and brighter than white, so it is still white after the tone curve. The SVG multiplies over it, so
   // whatever the figure draws there (a screen, a chart) shows as drawn.
   paper: { basic: true, color: 0xffffff, gain: 8 },
+  // what paper becomes while the object is turned and the drawing has stepped aside: a dark screen, or a plain card
+  screenOff: { color: 0x1b241d, roughness: 0.16, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.3 },
+  card: { color: 0xf1efe8, roughness: 0.62 },
 };
 
 function woodTexture() {
@@ -491,21 +494,35 @@ const QUAD_VS = "varying vec2 vUv; void main(){ vUv = uv; gl_Position = projecti
 /** Final pass: tone curve and sRGB on straight colour (the buffers hold premultiplied colour), a hair of dither. */
 function outputMaterial() {
   return new THREE.ShaderMaterial({
-    uniforms: { tDiffuse: { value: null }, toneMappingExposure: { value: 1 } },
+    uniforms: { tDiffuse: { value: null }, toneMappingExposure: { value: 1 }, tGlowA: { value: null }, tGlowB: { value: null }, glow: { value: 0 } },
     vertexShader: QUAD_VS,
     fragmentShader: `
       uniform sampler2D tDiffuse;
+      uniform sampler2D tGlowA;
+      uniform sampler2D tGlowB;
+      uniform float glow;
       varying vec2 vUv;
       #include <tonemapping_pars_fragment>
       float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      vec3 shown(vec3 c){ return sRGBTransferOETF(vec4(NeutralToneMapping(max(c, 0.0)), 1.0)).rgb; }
       void main(){
         vec4 t = texture2D(tDiffuse, vUv);
         float a = clamp(t.a, 0.0, 1.0);
         vec3 c = a > 1e-4 ? t.rgb / a : vec3(0.0);
-        c = NeutralToneMapping(max(c, 0.0));
-        c = sRGBTransferOETF(vec4(c, 1.0)).rgb;
+        // light bleeding from lit parts: added to the solids before the tone curve; off the solids it is a halo
+        // of the light's own colour, fading out before the canvas edge
+        vec3 g = vec3(0.0);
+        if (glow > 0.0) {
+          vec2 e = smoothstep(vec2(0.0), vec2(0.05), vUv) * smoothstep(vec2(0.0), vec2(0.05), 1.0 - vUv);
+          g = (texture2D(tGlowA, vUv).rgb * 0.62 + texture2D(tGlowB, vUv).rgb * 0.55) * glow * e.x * e.y;
+        }
+        float gm = max(g.r, max(g.g, g.b));
+        float ga = 1.0 - exp(-gm * 1.6);
+        vec3 halo = gm > 1e-5 ? shown(g / gm * 1.15) : vec3(0.0);
+        c = shown(c + g);
         c += (hash(gl_FragCoord.xy) - 0.5) / 255.0;
-        gl_FragColor = vec4(clamp(c, 0.0, 1.0) * a, a);
+        float o = a + ga * (1.0 - a);
+        gl_FragColor = vec4(clamp(c, 0.0, 1.0) * a + halo * ga * (1.0 - a), o);
       }`,
     toneMapped: false,
     depthTest: false,
@@ -662,6 +679,136 @@ function groundShadows({ size, centre, ground, span, lightDir, height, color, ca
 }
 
 /**
+ * Glow: light bleeding from the lit parts (a lamp, a pilot light, a hot core, a beam). Only what is emissive draws
+ * into a half-size buffer, behind the solids' own depth (so a lamp on the far side does not shine through the
+ * machine), and that is blurred at two widths for the final pass to add. A frame with nothing lit skips all of it.
+ *
+ * What counts as lit: a material whose emissive colour times its intensity reaches about half, with no emissive map
+ * (tissue scenes use faint emissive to keep colour alive at night: that is not a lamp). A mesh can also say so
+ * itself: userData.glow = { color, intensity }, or false to stay out.
+ */
+function glowPass() {
+  const opts = { type: THREE.HalfFloatType, magFilter: THREE.LinearFilter, minFilter: THREE.LinearFilter };
+  const src = new THREE.WebGLRenderTarget(2, 2, { ...opts, depthBuffer: true });
+  const a = new THREE.WebGLRenderTarget(2, 2, { ...opts, depthBuffer: false });
+  const a2 = a.clone();
+  const b = a.clone();
+  const b2 = a.clone();
+  const black = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const blur = new THREE.ShaderMaterial({
+    uniforms: { t: { value: null }, d: { value: new THREE.Vector2() } },
+    vertexShader: QUAD_VS,
+    fragmentShader: `
+      uniform sampler2D t; uniform vec2 d; varying vec2 vUv;
+      void main(){
+        vec3 s = texture2D(t, vUv).rgb * 0.2270270;
+        s += (texture2D(t, vUv + d * 1.3846154).rgb + texture2D(t, vUv - d * 1.3846154).rgb) * 0.3162162;
+        s += (texture2D(t, vUv + d * 3.2307692).rgb + texture2D(t, vUv - d * 3.2307692).rgb) * 0.0702703;
+        gl_FragColor = vec4(s, 1.0);
+      }`,
+    depthTest: false,
+    depthWrite: false,
+    blending: THREE.NoBlending,
+  });
+  const quad = new FullScreenQuad(blur);
+  const soften = (renderer, from, tmp, to, step) => {
+    blur.uniforms.t.value = from.texture;
+    blur.uniforms.d.value.set(step / tmp.width, 0);
+    renderer.setRenderTarget(tmp);
+    quad.render(renderer);
+    blur.uniforms.t.value = tmp.texture;
+    blur.uniforms.d.value.set(0, step / to.height);
+    renderer.setRenderTarget(to);
+    quad.render(renderer);
+  };
+  const LAYER = 7;
+  const lit = [];
+  const keep = new THREE.Color();
+  return {
+    a,
+    b,
+    size(pw, ph) {
+      const w = (k) => Math.max(2, Math.round(pw / k));
+      const h = (k) => Math.max(2, Math.round(ph / k));
+      src.setSize(w(2), h(2));
+      a.setSize(w(4), h(4));
+      a2.setSize(w(4), h(4));
+      b.setSize(w(8), h(8));
+      b2.setSize(w(8), h(8));
+    },
+    /** Draws the glow buffers for this frame. False when nothing is lit (the buffers are then stale: don't use them). */
+    render(renderer, world, cam, root, hidden) {
+      lit.length = 0;
+      root.traverseVisible((o) => {
+        if (!o.isMesh || o.userData.glow === false) return;
+        const m = o.material;
+        if (!m || Array.isArray(m)) return;
+        const own = o.userData.glow;
+        let c = null;
+        let k = 0;
+        if (own) {
+          // said outright (set(name, { glow }) or the scene's own code): a number, or { color, intensity }
+          k = typeof own === "number" ? own : own.intensity || 0;
+          c = (typeof own === "object" && own.color) || m.color;
+        } else if (m.emissive && m.emissiveIntensity > 0 && !m.emissiveMap) {
+          const strength = Math.max(m.emissive.r, m.emissive.g, m.emissive.b) * m.emissiveIntensity;
+          if (strength < 0.45) return;
+          c = m.emissive;
+          k = m.emissiveIntensity * clamp((strength - 0.45) / 0.45, 0, 1);
+        }
+        if (!c || k <= 0) return;
+        lit.push({ mesh: o, c, k: k * (m.transparent ? clamp(m.opacity * 1.6, 0, 1) : 1), home: m });
+      });
+      if (!lit.length) return false;
+      const auto = renderer.autoClear;
+      renderer.getClearColor(keep);
+      const alpha = renderer.getClearAlpha();
+      // 1: every solid in black, for its depth
+      hidden.forEach((o) => (o.visible = false));
+      world.overrideMaterial = black;
+      renderer.autoClear = true;
+      renderer.setClearColor(0x000000, 1);
+      renderer.setRenderTarget(src);
+      renderer.render(world, cam);
+      world.overrideMaterial = null;
+      hidden.forEach((o) => (o.visible = true));
+      // 2: the lit parts alone, in their light's colour, behind that depth
+      for (const L of lit) {
+        const g = L.mesh.userData.__glow || (L.mesh.userData.__glow = new THREE.MeshBasicMaterial({ toneMapped: false, depthFunc: THREE.LessEqualDepth, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 }));
+        g.color.copy(L.c).multiplyScalar(L.k);
+        g.side = L.home.side;
+        L.mesh.material = g;
+        L.mesh.layers.enable(LAYER);
+      }
+      const mask = cam.layers.mask;
+      cam.layers.set(LAYER);
+      renderer.autoClear = false;
+      renderer.render(world, cam);
+      cam.layers.mask = mask;
+      for (const L of lit) {
+        L.mesh.material = L.home;
+        L.mesh.layers.disable(LAYER);
+      }
+      // 3: two widths of soft
+      soften(renderer, src, a2, a, 1);
+      soften(renderer, a, a2, a, 1.8);
+      soften(renderer, a, b2, b, 1);
+      soften(renderer, b, b2, b, 2.2);
+      renderer.setRenderTarget(null);
+      renderer.autoClear = auto;
+      renderer.setClearColor(keep, alpha);
+      return true;
+    },
+    dispose() {
+      for (const t of [src, a, a2, b, b2]) t.dispose();
+      black.dispose();
+      blur.dispose();
+      quad.dispose();
+    },
+  };
+}
+
+/**
  * create({ canvas, P, W, H, scene, theme, clear, coarse })
  *   P       the kit projection ({ origin, scale, azimuth, elevation }), W × H the SVG's viewBox
  *   scene   { parts: [descriptor…], ground }  from shared/figkit.mjs (gl3Scene)
@@ -704,10 +851,15 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   // camera, which is the kit's projection exactly. Lights and the floor live in the same mirrored space.
   const cam = new THREE.OrthographicCamera((0 - P.origin[0]) / k, (W - P.origin[0]) / k, P.origin[1] / k, (P.origin[1] - H) / k, 1, 6000);
   cam.matrixAutoUpdate = false;
+  // `uT`, `dT`: the camera's up and toward-the-viewer axes as it stands now (the turntable can raise or drop it)
+  const uT = u.clone();
+  const dT = d.clone();
+  let camDist = 3000;
   const placeCamera = (dist) => {
+    camDist = dist;
     cam.near = dist * 0.01;
     cam.far = dist * 2;
-    cam.matrix.makeBasis(r.clone().negate(), u, d).setPosition(d.clone().multiplyScalar(dist));
+    cam.matrix.makeBasis(r.clone().negate(), uT, dT).setPosition(dT.clone().multiplyScalar(dist));
     cam.matrixWorld.copy(cam.matrix);
     cam.matrixWorldInverse.copy(cam.matrix).invert();
     cam.updateProjectionMatrix();
@@ -742,6 +894,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   };
   const M4 = new THREE.Matrix4();
   const ghosts = []; // see-through meshes: hidden while shadows and occlusion are worked out
+  const papers = []; // paper panels: they change while the object is turned (see turn)
   function addPart(desc, parent) {
     const { geo, F, right } = buildPart(desc);
     const mesh = new THREE.Mesh(geo, mat(desc.m));
@@ -751,6 +904,16 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     mesh.castShadow = desc.m !== "paper" && !ghost;
     mesh.receiveShadow = desc.m !== "paper" && !ghost;
     mesh.userData.right = right;
+    mesh.name = desc.n || "";
+    if (desc.side === "back") {
+      // only the far half shows: an unlit ball drawn this way is a halo round whatever sits inside it, from any side
+      const see = mesh.material.userData.ghost;
+      mesh.material = mesh.material.clone();
+      mesh.material.side = THREE.BackSide;
+      mesh.material.userData.ghost = see;
+      mesh.userData.own = true;
+    }
+    if (desc.m === "paper") papers.push(mesh);
     if (ghost) {
       ghosts.push(mesh);
       mesh.renderOrder = 2;
@@ -831,6 +994,14 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   const sc = key.shadow.camera;
   {
     const lit = box.clone().expandByScalar(span * 0.12);
+    if (scene.turn) {
+      // the object turns about its upright axis: light the cylinder it sweeps
+      const sweep = Math.hypot(size.x, size.y) / 2 + span * 0.06;
+      lit.min.x = centre.x - sweep;
+      lit.max.x = centre.x + sweep;
+      lit.min.y = centre.y - sweep;
+      lit.max.y = centre.y + sweep;
+    }
     const eye = new THREE.OrthographicCamera();
     eye.position.copy(key.position).applyMatrix4(mirror.matrix);
     eye.lookAt(centre.clone().applyMatrix4(mirror.matrix));
@@ -938,6 +1109,68 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
   const out = outputMaterial();
   out.uniforms.toneMappingExposure.value = (night ? 1.0 : 0.98) * (look.exposure ?? 1);
   const outQuad = new FullScreenQuad(out);
+  const glowP = glowPass();
+  const glowK = (night ? 2.2 : 1.7) * (look.glow ?? 1);
+  out.uniforms.tGlowA.value = glowP.a.texture;
+  out.uniforms.tGlowB.value = glowP.b.texture;
+
+  // ── the turntable. The object spins about an upright axis through its middle, under the same lights and on the
+  // same floor; the camera may rise or drop. The drawing was made for one view only, so the page takes the SVG away
+  // while the object is turned (host.js) and paper panels stop being paper: a screen goes dark, a card goes plain.
+  const home = { l: cam.left, r: cam.right, t: cam.top, b: cam.bottom }; // the frustum of the drawing's own view
+  let yaw = 0; // radians; positive brings the near side round to the right
+  let tilt = 0; // radians added to the camera's elevation
+  let turned = false;
+  const corner = new THREE.Vector3();
+  function frame() {
+    const E2 = E + tilt;
+    uT.set(-Math.cos(A) * Math.sin(E2), -Math.sin(A) * Math.sin(E2), Math.cos(E2));
+    dT.set(Math.cos(A) * Math.cos(E2), Math.sin(A) * Math.cos(E2), Math.sin(E2));
+    placeCamera(camDist);
+    // the middle of the object stays where it is on screen
+    const px = centre.dot(r);
+    const py = centre.dot(uT);
+    const shift = py - centre.dot(u);
+    let s = 1;
+    const az = -yaw;
+    const c = Math.cos(az);
+    const sn = Math.sin(az);
+    // (through position and rotation, not the matrix: the root's own update each frame is what carries every
+    // hand-set part matrix under it into the world)
+    root.rotation.set(0, 0, az);
+    root.position.set(centre.x - c * centre.x + sn * centre.y, centre.y - sn * centre.x - c * centre.y, 0);
+    root.updateMatrix();
+    if (yaw || tilt) {
+      // pull back just enough that the turned object stays inside the picture
+      let need = 1;
+      for (let i = 0; i < 8; i++) {
+        corner.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(root.matrix);
+        const X = corner.dot(r) - px;
+        const Y = corner.dot(uT) - py;
+        need = Math.max(need, X > 0 ? X / Math.max(1e-6, (home.r - px) * 0.96) : -X / Math.max(1e-6, (px - home.l) * 0.96));
+        need = Math.max(need, Y > 0 ? Y / Math.max(1e-6, (home.t + shift - py) * 0.96) : -Y / Math.max(1e-6, (py - home.b - shift) * 0.96));
+      }
+      const ease = clamp((Math.abs(yaw) + Math.abs(tilt) * 2) / 0.3, 0, 1);
+      s = 1 + (Math.min(need, 2.2) - 1) * ease * ease * (3 - 2 * ease);
+    }
+    cam.left = px + (home.l - px) * s;
+    cam.right = px + (home.r - px) * s;
+    cam.top = py + (home.t + shift - py) * s;
+    cam.bottom = py + (home.b + shift - py) * s;
+    cam.updateProjectionMatrix();
+    const now = !!(yaw || tilt);
+    if (now !== turned) {
+      turned = now;
+      for (const m of papers) {
+        if (m.userData.own) continue; // given a colour of its own (a beam, a lit mark): it is light, not paper
+        if (turned) {
+          m.userData.paper = m.material;
+          m.material = mat(/screen/i.test(m.name) ? "screenOff" : "card");
+        } else if (m.userData.paper) m.material = m.userData.paper;
+        m.receiveShadow = turned;
+      }
+    }
+  }
   function buffers() {
     const pw = Math.max(2, Math.round(cssW * dpr));
     const ph = Math.max(2, Math.round(cssH * dpr));
@@ -949,6 +1182,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
       mixed.setSize(pw, ph);
     }
     res.value.set(pw, ph);
+    glowP.size(pw, ph);
     if (level > 0) {
       if (!gtao) {
         gtao = new GTAOPass(world, cam, 16, 16);
@@ -1013,6 +1247,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
         hidden.forEach((o) => (o.visible = true));
         src = mixed;
       }
+      out.uniforms.glow.value = level > 0 && glowK > 0 && glowP.render(renderer, world, cam, root, hidden) ? glowK : 0;
       renderer.setRenderTarget(null);
       renderer.setClearColor(0x000000, 0);
       renderer.clear();
@@ -1048,11 +1283,13 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
     },
     /**
      * Change a named part: its frame ({ o, a, u, v }; the vectors may be scaled, which stretches the part), whether
-     * it shows, its preset (m), or its own colour, opacity or glow (emissive + intensity).
+     * it shows, its preset (m), or its own colour, opacity or light (emissive + intensity). `glow` (a number) makes
+     * a part bleed light in its own colour whatever its material: for unlit parts such as a laser line.
      */
-    set(name, { F, visible, m, color, opacity, emissive, intensity } = {}) {
+    set(name, { F, visible, m, color, opacity, emissive, intensity, glow } = {}) {
       const mesh = named.get(name);
       if (!mesh) return false;
+      if (glow !== undefined) mesh.userData.glow = glow > 0 ? glow : undefined;
       if (F) frameMatrix(F, mesh.userData.right, mesh.matrix);
       if (visible !== undefined) mesh.visible = visible;
       if (m) {
@@ -1092,11 +1329,35 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
      * The canvas must be laid over the SVG's box as before.
      */
     view(x, y, w, h) {
-      cam.left = (x - P.origin[0]) / k;
-      cam.right = (x + w - P.origin[0]) / k;
-      cam.top = (P.origin[1] - y) / k;
-      cam.bottom = (P.origin[1] - y - h) / k;
-      cam.updateProjectionMatrix();
+      home.l = (x - P.origin[0]) / k;
+      home.r = (x + w - P.origin[0]) / k;
+      home.t = (P.origin[1] - y) / k;
+      home.b = (P.origin[1] - y - h) / k;
+      if (turned) frame();
+      else {
+        cam.left = home.l;
+        cam.right = home.r;
+        cam.top = home.t;
+        cam.bottom = home.b;
+        cam.updateProjectionMatrix();
+      }
+    },
+    /**
+     * Turn the object on its turntable: `yaw` radians about its upright axis (positive brings the near side round to
+     * the right), `tilt` radians added to the camera's elevation. turn(0, 0) is the drawing's own view, exactly.
+     * With no arguments, returns where it stands.
+     */
+    turn(y, t = 0) {
+      if (y === undefined) return [yaw, tilt];
+      const lo = (4 * Math.PI) / 180 - E;
+      const hi = (78 * Math.PI) / 180 - E;
+      y = Math.abs(y) < 1e-5 ? 0 : y;
+      t = Math.abs(t) < 1e-5 ? 0 : clamp(t, lo, hi);
+      if (y === yaw && t === tilt) return [yaw, tilt];
+      yaw = y;
+      tilt = t;
+      frame();
+      return [yaw, tilt];
     },
     has: (name) => named.has(name) || pieces.has(name),
     /** A world point in the SVG's own pixels (QA: must equal the kit's iso()). */
@@ -1113,6 +1374,7 @@ export function create({ canvas, P, W, H, scene, theme = "light", clear = null, 
       if (world.environment) world.environment.dispose();
       if (custom && custom.dispose) custom.dispose();
       ground.dispose();
+      glowP.dispose();
       if (gtao) gtao.dispose();
       if (beauty) beauty.dispose();
       if (mixed) mixed.dispose();
