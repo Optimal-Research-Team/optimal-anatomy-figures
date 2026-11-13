@@ -9,9 +9,9 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
   - **Files:** all 15 `optimal-fig-*.js` changed, each by the same 506 bytes (one style rule, about 100 bytes gzipped). **`optimal-fig-hypothalamus.js` (A2) and `optimal-fig-heart.js` (A4) change here for the first time since Oct 24**: the same one rule and nothing else. `optimal-gl3.js` (both copies), `hypothalamus-3d.js` and the three machine pages are byte-identical to `handoff-2026-11-12b`, so a mixed copy is safe this time; the machine pages are framed documents and never inherited anything.
   - **Code:** none. Placements, `FIGURE_RESERVE`, `REVEAL_RESERVE` and the private patch stay as they are. On a plain page every card is exactly as tall as before (old and new embeds compared at 358 and 760 px, as a desktop browser and as a phone). Under the site's -0.32 px tracking, Fig 2 now measures 1172.3 px at 358 px wide (was 1088.6; reserve 1172) and Fig 4 1187.9 (was 1167.0; reserve 1188).
   - **If you set `letter-spacing: normal` on the `<optimal-fig-…>` elements in the meantime,** leave it or take it out; it no longer does anything.
-  - **Six phone cards will still read 4 to 21 px under their reserves. That part is not the tracking.** With the site's two fonts loaded and the new embeds, nine of the fifteen phone cards (358 px) match their reserves to within half a pixel. Six still sit under theirs, for reasons older than this round: Fig 5 is 1203 px (reserve 1224) and A2 1290 (1311), because the reserves are measured on a page without Castoro and Public Sans, where those two cards wrap one more line; A3 is 1036 (1040), A5 1181 (1186), A6 1171 (1175) and A9 981 (998), whose reserves are a few px above what the cards measure either way. At 760 px thirteen match; A4 (1605 against 1626) and A9 (1039 against 1060) are one line under for the same font reason. No card is taller than its reserve. It is listed under "Found by the Nov 12 site check" below.
-  - **QA:** new `python3 scripts/check-host-type.py` mounts every embed under host pages that set these properties and fails if a card's height or its text styles change. `scripts/measure-reserves.py` still reports every card as fitting.
-  - **Not re-run this round:** the check on the site itself (the patch on `beoptimal-landing` + `check-embeds.mjs`). The fix was tested on pages that copy the site's tracking, not on the site. On your next preview, a figure's card at 390 px should measure the `plain` height that `scripts/check-host-type.py` prints for it at 358 px (its test page loads the site's two fonts; `measure-reserves.py` measures without them).
+  - **Checked on the site, Nov 13** (the private patch on `beoptimal-landing` `main` `e36b4fa`, with this release's `embeds/`): the patch still applies cleanly, `yarn build` passes, and `check-embeds.mjs` passes on every page at 390 and 1280 px, with and without WebGL, consoles clean. The site's tracking no longer reaches the cards. The four phone cards that sit in 358 px slots now land on their reserves: Fig 2 at 1172.3 px (was 1088.6), A8 1136.1 (was 1115.1), Fig 4 1187.9 (was 1167.0), A4 1379.4 (was 1358.5).
+  - **Still open after that check: nine phone cards sit in 342 or 362 px columns, and the reserves are measured at 358.** Three of them are now 2 to 4 px taller than their reserves (Fig 1, Fig 5, Fig 6; the tracking used to hide this for Fig 5 and Fig 6), and six are 4 to 21 px shorter. The table and the fix are under "Site check, Nov 13" below.
+  - **QA:** new `python3 scripts/check-host-type.py` mounts every embed under host pages that set these properties and fails if a card's height or its text styles change. `scripts/measure-reserves.py` still reports every card as fitting at 358 and 760 px.
 - **Nov 12, 2026 (b): turn, glow, and two figures back to drawings. Copy the whole of `embeds/` again, all at once; use release `handoff-2026-11-12b`.** `optimal-gl3.js` and the embeds that use it now share version 3 of their handshake, so they must be updated together (a mixed set shows the drawings, not the 3-D models: safe, but not what you want). Fig 1 and Fig 2 are drawings again (Peter withdrew their 3-D versions); their scripts no longer load `optimal-gl3.js`. Figs 3 to 6 turn by drag (`turn="off"` on the element switches that off). `optimal-gl3.js` is 655 KB, 170 KB gzip. A2 and A4 are still byte-identical to Oct 24. No site code, placement or reserve changes.
 - **Nov 12, 2026: polish round on the 3-D look. Same files, same places; use release `handoff-2026-11-12` in place of `handoff-2026-11-11`.** Looks only (whites, shadows, sharpness on 1x screens, A1 and A5 on the cream theme, Fig 5's colours). `optimal-gl3.js` (both copies), the 13 embeds and the 3 machine pages changed; A2 and A4 are still byte-identical to Oct 24. No site code, placement or reserve changes.
 - **Nov 11, 2026: every figure renders in real-time 3-D. Ship one more file, `optimal-gl3.js`, in two places, and re-copy the embeds.** See ENGINEERING_HANDOFF.md, "Added Nov 11". Use release `handoff-2026-11-12` (the Nov 12 polish round replaced `handoff-2026-11-11`), or re-run `scripts/export-embeds.mjs`.
@@ -94,13 +94,60 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 11. **IV iron page:** Fig 3 hero, A1 under it, A6 in "After your infusion", when the page is built.
 
-## Found by the Nov 12 site check (still open)
+## Site check, Nov 13 (the `handoff-2026-11-12c` embeds on `main` `e36b4fa`): what is still open
 
-- (The short phone cards are fixed in the embeds: see "Nov 12, 2026 (c)" at the top.)
-- **Some reserves are a little above their cards (older than this round; measured Nov 12 (c)).** At 358 px with the site's fonts: Fig 5 1203 against 1224, A2 1290 against 1311, A3 1036 against 1040, A5 1181 against 1186, A6 1171 against 1175, A9 981 against 998. At 760 px: A4 1605 against 1626, A9 1039 against 1060. Fig 5, A2, A4 and A9 (desktop) are one caption line shorter once Castoro and Public Sans are in; `measure-reserves.py` measures without them, so it reserves the taller case, which is the safe one while the fonts load. The other four phone gaps (A3, A5, A6, A9) are stale: `measure-reserves.py` prints 1036, 1181, 1172 and 982 for them. Nothing overlaps and no card is taller than its slot. Optional (XS): next time the patch is touched, set those four phone reserves to the printed values in `handoff/site/optimalFigures.ts` and in the site's copy.
-- **Desktop cards in narrow columns: check on the next preview.** The site check also saw a few desktop cards 9 to 175 px shorter than their reserves. The tracking explains part of that and is fixed (Fig 3 at 760 px lost 27 px under it). The rest is the column being narrower than the 760 px the desktop reserve is measured at, which the embeds can't change. Nothing overlaps; there is spare space under the card. If a gap matters, measure that placement and give it its own reserve.
-- One card is 4 px taller than its reserve: Fig 1 on the Menopause Protocol at 390 px (1065 against 1061), because that column is 362 px wide, not 358. Re-measured Nov 12 (c) in a 362 px slot: 1065 with the old embed and with the new one, with or without the site's tracking, so this is the column width and not the text spacing. Either reserve 1065 for that placement or leave it (a 4 px shift).
-- `yarn test` gives 175 of 177 on `main` with or without the patch (`legacyRedirects.test.ts`, `siteNavigation.test.ts`).
+The check itself passed (see "Nov 12, 2026 (c)" at the top). What follows is card heights against `FIGURE_RESERVE`, measured on a local `vite preview` of the patched site with analytics blocked. "12b card" is the same build with the previous embeds, for comparison.
+
+**How a mismatch shows:** the slot holds its reserve as a `min-height` until the card mounts, then takes the card's own height. So the content below a figure moves by the difference at the moment it mounts. Cards mount when their slot comes within 800 px of the viewport, so the move is usually off screen.
+
+**At 390 px** (identical as a desktop browser and as a phone with touch):
+
+| Page | Figure | Slot | 12b card | 12c card | Reserve | 12c against reserve |
+|---|---|---|---|---|---|---|
+| `/optimal-menopause-protocol` | Fig 1 | 362 px | 1065.1 | 1065.1 | 1061 | **+4 (taller)** |
+| `/optimal-menopause-protocol` | A2 | 362 px | 1252.5 | 1294.3 | 1311 | -17 |
+| `/optimal-menopause-protocol` | A3 | 362 px | 1018.9 | 1018.9 | 1040 | -21 |
+| `/optimal-menopause-protocol` | A9 | 362 px | 984.3 | 984.3 | 998 | -14 |
+| `/services/inbody-580` | Fig 2 | 358 px | 1088.6 | 1172.3 | 1172 | on it |
+| `/services/inbody-580` | A8 | 358 px | 1115.1 | 1136.1 | 1136 | on it |
+| `/services/creator-600` | Fig 4 | 358 px | 1167.0 | 1187.9 | 1188 | on it |
+| `/services/creator-600` | A7 | 342 px | 1095.6 | 1095.6 | 1117 | -21 |
+| `/services/vo2-max-testing` | Fig 5 | 342 px | 1186.5 | 1228.4 | 1224 | **+4 (taller)** |
+| `/services/vo2-max-testing` | Fig 6 | 342 px | 1204.3 | 1225.2 | 1223 | **+2 (taller)** |
+| `/services/vo2-max-testing` | A4 | 358 px | 1358.5 | 1379.4 | 1379 | on it |
+| `/journal/vo2max-and-longevity` | A5 | 342 px | 1140.5 | 1182.3 | 1186 | -4 |
+| `/optimal-longevity-protocol` | A6 | 342 px | 1126.6 | 1168.5 | 1175 | -7 |
+
+**At 1280 px:**
+
+| Page | Figure | Slot | 12b card | 12c card | Reserve | 12c against reserve |
+|---|---|---|---|---|---|---|
+| `/optimal-menopause-protocol` | Fig 1 | 760 px | 1166.3 | 1166.3 | 1166 | on it |
+| `/optimal-menopause-protocol` | A2 | 760 px | 1305.9 | 1305.9 | 1306 | on it |
+| `/optimal-menopause-protocol` | A3 | 760 px | 1228.5 | 1228.5 | 1228 | on it |
+| `/optimal-menopause-protocol` | A9 | 760 px | 1038.6 | 1038.6 | 1060 | -21 |
+| `/services/inbody-580` | Fig 2 | 760 px | 1190.1 | 1190.1 | 1190 | on it |
+| `/services/inbody-580` | A8 | 760 px | 1118.9 | 1118.9 | 1119 | on it |
+| `/services/creator-600` | Fig 4 | 760 px | 1351.2 | 1351.2 | 1351 | on it |
+| `/services/creator-600` | A7 | 760 px | 1423.5 | 1423.5 | 1424 | on it |
+| `/services/vo2-max-testing` | Fig 5 | 760 px | 1315.2 | 1315.2 | 1315 | on it |
+| `/services/vo2-max-testing` | Fig 6 | 760 px | 1378.1 | 1405.1 | 1405 | on it |
+| `/services/vo2-max-testing` | A4 | 760 px | 1563.2 | 1605.0 | 1626 | -21 |
+| `/journal/vo2max-and-longevity` | A5 | 640 px | 1230.3 | 1251.2 | 1374 | -123 |
+| `/optimal-longevity-protocol` | A6 | 752 px | 1284.1 | 1284.1 | 1293 | -9 |
+
+Three causes, none of them the tracking any more:
+
+- **Column width.** The reserves are measured at 358 and 760 px. On the site, figures inside a padded section are 342 px wide on a phone; the Menopause Protocol's column is 362; the journal column is 640 on desktop and the Longevity Protocol's is 752. A narrower card is not always shorter: Fig 5 and Fig 6 are taller at 342 than at 358.
+- **Fonts.** `scripts/measure-reserves.py` measures on a page without Castoro and Public Sans, the taller case. With the site's fonts A2 is one caption line shorter on a phone (at 358 px: 1290 against 1311), and A4 and A9 on desktop (21 px each).
+- **Stale values.** The phone reserves for A3, A5, A6 and A9 are 4 to 17 px above what `measure-reserves.py` prints today (1036, 1181, 1172, 982).
+
+**To do (S, needs Peter's go-ahead because it changes the patch):** measure each placement at the site's own column width and set the reserves from that, in `handoff/site/optimalFigures.ts`, `handoff/placements.json` and the private patch. Since one figure can sit in columns of different widths, the cleanest form is a reserve per placement. The smallest change that stops the three cards that grow, with the site's fonts loaded, is phone reserves of 1066 for Fig 1, 1229 for Fig 5 and 1226 for Fig 6.
+
+Also from this check:
+
+- `yarn test` gives 196 of 200 on `main` (`e36b4fa`) with or without the patch. The four failures are in `legacyRedirects.test.ts` (two), `siteNavigation.test.ts` and `cycle-hormone-care/content.test.ts`; none touches the figures. On Nov 12 it was 175 of 177 on `98ff79c`.
+- An earlier note here said a short card leaves "spare space under the card" and nothing shifts. That was wrong: the slot drops its reserve once the card is in (`.optimal-figure[data-ready] { min-height: 0 }`), as described above.
 
 ## Housekeeping found on the way (pre-existing, optional)
 

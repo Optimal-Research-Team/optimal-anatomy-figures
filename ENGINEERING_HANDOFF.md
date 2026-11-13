@@ -25,7 +25,7 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 
 ## Added Nov 12 (c): a host page's text styles stay out of the figures
 
-**Found by the Nov 12 site check; release `handoff-2026-11-12c`.** A shadow root keeps a page's selectors out of a figure, but inherited properties still come down through the element. On the site every figure inherited the site's `letter-spacing` (-0.32 px on the service pages, -0.17 px on the Menopause Protocol). Tighter tracking let the captions wrap in fewer lines than in the gallery, where `FIGURE_RESERVE` was measured, so phone cards came out 14 to 83 px shorter than their reserves and a few desktop cards were short too. Nothing overlapped; there was spare space under each card.
+**Found by the Nov 12 site check; release `handoff-2026-11-12c`.** A shadow root keeps a page's selectors out of a figure, but inherited properties still come down through the element. On the site every figure inherited the site's `letter-spacing` (-0.32 px on the service pages, -0.17 px on the Menopause Protocol). Tighter tracking let the captions wrap in fewer lines than in the gallery, where `FIGURE_RESERVE` was measured, so phone cards came out 14 to 83 px shorter than their reserves and a few desktop cards were short too. Nothing overlapped; the content below a figure moved up by the difference when its card mounted.
 
 **The fix is in the embeds** (`shared/page.mjs`, `HOST_TYPE_RESET`). Each embed's stylesheet now sets these back to their initial values:
 
@@ -56,9 +56,13 @@ There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron
 
 **QA:** `python3 scripts/check-host-type.py` (after `node scripts/build-all.mjs`). For each embed, at 358 and 760 px, it measures the card on a plain page and then under five host pages: the site's two trackings, every property from the parent (with and without `nowrap`), and every property set on the element itself. The test page is in English, like the site. It fails if a card's height changes or if any element that holds text computes a different style. On the Nov 12 (b) embeds it fails (Fig 2: 1172.3 px plain, 1088.6 under -0.32 px tracking, the same numbers the site check saw); on these it passes.
 
-**What to expect on the site.** With the site's two fonts loaded and the new embeds, nine of the fifteen phone cards (358 px) match their reserves to within half a pixel. Six still sit under theirs, for reasons older than this round: Fig 5 is 1203 px (reserve 1224) and A2 1290 (1311), because the reserves are measured on a page without Castoro and Public Sans, where those two cards wrap one more line; A3 is 1036 (1040), A5 1181 (1186), A6 1171 (1175) and A9 981 (998), whose reserves are a few px above what the cards measure either way. At 760 px thirteen match; A4 (1605 against 1626) and A9 (1039 against 1060) are one line under for the same font reason. No card is taller than its reserve. `scripts/measure-reserves.py` measures on a page without the two fonts (the taller case, which is the safe one to reserve while fonts load); `scripts/check-host-type.py` loads them, so its `plain` column is what a card should measure on the site at 358 and 760 px.
+**Checked on the site, Nov 13** (the private patch on `beoptimal-landing` `main` `e36b4fa`, with these embeds; local `vite preview`, analytics blocked):
 
-**Not re-run this round:** `check-embeds.mjs` on the patched site. The fix was tested on pages that copy the site's tracking, not on the site itself.
+- The patch applies cleanly, `yarn build` passes, and `check-embeds.mjs` passes on every page at 390 and 1280 px, with and without WebGL, consoles clean.
+- The slots around the figures still carry the site's tracking (-0.32 px on the service pages and the journal, -0.17 px on the Menopause Protocol, -0.34 px on the Longevity Protocol); the figure elements now compute `normal`, and nothing inside the cards takes it.
+- The four phone cards that sit in 358 px slots land on their reserves: Fig 2 at 1172.3 px (1088.6 with the previous embeds), A8 1136.1 (1115.1), Fig 4 1187.9 (1167.0), A4 1379.4 (1358.5). On desktop Fig 6 does too (1405.1, was 1378.1).
+
+**What the check left open: the reserves assume a 358 px or 760 px column.** `FIGURE_RESERVE` holds one phone and one desktop height per figure, measured at those widths by `scripts/measure-reserves.py` on a page without the two web fonts. On the site nine of the thirteen placed phone cards sit in 342 or 362 px columns, the journal column is 640 px on desktop, and the fonts are loaded. So, with the tracking out of the way, three cards are 2 to 4 px taller than their reserves (Fig 1, Fig 5, Fig 6), six phone cards are 4 to 21 px shorter, and A5 is 123 px shorter in the journal's desktop column. The slot drops its reserve once the card is in, so the content below moves by that much when the card mounts. The per-placement table and the proposed fix (reserves measured per placement) are in `DEV_TODO.md`, "Site check, Nov 13".
 
 ## Added Nov 11: every figure in real-time 3-D (one shared layer)
 
@@ -313,7 +317,7 @@ import OptimalFigure from 'components/optimal-figures/OptimalFigure'
 ```
 
 - **Lazy:** the script loads when the slot comes within 800 px of the viewport, once per page view (`loadFigure` dedupes).
-- **No layout shift:** each slot reserves the figure's measured height (`FIGURE_RESERVE`: phone at 358 px wide, desktop at 760 px). The reservation drops once the element is in. If you place a figure in a narrower column, measure it and update `FIGURE_RESERVE`.
+- **No layout shift:** each slot reserves the figure's measured height (`FIGURE_RESERVE`: phone at 358 px wide, desktop at 760 px). The reservation drops once the element is in. If you place a figure in a narrower column, measure it and update `FIGURE_RESERVE`. Most of today's placements are in such columns (342, 362, 640 or 752 px): `DEV_TODO.md`, "Site check, Nov 13", has the measured heights.
 - **Width:** the figures are designed for up to 760 px, and fill the width on phones. `gutter` adds 16 px each side for slots outside a padded column.
 - **Theme:** `light` (Cream) on the site. `dark` (Forest night) is for the exam-room TV.
 - **Fonts:** Castoro and Public Sans, which `index.html` already loads.
