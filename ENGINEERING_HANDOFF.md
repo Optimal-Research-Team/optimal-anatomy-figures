@@ -1,13 +1,15 @@
 # Engineering handoff: anatomy figures on beoptimal.ca
 
-**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b"; every figure in real-time 3-D added 2026-11-11; host-page text styles kept out 2026-11-12, package "c")
-**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-12c` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-12c), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
+**Date:** 2026-10-12 (equipment films E1–E4 added 2026-10-19; refreshed 2026-10-21; A2 real-time 3-D added 2026-10-21, package "b"; every figure in real-time 3-D added 2026-11-11; host-page text styles kept out 2026-11-12, package "c"; Fig 2 withdrawn 2026-11-15)
+**Start here if you had an earlier package:** [`handoff/README.md`](handoff/README.md) lists everything that changed. The download is the [`handoff-2026-11-15` release](https://github.com/Optimal-Research-Team/optimal-anatomy-figures/releases/tag/handoff-2026-11-15), and the site patch is in the private repo [optimal-anatomy-figures-site-patch](https://github.com/Optimal-Research-Team/optimal-anatomy-figures-site-patch).
 **From:** Peter Phua (product), built with Claude Code
 **For:** the engineers who own `BeOptimal/beoptimal-landing`
 
+> **Nov 15, 2026: Fig 2 (InBody glass body) is withdrawn by Peter. Don't place it on /services/inbody-580 or anywhere; the embed is gone.** If you already placed it from an earlier package, take the `<optimal-fig-inbody-580>` block (and its `inbody-580` entry in `FIGURE_RESERVE`) back out. E1, the 3-D InBody machine, and A8 stay on that page.
+
 ## In one paragraph
 
-There are 15 interactive explainer figures: a hot flash, an InBody scan, IV iron, gait, VO₂max, the heart, and more. Each ships as **one JavaScript file** that defines a custom element (`<optimal-fig-heart>`). The element renders its own card in a shadow root, so the site's Tailwind can't touch it. This handoff says **which page and section each figure goes in**, and gives you the components to place them. It also includes a **tested reference integration** (a patch against `beoptimal-landing@0f36c00`). The patch puts all 13 figures whose pages exist today in place: tests 80/80, `tsc` and `vite build` clean, and every figure mounts on its page at phone width in a local production build (QA output below).
+There are 14 interactive explainer figures: a hot flash, IV iron, gait, VO₂max, the heart, and more. Each ships as **one JavaScript file** that defines a custom element (`<optimal-fig-heart>`). The element renders its own card in a shadow root, so the site's Tailwind can't touch it. This handoff says **which page and section each figure goes in**, and gives you the components to place them. It also includes a **tested reference integration** (a patch against `beoptimal-landing@0f36c00`). The patch puts all 12 figures whose pages exist today in place: tests 80/80, `tsc` and `vite build` clean, and every figure mounts on its page at phone width in a local production build (QA output below).
 
 **Live gallery (every figure, both themes):** https://optimal-research-team.github.io/optimal-anatomy-figures/
 
@@ -256,7 +258,6 @@ Copy fixes on the same page:
 | Fig | Element | Where | Pri |
 |---|---|---|---|
 | E1 The InBody 580, in 3-D | `<EquipmentReveal slug="inbody-580" gutter>` | Its own block right before "Why" (BEYOND THE SCALE) | P |
-| 2 Five cylinders on a bridge | `optimal-fig-inbody-580` | Its own block between "Why" ("BEYOND THE SCALE") and "Result sheet", with gutter | P |
 | A8 Water in and around the fibres | `optimal-fig-muscle-water` | Its own block right after "Result sheet", with gutter | P |
 
 ### Menopause Protocol (free): `/optimal-menopause-protocol` (`src/content/menopause/page.html`, rendered by `MenopauseProtocolPage.tsx`)

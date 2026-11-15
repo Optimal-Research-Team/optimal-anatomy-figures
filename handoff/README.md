@@ -1,10 +1,18 @@
-# Optimal figures: engineering handoff, Nov 12 2026 (c) (replaces the Nov 12 (b), Nov 12, Nov 11, Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
+# Optimal figures: engineering handoff, Nov 15 2026 (replaces the Nov 12 (c), Nov 12 (b), Nov 12, Nov 11, Oct 24, Oct 23, Oct 21 (b), Oct 21 and Oct 12 packages)
 
 **For:** Jeremy, and anyone integrating the anatomy figures into `BeOptimal/beoptimal-landing`.
 
 **Source of truth:** https://github.com/Optimal-Research-Team/optimal-anatomy-figures. The live gallery is https://optimal-research-team.github.io/optimal-anatomy-figures/.
 
 Start with `ENGINEERING_HANDOFF.md` (where everything goes and how to embed it) and `DEV_TODO.md` (the task list, newest changes first).
+
+## What changed since the Nov 12 (c) package (`handoff-2026-11-12c`)
+
+**Nov 15, 2026: Fig 2 (InBody glass body) is withdrawn by Peter. Don't place it on /services/inbody-580 or anywhere; the embed is gone.**
+
+- **`optimal-fig-inbody-580.js` is gone** from `embeds/` (and from the manifest), and `inbody-580` is gone from `FIGURE_RESERVE` in `site/optimalFigures.ts` and from `placements.json`. 14 embed scripts now.
+- **If you placed it already:** delete the `<optimal-fig-inbody-580>` block between "Why" and "Result sheet" on `InBody580Page.tsx`, and its reserve entry. Its demo pages and its live script on the gallery now 404.
+- **Nothing else changes.** The other 14 embeds are byte-identical to `handoff-2026-11-12c`. E1 (the 3-D InBody machine, `<EquipmentReveal slug="inbody-580">`) and A8 (water in and around the fibres) stay on `/services/inbody-580`.
 
 ## What changed since the Nov 12 (b) package (`handoff-2026-11-12b`)
 

@@ -36,7 +36,7 @@ node figures/01-menopause-thermostat/build.mjs  # dark; add --light, --audit
 node scripts/build-all.mjs                      # all figures -> dist/ + gallery index
 node scripts/verify.mjs <figure-dir>            # every check (phones 390/360/320 x 2 themes, reduced, desktop, lines) + shots
 python3 scripts/contact-sheet.py                # review/contact-sheet.png
-node scripts/export-embeds.mjs --out <dir>      # copy the 15 embed scripts + manifest (for the website's public/figures)
+node scripts/export-embeds.mjs --out <dir>      # copy the 14 embed scripts + manifest (for the website's public/figures)
 node handoff/qa/check-embeds.mjs <site URL>     # QA the figures on a running site (see ENGINEERING_HANDOFF.md)
 python3 scripts/measure-reserves.py             # every card's height against the site's reserves (after build-all)
 python3 scripts/check-host-type.py              # a host page's text styles stay out of the embeds (after build-all)

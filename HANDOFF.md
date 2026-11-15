@@ -23,7 +23,7 @@ Build them **simplest first**, one at a time, and get each one to "done" (below)
 | Order | Figure | Folder | Anatomy size | Build estimate | Ships on |
 |---|---|---|---|---|---|
 | **1** | Menopause: the narrowing thermostat | `figures/01-menopause-thermostat/` | Figure | 1–1.5 h | Menopause Protocol page, hormone explainers |
-| **2** | InBody 580: five cylinders on a bridge | `figures/02-inbody-580/` | Figure | 1–1.5 h | `/services/inbody-580` |
+| ~~**2**~~ | ~~InBody 580: five cylinders on a bridge~~ (withdrawn by Peter, 2026-11-15; folder deleted) | — | — | — | — |
 | **3** | IV iron: the depot with a gate | `figures/03-iv-iron/` | Figure (upper end) | 1.5–2 h | IV iron waitlist page (beoptimal.ca, launching) |
 | **4** | Creator 600: the runner rig | `figures/04-creator-600/` | Hero | 3–4 h | `/services/creator-600` |
 | **5** | VO2max: the ramp and the cart | `figures/05-vo2max/` | Hero (+1 WebGL layer) | 3–5 h (−1 h reusing the mannequin) | `/services/vo2-max-testing`, Performance package |

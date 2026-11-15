@@ -52,5 +52,5 @@ Recipe: HANDOFF-LOCAL §6a (tissue blocks) and §6b (organs cut in half, `shared
 ## Round-2 options already raised
 
 - Fig 1: treatment switch: decided against (threshold model overstates; A2 carries treatments). Optional WebGL heat shimmer over the radiator.
-- Fig 2: an ECW/TBW scenario switch ("more fluid outside cells" / "fewer cells") showing that a high ratio doesn't say why. Option to turn the body so all five cylinders show.
+- ~~Fig 2: an ECW/TBW scenario switch~~: Fig 2 withdrawn by Peter (2026-11-15); A8 already shows that a high ratio doesn't say why.
 - Fig 3: decide whether the readout shows "gut gate % open" (current) or a relative hepcidin number.

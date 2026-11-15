@@ -4,6 +4,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Changed since the handoff
 
+- **Nov 15, 2026: Fig 2 (InBody glass body) is withdrawn by Peter. Don't place it on /services/inbody-580 or anywhere; the embed is gone.** Use release `handoff-2026-11-15`: the same embeds as `handoff-2026-11-12c` minus `optimal-fig-inbody-580.js`, and `FIGURE_RESERVE` without `inbody-580`. If it's already in your branch, remove the `<optimal-fig-inbody-580>` block on `InBody580Page.tsx` and its reserve. E1 (the 3-D InBody machine) and A8 stay. Nothing else changes.
 - **Nov 12, 2026 (c): the figures no longer take the page's text spacing. Re-copy all 15 embed scripts; use release `handoff-2026-11-12c`.** This is the fix for the short cards the Nov 12 site check found. On the site each figure inherited the site's `letter-spacing` through its shadow root (-0.32 px on the service pages, -0.17 px on the Menopause Protocol), so its captions wrapped in fewer lines than in the gallery, where the reserves were measured, and phone cards came out 14 to 83 px short of their reserves. See ENGINEERING_HANDOFF.md, "Added Nov 12 (c)".
   - **What changed:** each embed now sets fourteen inherited text properties back to their initial values, on its own element (`:host`) and again on the card's root inside the shadow root: `letter-spacing`, `word-spacing`, `text-transform`, `text-indent`, `text-align`, `text-align-last`, `white-space`, `text-wrap`, `word-break`, `overflow-wrap`, `hyphens`, `line-break`, `text-anchor` and `text-shadow`. The list is what was measured to move a box in a card, or a label in its drawing, when a page sets it (all 15 figures), plus `text-shadow`, which only paints. `font-feature-settings` and `line-height` were checked too and do not get in: the card's own `font` rule already resets them.
   - **Files:** all 15 `optimal-fig-*.js` changed, each by the same 506 bytes (one style rule, about 100 bytes gzipped). **`optimal-fig-hypothalamus.js` (A2) and `optimal-fig-heart.js` (A4) change here for the first time since Oct 24**: the same one rule and nothing else. `optimal-gl3.js` (both copies), `hypothalamus-3d.js` and the three machine pages are byte-identical to `handoff-2026-11-12b`, so a mixed copy is safe this time; the machine pages are framed documents and never inherited anything.
@@ -79,7 +80,7 @@ In order. Sizes are rough, for one engineer who knows the site repo. See `ENGINE
 
 ## Later (secondary placements)
 
-8. **Longevity Protocol:** Fig 5 in place of the stock bike photo (§1.2); Fig 2 / A8 / A9 in §10. Each is a widget slot plus a `page.test.ts` entry.
+8. **Longevity Protocol:** Fig 5 in place of the stock bike photo (§1.2); A8 / A9 in §10. Each is a widget slot plus a `page.test.ts` entry.
 9. **Menopause care (sales page):** Fig 1 under the symptoms list, with a link to Protocol §5.
 10. **VO₂ max FAQ:** A5 inside "How is this different from my watch's estimate?"
 
@@ -108,7 +109,6 @@ The check itself passed (see "Nov 12, 2026 (c)" at the top). What follows is car
 | `/optimal-menopause-protocol` | A2 | 362 px | 1252.5 | 1294.3 | 1311 | -17 |
 | `/optimal-menopause-protocol` | A3 | 362 px | 1018.9 | 1018.9 | 1040 | -21 |
 | `/optimal-menopause-protocol` | A9 | 362 px | 984.3 | 984.3 | 998 | -14 |
-| `/services/inbody-580` | Fig 2 | 358 px | 1088.6 | 1172.3 | 1172 | on it |
 | `/services/inbody-580` | A8 | 358 px | 1115.1 | 1136.1 | 1136 | on it |
 | `/services/creator-600` | Fig 4 | 358 px | 1167.0 | 1187.9 | 1188 | on it |
 | `/services/creator-600` | A7 | 342 px | 1095.6 | 1095.6 | 1117 | -21 |
@@ -126,7 +126,6 @@ The check itself passed (see "Nov 12, 2026 (c)" at the top). What follows is car
 | `/optimal-menopause-protocol` | A2 | 760 px | 1305.9 | 1305.9 | 1306 | on it |
 | `/optimal-menopause-protocol` | A3 | 760 px | 1228.5 | 1228.5 | 1228 | on it |
 | `/optimal-menopause-protocol` | A9 | 760 px | 1038.6 | 1038.6 | 1060 | -21 |
-| `/services/inbody-580` | Fig 2 | 760 px | 1190.1 | 1190.1 | 1190 | on it |
 | `/services/inbody-580` | A8 | 760 px | 1118.9 | 1118.9 | 1119 | on it |
 | `/services/creator-600` | Fig 4 | 760 px | 1351.2 | 1351.2 | 1351 | on it |
 | `/services/creator-600` | A7 | 760 px | 1423.5 | 1423.5 | 1424 | on it |

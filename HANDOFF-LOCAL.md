@@ -26,7 +26,7 @@ claude                                # Claude Code reads CLAUDE.md on start
 | # | Figure | State | Folder |
 |---|---|---|---|
 | 1 | Menopause thermostat | Round 1 done. No treatment switch, on purpose (see NOTES "Decisions") | `01-menopause-thermostat` |
-| 2 | InBody 580 | Round 1 done. Checked against InBody's result-sheet guide: no segmental reactance printed, which is correct | `02-inbody-580` |
+| 2 | InBody 580 | **Withdrawn by Peter, 2026-11-15**: removed from the gallery, the TV, the site handoff and the design system. Its bioimpedance model lives on in `a8-muscle-water/bia-model.mjs` | — |
 | 3 | IV iron | Round 1 done | `03-iv-iron` |
 | 4 | Creator 600 | Round 1 done; built `shared/mannequin.*` | `04-creator-600` |
 | 5 | VO₂max on a bike | **Round 3**: smart bike at KICKR BIKE SHIFT proportions (no logo or copied design), power arc on the flywheel cover, wireless mask, assessor with tablet | `05-vo2max` |
@@ -85,7 +85,7 @@ Every figure folder holds:
 3. **Site copy fix:** the Creator 600 page says "32″ upright display"; it's about 50″ (§3 item 9).
 4. **Truth pass with the network open:** re-check the MEDIUM/LOW rows in `reference/truth-pack.md`.
 5. **Round-2 options still open** (BACKLOG.md):
-   - Fig 2: an ECW/TBW scenario switch, partly covered by A8 now;
+   - ~~Fig 2: an ECW/TBW scenario switch~~ (Fig 2 withdrawn Nov 15; A8 covers the idea);
    - Fig 3: readout wording;
    - Fig 1: optional WebGL heat shimmer (at most one WebGL layer, and the SVG must read without it).
 6. **Optional tidy-up:** A7's `drawFar()` predates `shared/round-back.js` and could move onto it (`chords()`), as A2, A4 and A6 already have.
@@ -130,7 +130,7 @@ What Peter approved on A7: the section is the cut face, the near half is gone, a
 
 - `model.mjs` is a pure model and the only source of numbers. It's imported by the build and inlined in the page (with `export` stripped). Reuse across figures:
   - Fig 1 `flashAt`/`rateOf`, used by A2 and A3;
-  - Fig 2 `throughShare`, used by A8;
+  - the bioimpedance model's `throughShare` (was Fig 2's, now `a8-muscle-water/bia-model.mjs`), used by A8;
   - Fig 3 `simulate`, used by A6;
   - Fig 4 `kneeOf`/`cadenceOf`/`stepOf`, used by A7.
 - `build.mjs` builds the geometry: kit solids recorded through `shared/figkit.mjs` (box, cyl, turned, prism, pin, cable, …) for the machines, and hand-drawn `smooth()` paths for the anatomy. `--light` builds Cream; `--audit` checks the geometry.

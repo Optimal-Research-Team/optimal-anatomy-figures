@@ -1,4 +1,5 @@
-// Fig 2 model: segmental multi-frequency bioimpedance on the InBody 580.
+// Bioimpedance model: segmental multi-frequency bioimpedance on the InBody 580.
+// (Written for Fig 2, which Peter withdrew on 2026-11-15; A8 still uses throughShare.)
 //
 // Pure functions, no DOM; the build imports it and the page inlines it. Keys in
 // [brackets] refer to reference/truth-pack.md §2.

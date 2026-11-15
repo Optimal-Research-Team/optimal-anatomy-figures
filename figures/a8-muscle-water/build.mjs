@@ -1,10 +1,10 @@
-// A8 · Water in and around muscle fibres (anatomical series, inset for Fig 2).
+// A8 · Water in and around muscle fibres (anatomical series).
 //
 // A slice across a bundle (fascicle) of muscle fibres in the upper arm: packed fibres with their
 // nuclei at the edge and myofibrils inside, capillaries in the corners between them, and fluid
 // in the narrow gaps (extracellular water). InBody's current runs along the arm, so in this slice
 // it flows toward the viewer (⊙). At 5 kHz it stays in the gaps; at higher frequencies some of
-// it passes through the fibres (Fig 2's model). Scenes change the fibres or the fluid between
+// it passes through the fibres (the bioimpedance model in bia-model.mjs). Scenes change the fibres or the fluid between
 // them, and the readout gives the whole-body ECW/TBW the change would produce: a high ratio can
 // mean smaller fibres or extra fluid, and the number alone doesn't say which.
 //
@@ -14,7 +14,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plate, page, embed } from "../../shared/page.mjs";
 import * as M from "./model.mjs";
-import { throughShare } from "../02-inbody-580/model.mjs";
+import { throughShare } from "./bia-model.mjs";
 import { figkit, k } from "../../shared/figkit.mjs";
 import { gl3Wire } from "../../shared/gl3/wire.mjs";
 

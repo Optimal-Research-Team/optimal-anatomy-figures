@@ -245,7 +245,7 @@ The InBody 580 sends a tiny alternating current (200 µA) through the body from 
 | InBody's own consumer guidance | "normal" about 5–7°; men "good" 5.5–7, women "good" 5–6 | ° | InBody India blog [23] | LOW (vendor blog, no primary citation) |
 | How InBody computes whole-body phase angle | Proprietary equation. In practice the device value matched a calculation from **right-side summed segments** (RA + TR + RL) within −0.004°. | ° | Lafontant 2024 [24] | MEDIUM |
 
-**How Fig 2 uses these numbers** (`figures/02-inbody-580/model.mjs`)
+**How the bioimpedance model uses these numbers** (`figures/a8-muscle-water/bia-model.mjs`; written for Fig 2, withdrawn 2026-11-15; A8 uses it)
 
 | Shown or animated | Value | From |
 |---|---|---|
@@ -1291,7 +1291,7 @@ Uses §1 and Fig 1's `flashAt(t)`: finger skin rise +2.7 ± 0.2 °C (range 1–7
 
 ## A8. Water in and around muscle fibres (anatomical series)
 
-Uses §2: ECW/TBW typical ≈ 0.380 and the InBody bands (< 0.390 normal, 0.390–0.400 slightly over, > 0.400 over) [17][18]; Fig 2's Fricke model for the share of current crossing membranes (2 / 17 / 23 / 24 % at 5 / 50 / 250 / 500 kHz).
+Uses §2: ECW/TBW typical ≈ 0.380 and the InBody bands (< 0.390 normal, 0.390–0.400 slightly over, > 0.400 over) [17][18]; the bioimpedance model's Fricke model (`a8-muscle-water/bia-model.mjs`) for the share of current crossing membranes (2 / 17 / 23 / 24 % at 5 / 50 / 250 / 500 kHz).
 
 | Quantity | Value | Source | Confidence |
 |---|---|---|---|

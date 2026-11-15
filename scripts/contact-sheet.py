@@ -9,7 +9,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # folder, the capture that best shows the idea (first that exists)
 ORDER = [
     ("01-menopause-thermostat", ["desktop-light-flash.png", "desktop-light.png"]),
-    ("02-inbody-580", ["desktop-light.png"]),
     ("03-iv-iron", ["desktop-light-iv-day7.png", "desktop-light.png"]),
     ("04-creator-600", ["desktop-light.png"]),
     ("05-vo2max", ["desktop-light.png"]),

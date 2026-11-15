@@ -47,49 +47,6 @@
       ]
     },
     {
-      "fig": "2",
-      "title": "Five cylinders on a bridge",
-      "folder": "02-inbody-580",
-      "slug": "inbody-580",
-      "tag": "optimal-fig-inbody-580",
-      "script": "optimal-fig-inbody-580.js",
-      "bytes": 337124,
-      "gzipBytes": 75365,
-      "demo": "https://optimal-research-team.github.io/optimal-anatomy-figures/02-inbody-580/inbody-580-light.html",
-      "demoDark": "https://optimal-research-team.github.io/optimal-anatomy-figures/02-inbody-580/inbody-580.html",
-      "liveScript": "https://optimal-research-team.github.io/optimal-anatomy-figures/02-inbody-580/embed/optimal-fig-inbody-580.js",
-      "reserve": {
-        "phone": 1172,
-        "desktop": 1190,
-        "note": "Whole card incl. caption: at 358 px wide (390 px phone) and 760 px wide"
-      },
-      "webgl": false,
-      "approval": "Approved by Peter 2026-10-12 ('the only thing that needs to be re-done is the heart')",
-      "placements": [
-        {
-          "page": "InBody 580",
-          "route": "/services/inbody-580",
-          "file": "src/pages/InBody580Page.tsx",
-          "method": "component",
-          "anchor": "<SectionTracker section=\"Why\"> (eyebrow BEYOND THE SCALE)",
-          "position": "New block between the 'Why' section and the 'Result sheet' section",
-          "why": "How the scan reads you: four frequencies, five segments",
-          "priority": "primary"
-        },
-        {
-          "page": "Longevity Protocol (free protocol)",
-          "route": "/optimal-longevity-protocol",
-          "file": "src/content/longevity-protocol/page.html",
-          "renderer": "src/pages/OptimalLongevityProtocolPage.tsx",
-          "method": "olp-widget slot",
-          "anchor": "#s-10, the 'InBody 580 bioimpedance scan, in clinic' photo",
-          "position": "Replace the photo",
-          "why": "",
-          "priority": "secondary"
-        }
-      ]
-    },
-    {
       "fig": "3",
       "title": "The depot with a gate",
       "folder": "03-iv-iron",
@@ -626,7 +583,7 @@
           "file": "src/pages/InBody580Page.tsx",
           "method": "component",
           "anchor": "<SectionTracker section=\"Why\"> (eyebrow BEYOND THE SCALE)",
-          "position": "Its own block right before the 'Why' section, with gutter (so the page reads: the machine, why, then Fig 2 and A8)",
+          "position": "Its own block right before the 'Why' section, with gutter (so the page reads: the machine, why, then A8)",
           "why": "The machine every member stands on, built from its published dimensions: drag to turn it, take it apart, lift the grips, run a measurement",
           "priority": "primary"
         }

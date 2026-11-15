@@ -44,10 +44,10 @@ There is no IV iron page yet.
 
 - **Menopause Protocol** (the richest page for figures, and compliance-reviewed): §3 → A9; §5 → Fig 1, then A3; §14 → A2.
 - **Menopause care** (sales): at most Fig 1 under the symptoms list. The mechanism lives in the Protocol; link "How a hot flash works →" from here.
-- **InBody 580:** Fig 2, then A8 after the decoded sheet.
+- **InBody 580:** A8 after the decoded sheet (Fig 2 withdrawn 2026-11-15).
 - **Creator 600:** Fig 4 after "Six measures", A7 in "After the run".
 - **VO₂ max testing:** A4 in "Why measure it", Fig 6 in "The test", Fig 5 in "Equipment".
-- **Longevity Protocol:** §1.2 → Fig 5; §10 → Fig 2 (and A8 or A9); §20 → A6.
+- **Longevity Protocol:** §1.2 → Fig 5; §10 → A8 or A9; §20 → A6.
 - **Journal, VO2max post:** A4 + A5 after the definition.
 - **IV iron page (future):** Fig 3, A1, A6.
 

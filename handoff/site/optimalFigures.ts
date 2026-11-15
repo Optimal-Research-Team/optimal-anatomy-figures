@@ -23,7 +23,6 @@ export const FIGURE_RESERVE: Record<
   { phone: number; desktop: number }
 > = {
   'menopause-thermostat': { phone: 1061, desktop: 1166 },
-  'inbody-580': { phone: 1172, desktop: 1190 },
   'iv-iron': { phone: 1039, desktop: 1047 },
   'creator-600': { phone: 1188, desktop: 1351 },
   vo2max: { phone: 1224, desktop: 1315 },

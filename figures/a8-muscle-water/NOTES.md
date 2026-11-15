@@ -1,6 +1,6 @@
 # A8 · Water in and around the fibres
 
-**What it is:** a slice across a bundle of muscle fibres from the upper arm: the tissue-level view behind Fig 2 (InBody 580). It is hand-drawn organic SVG: 44 fibres packed by a Lloyd-relaxed Voronoi diagram, with:
+**What it is:** a slice across a bundle of muscle fibres from the upper arm: the tissue-level view behind the InBody 580's reading (Fig 2, the machine-level figure, was withdrawn by Peter on 2026-11-15; its bioimpedance model now lives here as `bia-model.mjs`). It is hand-drawn organic SVG: 44 fibres packed by a Lloyd-relaxed Voronoi diagram, with:
 - two fibre types in slightly different reds;
 - myofibril speckle inside each fibre;
 - nuclei pressed to the fibre edge;
@@ -9,7 +9,7 @@
 - a perimysium sheath around the bundle;
 - a small arm locator showing where the slice is taken.
 
-**Mapping in one sentence:** InBody's current runs along the arm, so in this slice it flows toward the viewer (⊙). At 5 kHz it appears only in the gaps (extracellular water). At higher frequencies a share of it appears inside the fibres, using Fig 2's `throughShare("arm", f)`: 2 / 17 / 23 / 24 % at 5 / 50 / 250 / 500 kHz. The scene buttons change the fibres or the fluid between them, and the readout gives the whole-body ECW/TBW that change would produce.
+**Mapping in one sentence:** InBody's current runs along the arm, so in this slice it flows toward the viewer (⊙). At 5 kHz it appears only in the gaps (extracellular water). At higher frequencies a share of it appears inside the fibres, using `throughShare("arm", f)` from `bia-model.mjs`: 2 / 17 / 23 / 24 % at 5 / 50 / 250 / 500 kHz. The scene buttons change the fibres or the fluid between them, and the readout gives the whole-body ECW/TBW that change would produce.
 
 ## Numbers (truth pack, "A8")
 
@@ -25,7 +25,7 @@
 ## Decisions
 
 - **Current drawn out of the page.** In a limb the current runs along the fibres, so a cross-section shows *where* it flows, not a sideways path. This avoids the common schematic in which current snakes across cells.
-- **The point is the ambiguity:** "Smaller" and "Extra fluid" both read high, so a high ratio says the balance shifted, not why. This is Fig 2's round-2 idea ("a high ratio doesn't say why"), done at tissue level.
+- **The point is the ambiguity:** "Smaller" and "Extra fluid" both read high, so a high ratio says the balance shifted, not why. This was Fig 2's round-2 idea ("a high ratio doesn't say why"), done at tissue level.
 - **No diagnosis:** the scenes are typical shifts, not conditions. The caption says it's a teaching model and gives InBody's bands.
 - **Dropped from the backlog line:** "actin and myosin slide" was cut to keep one idea per figure. The myofibrils show as speckle inside each fibre. A sarcomere strip could be its own small piece later.
 
@@ -52,7 +52,7 @@
 
 ## Open for Peter
 
-1. **Placement:** under Fig 2, as "what ECW/TBW is measuring".
+1. **Placement:** on `/services/inbody-580` after the result sheet, as "what ECW/TBW is measuring" (Fig 2 no longer sits above it).
 2. **The model's two LOW numbers** (muscle ≈ half of body water; muscle water 16 % extracellular) are textbook-level. Worth a source check before the scene values (0.369–0.413) appear on a page; the direction of each shift is solid.
 3. **Wording** of the "Extra fluid" scene: deliberately not called oedema or inflammation (no diagnosis).
 
